@@ -10,31 +10,32 @@
  */
 
 :root {
-  /* پالت رنگی استاندارد برگرفته از ACE (ace.insigniagroup.com) و Google Material 3 */
-  --ace-navy: #0b1f3a;         /* سرمه‌ای صنعتی عمیق سازمانی */
-  --ace-navy-hover: #132d52;
-  --ace-red: #ed250a;          /* قرمز متمرکز و پرانرژی اتوموتیو */
-  --ace-red-hover: #d62007;
-  --ace-surface: #f5f4f1;      /* طوسی گرم استخوانی مینیمال */
-  --ace-surface-subtle: #f8f9fa;
-  --ace-border: #eceae5;
-  --ace-black: #231f20;        /* مشکی مات برای تیترها */
-  --ace-muted: #6b7280;
+  /*
+   * ─────────────────────────────────────────────────────────────
+   * پالت رنگی یکپارچه، آرامش‌بخش و مینیمال (Google Material 3 Calm & Unified)
+   * ایجاد حس آرامش، اعتماد و روانی کامل در سراسر پلتفرم کاردو B2B
+   * ─────────────────────────────────────────────────────────────
+   */
+  --primary: #1d4ed8;            /* آبی موقر و آرامش‌بخش متریال (Royal Blue) */
+  --primary-hover: #1e40af;      /* Blue 800 */
+  --primary-tonal: #eff6ff;      /* Blue 50 — پس‌زمینه ملایم چیپ‌ها و بج‌ها */
+  --primary-border: #bfdbfe;     /* Blue 200 */
 
-  --paper: #f8f9fa;            /* پس‌زمینه شفاف و پرانرژی */
-  --paper-raised: #ffffff;     /* سفید برای پنل‌ها و کارت‌ها */
-  --ink: #1e2430;              /* متن اصلی */
-  --ink-soft: #5b6577;         /* متن ثانویه */
-  --rule: #e5e7eb;             /* حاشیه‌های تمیز */
-  --rule-strong: #d1d5db;
-  --brass: #0b1f3a;            /* سرمه‌ای اصلی */
-  --brass-soft: #f0f4f9;
-  --energy-orange: #ed250a;    /* قرمز ACE */
-  --energy-orange-soft: #fef2f2;
-  --ledger-green: #059669;
+  --paper: #f8fafc;              /* Slate 50 — پس‌زمینه یکدست و بسیار آرام کل صفحات */
+  --paper-raised: #ffffff;       /* سفید خالص برای کارت‌ها، پنل‌ها و فرم‌ها */
+  --ink: #0f172a;                /* Slate 900 — متن اصلی با خوانایی بالا بدون خستگی چشم */
+  --ink-soft: #64748b;           /* Slate 500 — متن ثانویه و توضیحات */
+  --rule: #e2e8f0;               /* Slate 200 — خطوط حاشیه بسیار ظریف و تمیز */
+  --rule-strong: #cbd5e1;        /* Slate 300 */
+
+  --brass: #1d4ed8;
+  --brass-soft: #eff6ff;
+  --energy-orange: #d97706;      /* کهربایی ملایم برای سطوح و اعتبار */
+  --energy-orange-soft: #fef3c7;
+  --ledger-green: #059669;       /* سبز زمردی آرام برای تایید و موجودی */
   --ledger-green-soft: #ecfdf5;
-  --alarm: #ed250a;
-  --alarm-soft: #fef2f2;
+  --alarm: #e11d48;              /* رز ملایم برای هشدار و خطا */
+  --alarm-soft: #fff1f2;
   --amber: #d97706;
   --amber-soft: #fef3c7;
   --violet: #6366f1;
@@ -158,42 +159,21 @@ body {
     transform: translateY(-1px);
   }
 
-  .btn-primary {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 60%, #1e40af 100%);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.35), 0 2px 4px -2px rgba(37, 99, 235, 0.2);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 60%, #1d4ed8 100%);
-    box-shadow: 0 6px 20px -2px rgba(37, 99, 235, 0.45), 0 3px 6px -2px rgba(37, 99, 235, 0.3);
-    transform: translateY(-1px);
-  }
-
+  .btn-primary,
+  .btn-blue,
   .btn-brass {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    background-color: var(--primary);
     color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 2px 6px -1px rgba(29, 78, 216, 0.25);
+    transition: all 0.15s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
+  .btn-primary:hover:not(:disabled),
+  .btn-blue:hover:not(:disabled),
   .btn-brass:hover:not(:disabled) {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    box-shadow: 0 6px 20px -2px rgba(37, 99, 235, 0.45);
-    transform: translateY(-1px);
-  }
-
-  .btn-blue {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
-  }
-
-  .btn-blue:hover:not(:disabled) {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
-    box-shadow: 0 6px 20px -2px rgba(37, 99, 235, 0.45);
+    background-color: var(--primary-hover);
+    box-shadow: 0 4px 14px -1px rgba(29, 78, 216, 0.35);
     transform: translateY(-1px);
   }
 
