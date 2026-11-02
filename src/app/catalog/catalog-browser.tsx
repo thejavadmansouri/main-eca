@@ -73,7 +73,7 @@ export function CatalogBrowser(props: {
 
   // سفارش مجدد هوشمند و هشدارهای موجودی
   const [smartReorderItems, setSmartReorderItems] = useState<any[]>([]);
-  const [showSmartReorder, setShowSmartReorder] = useState(true);
+  const [showSmartReorder, setShowSmartReorder] = useState(false);
   const [subscribedAlerts, setSubscribedAlerts] = useState<Record<string, boolean>>({});
   const [subscribingId, setSubscribingId] = useState<string | null>(null);
 
@@ -472,129 +472,106 @@ export function CatalogBrowser(props: {
         </div>
       </div>
 
-      {/* مرکز صفحه: بخش جست‌وجوی هوشمند محصول و فیلترهای انتخابی */}
-      <div className="mt-4 p-4 sm:p-5 bg-white border border-slate-200/90 rounded-2xl shadow-2xs space-y-4">
-        {/* ۱. نوار جست‌وجوی هوشمند قطعه در مرکز */}
-        <div className="flex flex-col gap-2.5 sm:flex-row items-center">
-          <div className="relative flex-1 w-full">
-            <div className="absolute inset-y-0 right-3.5 flex items-center pointer-events-none text-slate-400">
-              <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" x2="16.65" y1="21" y2="16.65" />
-              </svg>
-            </div>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="جست‌وجوی نام قطعه، کد فنی SKU، کد OEM، بارکد یا برند سازنده قطعه..."
-              className="input py-3 pr-11 pl-9 text-xs sm:text-sm border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 rounded-xl bg-slate-50/50 hover:bg-white transition-all w-full font-medium"
-              autoComplete="off"
-            />
+      {/* مرکز صفحه: بخش جست‌وجوی هوشمند با زوم کامل (Focal Hero Search Console) */}
+      <div className="mt-4 p-4 sm:p-6 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-3.5">
+        {/* ۱. نوار جست‌وجوی بزرگ و برجسته (Hero Zoom Search) */}
+        <div className="relative w-full group">
+          <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-600 transition-colors">
+            <svg className="size-5.5 sm:size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" x2="16.65" y1="21" y2="16.65" />
+            </svg>
+          </div>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="جست‌وجوی سریع نام قطعه، کد فنی SKU، کد OEM، بارکد یا نام برند قطعه‌ساز..."
+            className="w-full h-14 sm:h-16 pr-12 sm:pr-14 pl-24 sm:pl-28 text-sm sm:text-base border-2 border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 rounded-2xl bg-slate-50/40 hover:bg-white focus:bg-white shadow-2xs focus:shadow-md transition-all font-medium placeholder:text-slate-400 text-slate-900 outline-none"
+            autoComplete="off"
+          />
+          <div className="absolute inset-y-0 left-3 flex items-center gap-1.5">
             {query && (
               <button
+                type="button"
                 onClick={() => setQuery("")}
-                className="absolute inset-y-0 left-2.5 px-2 text-slate-400 hover:text-slate-700 text-sm"
-                aria-label="پاک کردن"
+                className="size-8 grid place-items-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors text-sm"
+                aria-label="پاک کردن متن جست‌وجو"
               >
                 ✕
               </button>
             )}
+            <span className="hidden sm:inline-flex items-center text-[11px] font-mono font-medium text-slate-400 bg-slate-100 border border-slate-200/80 px-2 py-1 rounded-lg select-none">
+              اینتر ↵
+            </span>
           </div>
-
-          {/* دکمه فیلترهای تکمیلی */}
-          <button
-            onClick={() => setShowAdvancedFilters((prev) => !prev)}
-            className={`btn text-xs px-4 py-3 rounded-xl flex items-center gap-2 border transition-all w-full sm:w-auto shrink-0 min-h-[46px] ${
-              activeFiltersCount > 0 || showAdvancedFilters
-                ? "bg-blue-50 border-blue-300 text-blue-700 font-bold"
-                : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-            </svg>
-            <span>فیلترهای پیشرفته و سازنده</span>
-            {activeFiltersCount > 0 && (
-              <span className="size-5 rounded-full bg-blue-600 text-white grid place-items-center text-[10px] font-bold nums">
-                {toFaDigits(activeFiltersCount)}
-              </span>
-            )}
-          </button>
         </div>
 
-            {/* ۱. چیپس‌های لمسی سریع برای برند خودروها */}
-            <div className="pt-1 border-t border-slate-100">
-              <div className="flex items-center justify-between text-xs text-slate-500 font-medium mb-1.5">
-                <span className="font-bold text-slate-700">انتخاب خودرو:</span>
-                {carBrand && (
-                  <button onClick={() => setCarBrand("")} className="text-blue-600 hover:underline font-bold">
-                    همه خودروها
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
-                <button
-                  onClick={() => setCarBrand("")}
-                  className={`px-3.5 py-1.5 rounded-full shrink-0 transition-all font-bold ${
-                    carBrand === ""
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/25"
-                      : "bg-slate-50 border border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-white"
-                  }`}
-                >
-                  همه خودروها
-                </button>
-                {allCarBrands.map((b) => (
-                  <button
-                    key={b}
-                    onClick={() => setCarBrand(b === carBrand ? "" : b)}
-                    className={`px-3.5 py-1.5 rounded-full shrink-0 transition-all font-bold ${
-                      carBrand === b
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/25"
-                        : "bg-slate-50 border border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-white"
-                    }`}
-                  >
-                    {b}
-                  </button>
-                ))}
-              </div>
-            </div>
+        {/* ۲. نوار ابزار: دکمه فیلترهای پیشرفته و تیک سفارش مجدد هوشمند */}
+        <div className="flex items-center justify-between gap-3 flex-wrap pt-0.5">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* دکمه فیلترهای پیشرفته */}
+            <button
+              type="button"
+              onClick={() => setShowAdvancedFilters((prev) => !prev)}
+              className={`btn text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 border transition-all shrink-0 min-h-[42px] font-bold ${
+                activeFiltersCount > 0 || showAdvancedFilters
+                  ? "bg-blue-50 border-blue-300 text-blue-700 shadow-xs"
+                  : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400"
+              }`}
+            >
+              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+              </svg>
+              <span>فیلترهای پیشرفته و سازنده</span>
+              {activeFiltersCount > 0 && (
+                <span className="size-5 rounded-full bg-blue-600 text-white grid place-items-center text-[10px] font-black nums">
+                  {toFaDigits(activeFiltersCount)}
+                </span>
+              )}
+            </button>
 
-            {/* ۲. چیپس‌های لمسی سریع برای قسمت‌ها و بخش‌های فنی خودرو */}
-            <div>
-              <div className="flex items-center justify-between text-xs text-slate-500 font-medium mb-1.5">
-                <span className="font-bold text-slate-700">قسمت و بخش فنی خودرو:</span>
-                {category && (
-                  <button onClick={() => setCategory("")} className="text-orange-600 hover:underline font-bold">
-                    همه قسمت‌ها
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
-                <button
-                  onClick={() => setCategory("")}
-                  className={`px-3.5 py-1.5 rounded-full shrink-0 transition-all font-bold ${
-                    category === ""
-                      ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-sm shadow-orange-500/25"
-                      : "bg-slate-50 border border-slate-200 text-slate-700 hover:border-orange-300 hover:bg-white"
-                  }`}
-                >
-                  همه قسمت‌ها
-                </button>
-                {allCategories.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setCategory(c === category ? "" : c)}
-                    className={`px-3.5 py-1.5 rounded-full shrink-0 transition-all font-bold ${
-                      category === c
-                        ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-sm shadow-orange-500/25"
-                        : "bg-slate-50 border border-slate-200 text-slate-700 hover:border-orange-300 hover:bg-white"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* تیک سفارش مجدد هوشمند — فقط با زدن این تیک دیده می‌شود */}
+            <label className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border cursor-pointer select-none text-xs transition-all min-h-[42px] ${
+              showSmartReorder
+                ? "bg-amber-50 border-amber-300 text-amber-900 font-bold shadow-xs"
+                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium"
+            }`}>
+              <input
+                type="checkbox"
+                checked={showSmartReorder}
+                onChange={(e) => setShowSmartReorder(e.target.checked)}
+                className="size-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+              />
+              <span>سفارش مجدد هوشمند (اقلام پرتکرار من)</span>
+              {smartReorderItems.length > 0 && (
+                <span className="nums text-[10px] bg-amber-200/80 text-amber-950 px-1.5 py-0.2 rounded-full font-black">
+                  {toFaDigits(smartReorderItems.length)}
+                </span>
+              )}
+            </label>
+
+            {/* تیک فقط موجود */}
+            <label className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border cursor-pointer select-none text-xs transition-all min-h-[42px] ${
+              inStockOnly
+                ? "bg-emerald-50 border-emerald-300 text-emerald-900 font-bold shadow-xs"
+                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium"
+            }`}>
+              <input
+                type="checkbox"
+                checked={inStockOnly}
+                onChange={(e) => setInStockOnly(e.target.checked)}
+                className="size-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+              />
+              <span>فقط موجود در انبار</span>
+            </label>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+            <span>تعداد نتایج:</span>
+            <b className="nums font-black text-slate-900 text-sm">{toFaDigits(items.length)}</b>
+            <span>قلم کالا</span>
+          </div>
+        </div>
       </div>
 
       {/* ۴. پنل فیلترهای پیشرفته: در دسکتاپ پنل آکاردئونی و در موبایل Bottom Sheet استاندارد */}
@@ -614,29 +591,29 @@ export function CatalogBrowser(props: {
               </button>
             </div>
 
-            <div className="grid grid-cols-4 gap-3.5 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 text-xs">
               <div>
-                <label className="label block mb-1">برند سازنده قطعه (پارت برند):</label>
+                <label className="label block mb-1 font-bold text-slate-700">خانواده / برند خودرو:</label>
                 <select
-                  value={partBrand}
-                  onChange={(e) => setPartBrand(e.target.value)}
-                  className="input text-xs border-slate-300 rounded-lg bg-white"
+                  value={carBrand}
+                  onChange={(e) => setCarBrand(e.target.value)}
+                  className="input text-xs border-slate-300 rounded-lg bg-white h-10 font-medium"
                 >
-                  <option value="">همه برندهای سازنده</option>
-                  {allPartBrands.map((pb) => (
-                    <option key={pb} value={pb}>
-                      {pb}
+                  <option value="">همه خودروها</option>
+                  {allCarBrands.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="label block mb-1">مدل دقیق خودرو:</label>
+                <label className="label block mb-1 font-bold text-slate-700">مدل دقیق خودرو:</label>
                 <select
                   value={carModel}
                   onChange={(e) => setCarModel(e.target.value)}
-                  className="input text-xs border-slate-300 rounded-lg bg-white"
+                  className="input text-xs border-slate-300 rounded-lg bg-white h-10 font-medium"
                 >
                   <option value="">همه مدل‌ها</option>
                   {allModels.map((m) => (
@@ -648,11 +625,43 @@ export function CatalogBrowser(props: {
               </div>
 
               <div>
-                <label className="label block mb-1">تاریخ ورود به انبار:</label>
+                <label className="label block mb-1 font-bold text-slate-700">قسمت و گروه فنی قطعه:</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="input text-xs border-slate-300 rounded-lg bg-white h-10 font-medium"
+                >
+                  <option value="">همه قسمت‌ها</option>
+                  {allCategories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="label block mb-1 font-bold text-slate-700">برند سازنده قطعه (پارت برند):</label>
+                <select
+                  value={partBrand}
+                  onChange={(e) => setPartBrand(e.target.value)}
+                  className="input text-xs border-slate-300 rounded-lg bg-white h-10 font-medium"
+                >
+                  <option value="">همه برندهای سازنده</option>
+                  {allPartBrands.map((pb) => (
+                    <option key={pb} value={pb}>
+                      {pb}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="label block mb-1 font-bold text-slate-700">تاریخ ورود به انبار:</label>
                 <select
                   value={dateFilter}
                   onChange={(e) => setDateFilter(e.target.value)}
-                  className="input text-xs border-slate-300 rounded-lg bg-white"
+                  className="input text-xs border-slate-300 rounded-lg bg-white h-10 font-medium"
                 >
                   <option value="all">همه زمان‌ها</option>
                   <option value="week">اقلام جدید (۷ روز اخیر)</option>
@@ -662,11 +671,11 @@ export function CatalogBrowser(props: {
               </div>
 
               <div>
-                <label className="label block mb-1">مرتب‌سازی بر اساس:</label>
+                <label className="label block mb-1 font-bold text-slate-700">مرتب‌سازی بر اساس:</label>
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value)}
-                  className="input text-xs border-slate-300 rounded-lg bg-white font-medium"
+                  className="input text-xs border-slate-300 rounded-lg bg-white h-10 font-medium"
                 >
                   <option value="default">پیش‌فرض (خودرو و گروه کالا)</option>
                   <option value="newest">جدیدترین قطعات اضافه شده</option>
@@ -717,32 +726,64 @@ export function CatalogBrowser(props: {
 
               <div className="py-4 space-y-3.5 text-xs">
                 <div>
-                  <label className="label block mb-1">برند سازنده قطعه (پارت برند):</label>
+                  <label className="label block mb-1 font-bold text-slate-700">خانواده / برند خودرو:</label>
                   <select
-                    value={partBrand}
-                    onChange={(e) => setPartBrand(e.target.value)}
-                    className="input text-xs border-slate-300 rounded-lg bg-white h-11"
+                    value={carBrand}
+                    onChange={(e) => setCarBrand(e.target.value)}
+                    className="input text-xs border-slate-300 rounded-lg bg-white h-11 font-medium"
                   >
-                    <option value="">همه برندهای سازنده</option>
-                    {allPartBrands.map((pb) => (
-                      <option key={pb} value={pb}>
-                        {pb}
+                    <option value="">همه خودروها</option>
+                    {allCarBrands.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="label block mb-1">مدل دقیق خودرو:</label>
+                  <label className="label block mb-1 font-bold text-slate-700">مدل دقیق خودرو:</label>
                   <select
                     value={carModel}
                     onChange={(e) => setCarModel(e.target.value)}
-                    className="input text-xs border-slate-300 rounded-lg bg-white h-11"
+                    className="input text-xs border-slate-300 rounded-lg bg-white h-11 font-medium"
                   >
                     <option value="">همه مدل‌ها</option>
                     {allModels.map((m) => (
                       <option key={m} value={m}>
                         {m}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="label block mb-1 font-bold text-slate-700">قسمت و گروه فنی قطعه:</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="input text-xs border-slate-300 rounded-lg bg-white h-11 font-medium"
+                  >
+                    <option value="">همه قسمت‌ها</option>
+                    {allCategories.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="label block mb-1 font-bold text-slate-700">برند سازنده قطعه (پارت برند):</label>
+                  <select
+                    value={partBrand}
+                    onChange={(e) => setPartBrand(e.target.value)}
+                    className="input text-xs border-slate-300 rounded-lg bg-white h-11 font-medium"
+                  >
+                    <option value="">همه برندهای سازنده</option>
+                    {allPartBrands.map((pb) => (
+                      <option key={pb} value={pb}>
+                        {pb}
                       </option>
                     ))}
                   </select>
@@ -888,10 +929,10 @@ export function CatalogBrowser(props: {
         </div>
       )}
 
-      {/* بخش سفارش مجدد هوشمند بر اساس خریدهای پیشین */}
-      {smartReorderItems.length > 0 && showSmartReorder && (
-        <div className="mt-4 p-4 sm:p-5 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-slate-50 border border-amber-300 rounded-2xl shadow-xs space-y-3">
-          <div className="flex items-center justify-between">
+      {/* بخش سفارش مجدد هوشمند بر اساس خریدهای پیشین — فقط با فعال شدن تیک نمایش داده می‌شود */}
+      {showSmartReorder && (
+        <div className="mt-4 p-4 sm:p-5 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-slate-50 border border-amber-300 rounded-2xl shadow-xs space-y-3 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <span className="text-base">🔄</span>
               <div>
@@ -904,15 +945,17 @@ export function CatalogBrowser(props: {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={handleAddAllSmartReorder}
-                className="text-xs font-black bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-3 py-1.5 rounded-xl transition-all shadow-xs"
-              >
-                افزودن همه به سبد ({toFaDigits(smartReorderItems.length)} قلم)
-              </button>
+              {smartReorderItems.length > 0 && (
+                <button
+                  onClick={handleAddAllSmartReorder}
+                  className="text-xs font-black bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-3 py-1.5 rounded-xl transition-all shadow-xs"
+                >
+                  افزودن همه به سبد ({toFaDigits(smartReorderItems.length)} قلم)
+                </button>
+              )}
               <button
                 onClick={() => setShowSmartReorder(false)}
-                className="text-xs text-slate-400 hover:text-slate-600 px-1.5 py-1"
+                className="text-xs text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100"
                 title="بستن بخش پیشنهادی"
               >
                 ✕
@@ -920,33 +963,39 @@ export function CatalogBrowser(props: {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
-            {smartReorderItems.map((sItem) => (
-              <div
-                key={sItem.id}
-                className="p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between gap-2 shadow-2xs hover:border-amber-400 transition-colors"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-slate-900 truncate">{sItem.name}</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
-                    <span className="nums font-bold text-amber-700">{formatToman(sItem.finalPrice)} ت</span>
-                    <span className="mx-1">·</span>
-                    <span>پیشنهاد: <b className="nums text-slate-800">{toFaDigits(sItem.suggestedQty)}</b> {sItem.unit}</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const full = items.find((x) => x.id === sItem.id);
-                    if (full) addToCart(full, sItem.suggestedQty);
-                  }}
-                  className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white shrink-0 active:scale-95 transition-all shadow-xs"
+          {smartReorderItems.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
+              {smartReorderItems.map((sItem) => (
+                <div
+                  key={sItem.id}
+                  className="p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between gap-2 shadow-2xs hover:border-amber-400 transition-colors"
                 >
-                  + سبد
-                </button>
-              </div>
-            ))}
-          </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-slate-900 truncate">{sItem.name}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      <span className="nums font-bold text-amber-700">{formatToman(sItem.finalPrice)} ت</span>
+                      <span className="mx-1">·</span>
+                      <span>پیشنهاد: <b className="nums text-slate-800">{toFaDigits(sItem.suggestedQty)}</b> {sItem.unit}</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const full = items.find((x) => x.id === sItem.id);
+                      if (full) addToCart(full, sItem.suggestedQty);
+                    }}
+                    className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white shrink-0 active:scale-95 transition-all shadow-xs"
+                  >
+                    + سبد
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-4 bg-white/80 border border-amber-200 rounded-xl text-center text-xs text-slate-600 font-medium">
+              هنوز سابقه خرید پرتکراری برای این حساب کاربری ثبت نشده است. پس از ثبت فاکتورهای اولیه، اقلام پرمصرف شما به‌صورت هوشمند در این بخش پیشنهاد داده خواهند شد.
+            </div>
+          )}
         </div>
       )}
 
