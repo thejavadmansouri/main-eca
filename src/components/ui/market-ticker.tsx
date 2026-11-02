@@ -74,19 +74,19 @@ export function MarketTicker() {
 
   return (
     <div
-      className="w-full bg-slate-950 text-slate-100 border-b border-slate-800/90 text-xs py-2 px-3 sm:px-6 relative overflow-hidden select-text"
+      className="w-full bg-[#0B1F3A] text-white border-b border-white/10 text-xs py-2 px-3 sm:px-6 relative overflow-hidden select-text"
       title="برای خواندن یا کپی کردن متن، ماوس را روی نوار نگه دارید"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         {/* نشانگر نبض زنده تابلوی اعلامات بورس قطعات */}
-        <div className="flex items-center gap-2 shrink-0 z-10 bg-slate-950/95 pl-3 select-none">
+        <div className="flex items-center gap-2 shrink-0 z-10 bg-[#0B1F3A] pl-3 select-none">
           <span className="relative flex size-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-            <span className="relative inline-flex rounded-full size-2 bg-amber-500" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ED250A] opacity-75" />
+            <span className="relative inline-flex rounded-full size-2 bg-[#ED250A]" />
           </span>
-          <span className="font-black text-[11px] tracking-tight text-amber-400 whitespace-nowrap flex items-center gap-1">
-            <span>نبض بازار کاردو</span>
-            <span className="text-[10px] text-slate-500 font-normal">|</span>
+          <span className="font-black text-[11px] tracking-tight text-white whitespace-nowrap flex items-center gap-1.5">
+            <span className="text-[#ED250A] font-black">نبض بازار</span>
+            <span className="text-white/40 font-normal">|</span>
           </span>
         </div>
 
@@ -118,7 +118,7 @@ export function MarketTicker() {
         {/* دکمه بستن */}
         <button
           onClick={() => setClosed(true)}
-          className="text-slate-500 hover:text-slate-300 transition-colors shrink-0 z-10 pr-1 text-xs select-none"
+          className="text-white/40 hover:text-white transition-colors shrink-0 z-10 pr-1 text-xs select-none"
           title="بستن نوار اعلان"
         >
           ✕
@@ -130,21 +130,21 @@ export function MarketTicker() {
 
 function TickerBadge({ item }: { item: TickerItem }) {
   const content = (
-    <div className="inline-flex items-center gap-2 group hover:text-amber-300 transition-colors select-text cursor-text">
+    <div className="inline-flex items-center gap-2 group hover:text-white transition-colors select-text cursor-text">
       <span
         className={`text-[10px] font-black px-2 py-0.5 rounded-md select-none shrink-0 ${
           item.trend === "hot"
-            ? "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+            ? "bg-[#ED250A] text-white shadow-xs"
             : item.trend === "down"
             ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
             : item.trend === "up"
             ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-            : "bg-blue-500/20 text-blue-300 border border-blue-500/40"
+            : "bg-white/10 text-white/90 border border-white/20"
         }`}
       >
         {item.badge}
       </span>
-      <span className="text-slate-200 text-[11px] selection:bg-amber-500 selection:text-slate-950 font-medium">
+      <span className="text-white/90 text-[11px] selection:bg-[#ED250A] selection:text-white font-medium">
         {item.text}
       </span>
     </div>

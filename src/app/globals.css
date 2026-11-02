@@ -10,23 +10,34 @@
  */
 
 :root {
-  --paper: #f8fafc;          /* پس‌زمینه شفاف و پرانرژی */
-  --paper-raised: #ffffff;   /* سفید براق برای پنل‌ها و کارت‌ها */
-  --ink: #0b1329;            /* سرمه‌ای تیره عمیق با ابهت و کنتراست فوق‌العاده */
-  --ink-soft: #475569;       /* Slate 600 — متن ثانویه خوانا */
-  --rule: #e2e8f0;           /* حاشیه‌های تمیز */
-  --rule-strong: #cbd5e1;    /* خطوط مرزی کنترلی */
-  --brass: #1d4ed8;          /* آبی کبالت پویا و درخشان */
-  --brass-soft: #eff6ff;     /* آبی ملایم */
-  --energy-orange: #ea580c;  /* نارنجی پرانرژی صنعتی برای تخفیف‌ها و اکشن‌های فوری */
-  --energy-orange-soft: #fff7ed;
-  --ledger-green: #059669;   /* سبز زمردی پرانرژی برای موجودی و موفقیت */
+  /* پالت رنگی استاندارد برگرفته از ACE (ace.insigniagroup.com) و Google Material 3 */
+  --ace-navy: #0b1f3a;         /* سرمه‌ای صنعتی عمیق سازمانی */
+  --ace-navy-hover: #132d52;
+  --ace-red: #ed250a;          /* قرمز متمرکز و پرانرژی اتوموتیو */
+  --ace-red-hover: #d62007;
+  --ace-surface: #f5f4f1;      /* طوسی گرم استخوانی مینیمال */
+  --ace-surface-subtle: #f8f9fa;
+  --ace-border: #eceae5;
+  --ace-black: #231f20;        /* مشکی مات برای تیترها */
+  --ace-muted: #6b7280;
+
+  --paper: #f8f9fa;            /* پس‌زمینه شفاف و پرانرژی */
+  --paper-raised: #ffffff;     /* سفید برای پنل‌ها و کارت‌ها */
+  --ink: #1e2430;              /* متن اصلی */
+  --ink-soft: #5b6577;         /* متن ثانویه */
+  --rule: #e5e7eb;             /* حاشیه‌های تمیز */
+  --rule-strong: #d1d5db;
+  --brass: #0b1f3a;            /* سرمه‌ای اصلی */
+  --brass-soft: #f0f4f9;
+  --energy-orange: #ed250a;    /* قرمز ACE */
+  --energy-orange-soft: #fef2f2;
+  --ledger-green: #059669;
   --ledger-green-soft: #ecfdf5;
-  --alarm: #dc2626;          /* قرمز براق برای هشدار */
+  --alarm: #ed250a;
   --alarm-soft: #fef2f2;
-  --amber: #d97706;          /* طلایی پرانرژی برای سطوح و اعتبار */
+  --amber: #d97706;
   --amber-soft: #fef3c7;
-  --violet: #6366f1;         /* بنفش صیادی و بارنامه */
+  --violet: #6366f1;
   --violet-soft: #eef2ff;
 }
 
@@ -117,6 +128,34 @@ body {
     cursor: not-allowed;
     filter: grayscale(20%);
     box-shadow: none !important;
+  }
+
+  .btn-ace-red {
+    background-color: var(--ace-red);
+    color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 14px -2px rgba(237, 37, 10, 0.35);
+    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .btn-ace-red:hover:not(:disabled) {
+    background-color: var(--ace-red-hover);
+    box-shadow: 0 6px 20px -2px rgba(237, 37, 10, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .btn-ace-navy {
+    background-color: var(--ace-navy);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 14px -2px rgba(11, 31, 58, 0.3);
+    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .btn-ace-navy:hover:not(:disabled) {
+    background-color: var(--ace-navy-hover);
+    box-shadow: 0 6px 20px -2px rgba(11, 31, 58, 0.4);
+    transform: translateY(-1px);
   }
 
   .btn-primary {
