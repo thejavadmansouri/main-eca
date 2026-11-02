@@ -242,7 +242,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100/70 text-slate-800 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* اعلان‌های فوری مدیران */}
       <AnnouncementBanner target="ADMIN" />
 
@@ -260,14 +260,14 @@ export function AdminShell({ admin, children }: AdminShellProps) {
               href="/admin"
               className={`flex items-center gap-3 transition-opacity ${collapsed ? "justify-center w-full" : ""}`}
             >
-              <span className="size-10 grid place-items-center bg-linear-to-tr from-amber-500 via-amber-600 to-orange-600 text-slate-950 text-base font-black rounded-xl shadow-md shadow-amber-500/20 shrink-0">
+              <span className="size-10 grid place-items-center bg-blue-600 text-white text-base font-black rounded-xl shadow-xs shrink-0">
                 ک
               </span>
               {!collapsed && (
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5 font-black text-slate-900 text-base">
                     <span>کاردو</span>
-                    <span className="text-[10px] font-black tracking-wider bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.2 rounded-md">
+                    <span className="text-[10px] font-bold tracking-wider bg-blue-50 text-blue-700 border border-blue-200/80 px-1.5 py-0.2 rounded-md">
                       B2B OS
                     </span>
                   </div>
@@ -325,18 +325,18 @@ export function AdminShell({ admin, children }: AdminShellProps) {
                       title={collapsed ? item.label : undefined}
                       className={`group relative flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                         isActive
-                          ? "bg-amber-500/10 text-amber-900 font-bold shadow-xs border border-amber-500/20"
+                          ? "bg-blue-50 text-blue-700 font-bold shadow-xs border border-blue-200"
                           : "text-slate-600 hover:text-slate-950 hover:bg-slate-100/80"
                       } ${collapsed ? "justify-center px-0 py-2.5" : ""}`}
                     >
-                      {/* نوار نشانگر انتخاب مدرن سبک اپل در لبه بیرونی */}
+                      {/* نوار نشانگر انتخاب مدرن */}
                       {isActive && (
-                        <span className="absolute right-0 top-1.5 bottom-1.5 w-1 bg-amber-500 rounded-l-full" />
+                        <span className="absolute right-0 top-1.5 bottom-1.5 w-1 bg-blue-600 rounded-l-full" />
                       )}
 
                       <span
                         className={`transition-colors shrink-0 ${
-                          isActive ? "text-amber-600" : "text-slate-400 group-hover:text-slate-700"
+                          isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-700"
                         }`}
                       >
                         {item.icon}
@@ -347,7 +347,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
                       )}
 
                       {!collapsed && item.badge && (
-                        <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-300/60">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200">
                           {item.badge}
                         </span>
                       )}
@@ -448,7 +448,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
             {/* هدر منوی موبایل */}
             <div className="h-16 px-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="size-8 grid place-items-center bg-amber-500 text-slate-950 text-sm font-black rounded-lg">
+                <span className="size-8 grid place-items-center bg-blue-600 text-white text-sm font-black rounded-lg">
                   ک
                 </span>
                 <span className="font-extrabold text-sm text-slate-900">پنل مدیریت کاردو B2B</span>
@@ -479,16 +479,16 @@ export function AdminShell({ admin, children }: AdminShellProps) {
                         onClick={() => setMobileOpen(false)}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors ${
                           isActive
-                            ? "bg-amber-500/15 text-amber-900 font-bold border border-amber-500/30"
+                            ? "bg-blue-50 text-blue-700 font-bold border border-blue-200"
                             : "text-slate-600 hover:bg-slate-100"
                         }`}
                       >
-                        <span className={isActive ? "text-amber-600" : "text-slate-400"}>
+                        <span className={isActive ? "text-blue-600" : "text-slate-400"}>
                           {item.icon}
                         </span>
                         <span className="flex-1 text-right">{item.label}</span>
                         {item.badge && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800">
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-800">
                             {item.badge}
                           </span>
                         )}

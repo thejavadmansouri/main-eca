@@ -169,18 +169,15 @@ export function CustomerShell(props: CustomerShellProps) {
   const tier = props.tierName || "برنزی";
 
   return (
-    <div className="min-h-dvh flex flex-col bg-[#F5F4F1] text-[#231F20] selection:bg-[#ED250A] selection:text-white font-sans" dir="rtl">
-      {/* نوار رنگی بالای صفحه */}
-      <div className="h-1 bg-gradient-to-r from-[#0B1F3A] via-[#ED250A] to-[#0B1F3A] w-full shrink-0" />
-
+    <div className="min-h-dvh flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white font-sans" dir="rtl">
       {/* بنر اطلاعیه فوری و سراسری کاردو */}
       <AnnouncementBanner target="CUSTOMER" />
 
       {/* تابلوی زنده نوسانات بازار قطعات و لجستیک کرمان */}
       <MarketTicker />
 
-      {/* هدر بالایی — نمایش مشخصات همکار در بالا سمت راست */}
-      <header className="border-b border-[#ECEAE5] bg-white sticky top-0 z-30 shadow-2xs">
+      {/* هدر بالایی — هماهنگ با دیزاین سیستم گوگل و متریال ۳ */}
+      <header className="border-b border-slate-200 bg-white/95 backdrop-blur-md sticky top-0 z-30 shadow-xs">
         <div className="w-full px-3 sm:px-6 h-16 flex items-center justify-between gap-3">
           {/* بخش ۱: بالا سمت راست — اطلاعات کامل همکار و دکمه باز کردن منو */}
           <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
@@ -188,7 +185,7 @@ export function CustomerShell(props: CustomerShellProps) {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl shrink-0"
+              className="lg:hidden p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl shrink-0 transition-colors"
               aria-label="باز کردن منوی دسترسی"
             >
               <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -199,8 +196,8 @@ export function CustomerShell(props: CustomerShellProps) {
             </button>
 
             {/* کارت مشخصات همکار در بالا سمت راست */}
-            <div className="flex items-center gap-2.5 sm:gap-3 bg-[#F5F4F1] hover:bg-[#ECEAE5] border border-[#ECEAE5] rounded-2xl px-3 py-1.5 transition-all shadow-2xs group">
-              <span className="size-9.5 grid place-items-center bg-[#0B1F3A] text-white rounded-xl font-extrabold text-sm shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+            <div className="flex items-center gap-2.5 sm:gap-3 bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-2xl px-3 py-1.5 transition-all shadow-2xs group">
+              <span className="size-9.5 grid place-items-center bg-blue-600 text-white rounded-xl font-extrabold text-sm shrink-0 shadow-xs group-hover:scale-105 transition-transform">
                 {props.companyName.charAt(0) || "ک"}
               </span>
               <div className="min-w-0 flex flex-col leading-tight">
@@ -208,12 +205,12 @@ export function CustomerShell(props: CustomerShellProps) {
                   <span className="font-black text-xs sm:text-sm text-slate-900 truncate max-w-[140px] sm:max-w-[200px]">
                     {props.companyName}
                   </span>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full shadow-2xs ${
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border shadow-2xs ${
                     tier === "طلایی"
-                      ? "bg-amber-500 text-slate-950"
+                      ? "bg-amber-100 text-amber-900 border-amber-300"
                       : tier === "نقره‌ای"
-                      ? "bg-slate-700 text-white"
-                      : "bg-[#0B1F3A] text-white"
+                      ? "bg-slate-200 text-slate-800 border-slate-300"
+                      : "bg-blue-50 text-blue-700 border-blue-200"
                   }`}>
                     سطح {tier}
                     {props.tierDiscount ? ` (${toFaDigits(props.tierDiscount)}٪)` : ""}
@@ -262,8 +259,8 @@ export function CustomerShell(props: CustomerShellProps) {
 
             {/* لوگوی کوچک کاردو در سمت چپ */}
             <Link href="/catalog" prefetch={false} className="hidden md:flex items-center gap-1.5 shrink-0 pl-1 group">
-              <span className="font-black text-base tracking-tight text-[#0B1F3A] group-hover:text-[#ED250A] transition-colors">کاردو</span>
-              <span className="text-[10px] font-black bg-[#ED250A] text-white px-1.5 py-0.5 rounded shadow-2xs">B2B</span>
+              <span className="font-black text-base tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">کاردو</span>
+              <span className="text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80 px-1.5 py-0.5 rounded">B2B</span>
             </Link>
 
             <LogoutButton />
@@ -274,17 +271,17 @@ export function CustomerShell(props: CustomerShellProps) {
       {/* چیدمان بدنه: منوی سمت راست (Sidebar) + فضای میانی اصلی (Center Content) */}
       <div className="flex-1 flex w-full">
         {/* منوی ستونی سمت راست در دسکتاپ (Fixed / Sticky Desktop Sidebar) */}
-        <aside className="hidden lg:flex flex-col w-72 shrink-0 bg-white border-l border-[#ECEAE5] min-h-[calc(100vh-4.25rem)] p-4 space-y-4 shadow-2xs">
+        <aside className="hidden lg:flex flex-col w-72 shrink-0 bg-white border-l border-slate-200 min-h-[calc(100vh-4.25rem)] p-4 space-y-4 shadow-xs">
           {/* کارت وضعیت حساب همکار در بالای سایدبار راست */}
-          <div className="p-4 bg-[#0B1F3A] text-white rounded-2xl shadow-sm space-y-2.5">
+          <div className="p-4 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl shadow-sm space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-slate-300 font-medium">حساب تجاری رسمی همکار</span>
-              <span className="size-2 rounded-full bg-emerald-400 animate-pulse" title="حساب فعال"></span>
+              <span className="text-[11px] text-blue-100 font-medium">حساب تجاری رسمی همکار</span>
+              <span className="size-2 rounded-full bg-emerald-300 animate-pulse" title="حساب فعال"></span>
             </div>
             <p className="text-sm font-black truncate">{props.companyName}</p>
-            <div className="pt-2 border-t border-slate-750 flex items-center justify-between text-xs">
-              <span className="text-slate-400">تخفیف همکاری شما:</span>
-              <span className="nums font-black text-white text-xs bg-[#ED250A] px-2 py-0.5 rounded">
+            <div className="pt-2 border-t border-white/20 flex items-center justify-between text-xs">
+              <span className="text-blue-100">تخفیف همکاری شما:</span>
+              <span className="nums font-black text-white text-xs bg-white/20 px-2 py-0.5 rounded backdrop-blur-xs">
                 {toFaDigits(props.tierDiscount || 0)}٪ تخفیف
               </span>
             </div>
@@ -304,8 +301,8 @@ export function CustomerShell(props: CustomerShellProps) {
                   prefetch={false}
                   className={`flex items-center justify-between px-3 py-2.5 rounded-xl font-bold transition-all duration-200 group ${
                     isActive
-                      ? "bg-[#0B1F3A] text-white shadow-sm"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-[#F5F4F1]"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -314,7 +311,7 @@ export function CustomerShell(props: CustomerShellProps) {
                   </div>
                   {item.badge && (
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                      isActive ? "bg-white/20 text-white" : "bg-[#ED250A]/10 text-[#ED250A]"
+                      isActive ? "bg-white/20 text-white" : "bg-blue-50 text-blue-700 border border-blue-200/60"
                     }`}>
                       {item.badge}
                     </span>
@@ -325,17 +322,17 @@ export function CustomerShell(props: CustomerShellProps) {
           </nav>
 
           {/* جعبه اطلاعات انبار مرکزی و پشتیبانی کرمان در پایین منو */}
-          <div className="p-3.5 bg-[#F5F4F1] rounded-2xl border border-[#ECEAE5] text-xs space-y-1.5 shadow-2xs">
-            <div className="flex items-center gap-1.5 font-extrabold text-[#0B1F3A]">
-              <span className="size-2 rounded-full bg-[#ED250A]"></span>
+          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1.5 shadow-2xs">
+            <div className="flex items-center gap-1.5 font-extrabold text-slate-900">
+              <span className="size-2 rounded-full bg-blue-600"></span>
               <span>انبار مرکزی استان کرمان</span>
             </div>
             <p className="text-[11px] text-slate-600 leading-4">
               ارسال روزانه باربری به رفسنجان، سیرجان، بم، جیرفت و تمام شهرستان‌ها
             </p>
-            <p className="text-[11px] text-slate-700 pt-1.5 border-t border-[#ECEAE5] flex justify-between font-bold">
+            <p className="text-[11px] text-slate-700 pt-1.5 border-t border-slate-200 flex justify-between font-bold">
               <span>پشتیبانی و باربری:</span>
-              <span dir="ltr" className="font-mono font-black nums text-[#0B1F3A]">۰۳۴-۳۳۲۰۰۰۰۰</span>
+              <span dir="ltr" className="font-mono font-black nums text-blue-600">۰۳۴-۳۳۲۰۰۰۰۰</span>
             </p>
           </div>
         </aside>
@@ -425,7 +422,7 @@ export function CustomerShell(props: CustomerShellProps) {
                 href={item.href}
                 prefetch={false}
                 className={`flex flex-col items-center justify-center gap-0.5 transition-all relative ${
-                  isActive ? "text-[#ED250A] font-bold" : "text-slate-500 hover:text-slate-800"
+                  isActive ? "text-blue-600 font-bold" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 <div
@@ -439,7 +436,7 @@ export function CustomerShell(props: CustomerShellProps) {
                   {item.shortLabel}
                 </span>
                 {isActive && (
-                  <span className="absolute top-0.5 w-6 h-0.5 bg-[#ED250A] rounded-full" />
+                  <span className="absolute top-0.5 w-6 h-0.5 bg-blue-600 rounded-full" />
                 )}
               </Link>
             );
