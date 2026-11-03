@@ -54,7 +54,7 @@ async function main() {
   // --- مشتری تستی ---
   const goldTier = await prisma.tier.findUnique({ where: { name: "طلایی" } });
   const testCustomer = await prisma.customer.findFirst({
-    where: { OR: [{ username: "test" }, { phone: "09120000000" }] },
+    where: { OR: [{ username: "test" }, { phone: "09121111111" }] },
   });
 
   if (!testCustomer) {
@@ -64,7 +64,7 @@ async function main() {
         passwordHash: await argon2.hash("test1234"),
         companyName: "فروشگاه یدکی رضایی (مشتری تستی)",
         contactName: "حسین رضایی",
-        phone: "09120000000",
+        phone: "09121111111",
         status: "ACTIVE",
         tierId: goldTier?.id,
         discountPercent: 10,
@@ -77,6 +77,7 @@ async function main() {
       where: { id: testCustomer.id },
       data: {
         username: "test",
+        phone: "09121111111",
         passwordHash: await argon2.hash("test1234"),
         status: "ACTIVE",
         tierId: goldTier?.id,
@@ -494,7 +495,9 @@ async function main() {
 
   // --- مشتری نمایشی ---
   const demoTier = await prisma.tier.findUnique({ where: { name: "طلایی" } });
-  let demo = await prisma.customer.findUnique({ where: { username: "demo" } });
+  let demo = await prisma.customer.findFirst({
+    where: { OR: [{ username: "demo" }, { phone: "09120000000" }] },
+  });
 
   if (!demo) {
     demo = await prisma.customer.create({
