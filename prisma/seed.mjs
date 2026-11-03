@@ -514,17 +514,23 @@ async function main() {
       },
     });
 
-    await prisma.walletTransaction.create({
-      data: {
-        customerId: demo.id,
-        type: "TOPUP_MANUAL",
-        amount: 5_000_000,
-        balanceAfter: 5_000_000,
-        refType: "MANUAL",
-        idempotencyKey: "seed:demo:wallet:initial",
-        note: "شارژ اولیه کیف پول همکار",
-      },
-    });
+    try {
+      await prisma.walletTransaction.upsert({
+        where: { idempotencyKey: "seed:demo:wallet:initial" },
+        update: {},
+        create: {
+          customerId: demo.id,
+          type: "TOPUP_MANUAL",
+          amount: 5_000_000,
+          balanceAfter: 5_000_000,
+          refType: "MANUAL",
+          idempotencyKey: "seed:demo:wallet:initial",
+          note: "شارژ اولیه کیف پول همکار",
+        },
+      });
+    } catch {
+      // ignore
+    }
 
     console.log("\n👤 مشتری نمایشی ساخته شد: demo / demo1234 (کیف پول ۵٬۰۰۰٬۰۰۰ تومان)");
   }
