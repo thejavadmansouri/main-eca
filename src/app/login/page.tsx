@@ -106,21 +106,27 @@ function LoginForm() {
   async function verifyOtp() {
     const data = await post("/api/auth/otp/verify", { phone, code });
 
-    if (data) router.push(next || "/catalog");
+    if (data && data.ok) {
+      window.location.href = next || "/catalog";
+    }
   }
 
-  async function loginPassword() {
-    const data = await post("/api/auth/login", { username, password });
+  async function loginPassword(u?: string, p?: string) {
+    const targetUser = u || username;
+    const targetPass = p || password;
 
-    if (data) {
-      if (data.role === "admin") {
-        router.push(next || "/catalog");
-        return;
-      }
+    const data = await post("/api/auth/login", { username: targetUser, password: targetPass });
 
-      // مشتری تأییدشده مستقیم به کاتالوگ؛ در انتظار → وضعیت حساب
-      router.push(next || (data.status === "ACTIVE" ? "/catalog" : "/dashboard"));
+    if (data && data.ok) {
+      const dest = next || (data.role === "admin" ? "/catalog" : (data.status === "ACTIVE" ? "/catalog" : "/dashboard"));
+      window.location.href = dest;
     }
+  }
+
+  async function handleQuickLogin(u: string, p: string) {
+    setUsername(u);
+    setPassword(p);
+    await loginPassword(u, p);
   }
 
   function handlePhoneSubmit(e: React.FormEvent) {
@@ -335,23 +341,19 @@ function LoginForm() {
                   <div className="flex items-center gap-2 pt-1">
                     <button
                       type="button"
-                      onClick={() => {
-                        setUsername("test");
-                        setPassword("test1234");
-                      }}
-                      className="flex-1 text-[11px] font-bold py-1.5 px-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition-colors cursor-pointer"
+                      disabled={busy}
+                      onClick={() => handleQuickLogin("test", "test1234")}
+                      className="flex-1 text-[11px] font-bold py-2 px-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition-colors cursor-pointer active:scale-95 text-center"
                     >
-                      ورود تستی (test)
+                      ورود فوری با کاربر تستی (test)
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setUsername("admin");
-                        setPassword("admin1234");
-                      }}
-                      className="flex-1 text-[11px] font-bold py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                      disabled={busy}
+                      onClick={() => handleQuickLogin("admin", "admin1234")}
+                      className="flex-1 text-[11px] font-bold py-2 px-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg border border-slate-300 transition-colors cursor-pointer active:scale-95 text-center"
                     >
-                      ورود ادمین (admin)
+                      ورود فوری مدیر (admin)
                     </button>
                   </div>
                   <button
