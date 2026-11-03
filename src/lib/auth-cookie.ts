@@ -16,7 +16,7 @@ export async function setSessionCookie(
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.COOKIE_SECURE === "true",
     maxAge: SESSION_TTL_SECONDS,
     path: "/",
   });

@@ -23,7 +23,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next");
 
-  const [mode, setMode] = useState<Mode>("phone");
+  const [mode, setMode] = useState<Mode>("password");
 
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("");
@@ -114,7 +114,7 @@ function LoginForm() {
 
     if (data) {
       if (data.role === "admin") {
-        router.push("/admin");
+        router.push(next || "/catalog");
         return;
       }
 
@@ -332,6 +332,28 @@ function LoginForm() {
                       className="input h-11 border-slate-300 rounded-xl font-medium focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                     />
                   </label>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUsername("test");
+                        setPassword("test1234");
+                      }}
+                      className="flex-1 text-[11px] font-bold py-1.5 px-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition-colors cursor-pointer"
+                    >
+                      ورود تستی (test)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUsername("admin");
+                        setPassword("admin1234");
+                      }}
+                      className="flex-1 text-[11px] font-bold py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                    >
+                      ورود ادمین (admin)
+                    </button>
+                  </div>
                   <button
                     type="submit"
                     disabled={busy || !username.trim() || !password}
@@ -344,7 +366,7 @@ function LoginForm() {
                     )}
                   </button>
                   <p className="text-[11px] text-slate-500 text-center font-medium">
-                    ادمین و مشتریان با نام کاربری و رمز وارد می‌شوند.
+                    نام کاربری و رمز خود را وارد کنید یا از دکمه‌های تستی بالا استفاده نمایید.
                   </p>
                 </form>
               )}

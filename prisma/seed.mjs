@@ -26,6 +26,14 @@ async function main() {
       },
     });
     console.log(`✅ ادمین ساخته شد: ${username} / ${password}`);
+  } else {
+    await prisma.adminUser.update({
+      where: { id: existingAdmin.id },
+      data: {
+        passwordHash: await argon2.hash(password),
+      },
+    });
+    console.log(`✅ رمز عبور ادمین به‌روزرسانی شد: ${username} / ${password}`);
   }
 
   // --- طبقه‌های پایه ---
@@ -41,6 +49,40 @@ async function main() {
       update: {},
       create: t,
     });
+  }
+
+  // --- مشتری تستی ---
+  const goldTier = await prisma.tier.findUnique({ where: { name: "طلایی" } });
+  const testCustomer = await prisma.customer.findFirst({
+    where: { OR: [{ username: "test" }, { phone: "09120000000" }] },
+  });
+
+  if (!testCustomer) {
+    await prisma.customer.create({
+      data: {
+        username: "test",
+        passwordHash: await argon2.hash("test1234"),
+        companyName: "فروشگاه یدکی رضایی (مشتری تستی)",
+        contactName: "حسین رضایی",
+        phone: "09120000000",
+        status: "ACTIVE",
+        tierId: goldTier?.id,
+        discountPercent: 10,
+        creditLimitOverride: 200_000_000,
+      },
+    });
+    console.log("✅ کاربر تستی ساخته شد: test / test1234");
+  } else {
+    await prisma.customer.update({
+      where: { id: testCustomer.id },
+      data: {
+        username: "test",
+        passwordHash: await argon2.hash("test1234"),
+        status: "ACTIVE",
+        tierId: goldTier?.id,
+      },
+    });
+    console.log("✅ کاربر تستی به‌روزرسانی شد: test / test1234");
   }
 
   // --- روش‌های ارسال ---
