@@ -101,6 +101,7 @@ export default async function CatalogPage() {
       inTransitCount={inTransitCount}
       activeChequesCount={activeChequesCount}
       isAdmin={isAdmin}
+      defaultAddress={customerAcc?.customer?.address ?? null}
       shipping={shipping.map((s) => ({
         id: s.id,
         name: s.name,

@@ -44,6 +44,7 @@ export function CatalogBrowser(props: {
   inTransitCount?: number;
   activeChequesCount?: number;
   isAdmin?: boolean;
+  defaultAddress?: string | null;
 }) {
   const router = useRouter();
 
@@ -57,18 +58,24 @@ export function CatalogBrowser(props: {
   const [inStockOnly, setInStockOnly] = useState(false); // فقط موجود
   const [sort, setSort] = useState("default"); // مرتب‌سازی
 
-  // وضعیت رابط و کشوها
+  // وضعیت رابط، سبد و باربری
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [items, setItems] = useState<CatalogItem[]>(props.initialItems);
   const [loading, setLoading] = useState(false);
   const [selectedQuickBuy, setSelectedQuickBuy] = useState<{ item: CatalogItem; qty: number } | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [showCartDrawer, setShowCartDrawer] = useState(false);
   const [cartShippingId, setCartShippingId] = useState(props.shipping[0]?.id ?? "");
+  const [shippingAddress, setShippingAddress] = useState(props.defaultAddress ?? "");
+  const [showShippingPopover, setShowShippingPopover] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
   const [checkoutBusy, setCheckoutBusy] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [addedToast, setAddedToast] = useState<string | null>(null);
+
+  const shippingPopoverRef = useRef<HTMLDivElement>(null);
+  const topCartRef = useRef<HTMLDivElement>(null);
+  const CART_DRAFT_KEY = "kardo_b2b_cart_draft_v1";
 
   // سفارش مجدد هوشمند و هشدارهای موجودی
   const [smartReorderItems, setSmartReorderItems] = useState<any[]>([]);
@@ -257,7 +264,7 @@ export function CatalogBrowser(props: {
       const target = items.find((it) => it.id === addId);
       if (target) {
         addToCart(target, addQty > 0 ? addQty : undefined);
-        setShowCartDrawer(true);
+        topCartRef.current?.scrollIntoView({ behavior: "smooth" });
         window.history.replaceState({}, "", window.location.pathname);
       }
     }
@@ -391,6 +398,87 @@ export function CatalogBrowser(props: {
     };
   }, [cart, props.tierDiscount, props.customerDiscount, props.shipping, cartShippingId]);
 
+  // بازیابی سبد خرید ذخیره‌شده از حافظه مرورگر در بارگذاری اولیه
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CART_DRAFT_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCart(parsed);
+        }
+      }
+      const savedShipping = localStorage.getItem(CART_DRAFT_KEY + "_shipping");
+      if (savedShipping) setCartShippingId(savedShipping);
+      const savedAddress = localStorage.getItem(CART_DRAFT_KEY + "_address");
+      if (savedAddress) setShippingAddress(savedAddress);
+    } catch {}
+  }, []);
+
+  // ذخیره خودکار تغییرات سبد در حافظه مرورگر
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (cart.length > 0) {
+        localStorage.setItem(CART_DRAFT_KEY, JSON.stringify(cart));
+        localStorage.setItem(CART_DRAFT_KEY + "_shipping", cartShippingId);
+        if (shippingAddress) localStorage.setItem(CART_DRAFT_KEY + "_address", shippingAddress);
+      } else {
+        localStorage.removeItem(CART_DRAFT_KEY);
+      }
+    } catch {}
+  }, [cart, cartShippingId, shippingAddress]);
+
+  // بستن منوی کوچک انتخاب باربری هنگام کلیک در خارج از آن
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        shippingPopoverRef.current &&
+        !shippingPopoverRef.current.contains(event.target as Node)
+      ) {
+        setShowShippingPopover(false);
+      }
+    }
+    if (showShippingPopover) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showShippingPopover]);
+
+  // دکمه سیو دستی اقلام سبد
+  const handleSaveCartDraft = () => {
+    if (cart.length === 0) {
+      setAddedToast("سبد سفارش خالی است");
+      setTimeout(() => setAddedToast(null), 2000);
+      return;
+    }
+    try {
+      localStorage.setItem(CART_DRAFT_KEY, JSON.stringify(cart));
+      localStorage.setItem(CART_DRAFT_KEY + "_shipping", cartShippingId);
+      if (shippingAddress) localStorage.setItem(CART_DRAFT_KEY + "_address", shippingAddress);
+      setDraftSaved(true);
+      setAddedToast(`✓ اقلام سبد (${toFaDigits(cart.length)} ردیف) ذخیره شدند — با رفرش صفحه پاک نمی‌شوند`);
+      setTimeout(() => {
+        setDraftSaved(false);
+        setAddedToast(null);
+      }, 3500);
+    } catch {
+      setAddedToast("خطا در ذخیره‌سازی محلی سبد");
+    }
+  };
+
+  const handleClearCart = () => {
+    if (confirm("آیا مطمئن هستید می‌خواهید تمام اقلام سبد سفارش را خالی کنید؟")) {
+      setCart([]);
+      try {
+        localStorage.removeItem(CART_DRAFT_KEY);
+        localStorage.removeItem(CART_DRAFT_KEY + "_shipping");
+      } catch {}
+      setAddedToast("سبد سفارش خالی شد");
+      setTimeout(() => setAddedToast(null), 2000);
+    }
+  };
+
   // ثبت پیش‌فاکتور از سبد خرید
   async function submitCartOrder() {
     setCheckoutBusy(true);
@@ -403,6 +491,7 @@ export function CatalogBrowser(props: {
         body: JSON.stringify({
           items: cart.map((c) => ({ productId: c.item.id, qty: c.qty })),
           shippingId: cartShippingId,
+          address: shippingAddress || undefined,
         }),
       });
 
@@ -413,8 +502,13 @@ export function CatalogBrowser(props: {
         return;
       }
 
+      try {
+        localStorage.removeItem(CART_DRAFT_KEY);
+        localStorage.removeItem(CART_DRAFT_KEY + "_shipping");
+        localStorage.removeItem(CART_DRAFT_KEY + "_address");
+      } catch {}
+
       setCart([]);
-      setShowCartDrawer(false);
       router.push(`/orders/${data.order.id}`);
     } catch {
       setCheckoutError("خطا در برقراری ارتباط با سرور");
@@ -465,11 +559,11 @@ export function CatalogBrowser(props: {
           </Link>
           {cart.length > 0 && (
             <button
-              onClick={() => setShowCartDrawer(true)}
-              className="btn btn-orange text-xs px-3.5 py-1.5 flex items-center gap-2 shadow-sm font-black rounded-lg"
+              onClick={() => topCartRef.current?.scrollIntoView({ behavior: "smooth" })}
+              className="btn btn-blue text-xs px-3.5 py-1.5 flex items-center gap-2 shadow-sm font-black rounded-lg"
             >
               <span>سبد سفارش</span>
-              <span className="nums font-black bg-white text-orange-700 rounded-full px-1.5 py-0.5 text-[11px] leading-none shadow-2xs">
+              <span className="nums font-black bg-white text-blue-700 rounded-full px-1.5 py-0.5 text-[11px] leading-none shadow-2xs">
                 {toFaDigits(cart.length)}
               </span>
             </button>
@@ -479,7 +573,7 @@ export function CatalogBrowser(props: {
 
       {/* ۰. باکس جدولی سبد سفارش جاری در بالای قسمت سرچ (Top Cart Table Box) — به محض اضافه شدن اولین کالا باز می‌شود */}
       {cart.length > 0 && (
-        <div className="mt-3 sm:mt-4 p-4 sm:p-5 bg-white border-2 border-blue-200/90 rounded-2xl shadow-xs space-y-3.5 animate-in fade-in slide-in-from-top-3 duration-200">
+        <div ref={topCartRef} className="mt-3 sm:mt-4 p-4 sm:p-5 bg-white border-2 border-blue-200/90 rounded-2xl shadow-xs space-y-3.5 animate-in fade-in slide-in-from-top-3 duration-200">
           {/* هدر باکس سبد بالا */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
             <div className="flex items-center gap-2">
@@ -507,18 +601,25 @@ export function CatalogBrowser(props: {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setCart([])}
-                className="text-xs text-slate-400 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors font-medium"
+                onClick={handleSaveCartDraft}
+                className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-blue-800 shadow-2xs transition active:scale-95 cursor-pointer"
+                title="ذخیره اقلام سبد تا با رفرش یا خروج از صفحه پاک نشوند"
               >
-                تخلیه سبد
+                <svg className="size-3.5 text-blue-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                <span>{draftSaved ? "✓ ذخیره شد" : "سیو سبد"}</span>
               </button>
+
               <button
                 type="button"
-                onClick={() => setShowCartDrawer(true)}
-                className="btn btn-blue text-xs px-3.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5 shadow-xs"
+                onClick={handleClearCart}
+                className="text-xs text-slate-400 hover:text-rose-600 px-2.5 py-1.5 rounded-lg hover:bg-rose-50 transition-colors font-medium cursor-pointer"
+                title="تخلیه کامل سبد"
               >
-                <span>مشاهده و نهایی‌سازی</span>
-                <span>←</span>
+                تخلیه سبد
               </button>
             </div>
           </div>
@@ -625,33 +726,172 @@ export function CatalogBrowser(props: {
             </table>
           </div>
 
-          {/* نوار پایین جدول: جمع کل و ثبت مستقیم فاکتور */}
-          <div className="pt-2 flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-3 text-xs">
-              <span className="text-slate-500 font-medium">مجموع مبالغ اقلام:</span>
-              <span className="nums font-black text-base text-slate-900">
-                {formatToman(cartSummary.subtotal)} <span className="text-xs font-normal text-slate-500">تومان</span>
-              </span>
+          {/* نوار پایین جدول: جمع کل و انتخاب نحوه باربری و آدرس و صدور پیش‌فاکتور */}
+          <div className="pt-2.5 flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3 sm:gap-4 text-xs flex-wrap">
+              <div>
+                <span className="text-slate-500 font-medium">مجموع اقلام: </span>
+                <span className="nums font-mono font-black text-sm sm:text-base text-slate-900">
+                  {formatToman(cartSummary.subtotal)}
+                </span>
+                <span className="text-[11px] text-slate-500 ms-1 font-sans">تومان</span>
+              </div>
+
+              {cartSummary.shippingCost > 0 ? (
+                <div>
+                  <span className="text-slate-500 font-medium">کرایه باربری: </span>
+                  <span className="nums font-mono font-bold text-xs sm:text-sm text-slate-800">
+                    {formatToman(cartSummary.shippingCost)}
+                  </span>
+                  <span className="text-[11px] text-slate-500 ms-1 font-sans">تومان</span>
+                </div>
+              ) : (
+                <div className="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md font-bold">
+                  ارسال رایگان
+                </div>
+              )}
+
+              <div className="border-s border-slate-200 ps-3 sm:ps-4">
+                <span className="text-slate-900 font-bold">مبلغ نهایی: </span>
+                <span className="nums font-mono font-black text-base sm:text-lg text-blue-700">
+                  {formatToman(cartSummary.total)}
+                </span>
+                <span className="text-xs text-blue-900 font-normal ms-1 font-sans">تومان</span>
+              </div>
+
               {(props.tierDiscount > 0 || props.customerDiscount > 0) && (
                 <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-                  {toFaDigits(props.tierDiscount + props.customerDiscount)}٪ تخفیف همکاری اعمال شد
+                  {toFaDigits(props.tierDiscount + props.customerDiscount)}٪ تخفیف اعمال شد
                 </span>
               )}
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowCartDrawer(true)}
-                className="btn text-xs px-3.5 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold"
-              >
-                انتخاب نحوه باربری و آدرس
-              </button>
+              {/* منوی کوچک بازشونده در همان‌جا برای انتخاب باربری و نشانی */}
+              <div className="relative" ref={shippingPopoverRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowShippingPopover((prev) => !prev)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                    showShippingPopover
+                      ? "bg-blue-50 border-blue-400 text-blue-900 shadow-xs"
+                      : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 shadow-2xs"
+                  }`}
+                  title="انتخاب نحوه ارسال باربری و نشانی مقصد"
+                >
+                  <Icon name="truck" className="size-4 text-blue-600" />
+                  <span>
+                    {props.shipping.find((s) => s.id === cartShippingId)?.name ?? "انتخاب باربری و آدرس"}
+                  </span>
+                  <span className="text-[10px] text-slate-600 font-mono nums">
+                    {cartSummary.shippingCost > 0
+                      ? `(${formatToman(cartSummary.shippingCost)} ت)`
+                      : "(رایگان)"}
+                  </span>
+                  <span className="text-[10px] text-slate-600">▾</span>
+                </button>
+
+                {showShippingPopover && (
+                  <div className="absolute start-0 bottom-full mb-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 z-40 animate-in fade-in zoom-in-95 duration-150 space-y-3.5 text-right">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <div className="flex items-center gap-1.5 font-extrabold text-xs text-slate-900">
+                        <Icon name="truck" className="size-4 text-blue-600" />
+                        <span>روش باربری و نشانی مقصد</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowShippingPopover(false)}
+                        className="size-6 grid place-items-center rounded-lg text-slate-600 hover:text-slate-700 hover:bg-slate-100 text-xs font-bold cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* گزینه‌های باربری */}
+                    <div className="space-y-1.5">
+                      <span className="text-[11px] font-bold text-slate-600 block">
+                        روش ارسال باربری:
+                      </span>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-thin">
+                        {props.shipping.map((s) => {
+                          const isSelected = s.id === cartShippingId;
+                          const free = s.freeAbove !== null && cartSummary.subtotal >= s.freeAbove;
+                          return (
+                            <label
+                              key={s.id}
+                              onClick={() => setCartShippingId(s.id)}
+                              className={`flex items-start justify-between gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                                isSelected
+                                  ? "bg-blue-50/80 border-blue-400 shadow-2xs"
+                                  : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="radio"
+                                  name="inlineShipping"
+                                  checked={isSelected}
+                                  onChange={() => setCartShippingId(s.id)}
+                                  className="accent-blue-600 size-3.5"
+                                />
+                                <div>
+                                  <div className="text-xs font-bold text-slate-900">{s.name}</div>
+                                  {s.note && (
+                                    <div className="text-[10px] text-slate-600 mt-0.5">{s.note}</div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-left font-mono nums text-[11px] shrink-0 font-bold">
+                                {free ? (
+                                  <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                    رایگان
+                                  </span>
+                                ) : s.cost > 0 ? (
+                                  <span className="text-slate-800">{formatToman(s.cost)} ت</span>
+                                ) : (
+                                  <span className="text-slate-600">پس‌کرایه</span>
+                                )}
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* نشانی و مقصد تحویل بار */}
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-slate-600 block">
+                        نشانی فروشگاه یا پایانه باربری مقصد:
+                      </label>
+                      <input
+                        type="text"
+                        value={shippingAddress}
+                        onChange={(e) => setShippingAddress(e.target.value)}
+                        placeholder="کرمان، خیابان شریعتی، فروشگاه مرکزی..."
+                        className="w-full text-xs p-2 rounded-xl border border-slate-300 focus:border-blue-500 focus:bg-blue-50/30 outline-none transition font-medium"
+                      />
+                      <span className="text-[10px] text-slate-600 block">
+                        پیش‌فاکتور با این مشخصات باربری و آدرس صادر می‌شود.
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowShippingPopover(false)}
+                      className="w-full py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                    >
+                      تأیید و ذخیره مشخصات باربری
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* دکمه ثبت پیش‌فاکتور رسمی */}
               <button
                 type="button"
                 onClick={submitCartOrder}
                 disabled={checkoutBusy}
-                className="btn btn-emerald text-xs px-4 py-2 rounded-xl font-black shadow-xs active:scale-95 transition-all flex items-center gap-1.5"
+                className="btn btn-emerald text-xs px-4 py-2 rounded-xl font-black shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 {checkoutBusy ? "در حال ثبت…" : "ثبت پیش‌فاکتور رسمی ←"}
               </button>
@@ -1731,7 +1971,7 @@ export function CatalogBrowser(props: {
         )}
       </div>
 
-      {/* نوار شناور پایین صفحه در صورت داشتن کالا در سبد — با فاصله امن از نوار پایین موبایل */}
+      {/* نوار شناور پایین صفحه در صورت داشتن کالا در سبد — هدایت به جدول سفارش بالا */}
       {cart.length > 0 && (
         <div className="fixed bottom-[calc(4.2rem+env(safe-area-inset-bottom))] md:bottom-6 inset-x-3 md:inset-x-auto md:left-8 md:right-8 md:max-w-2xl md:mx-auto z-30 animate-in slide-in-from-bottom-4 duration-200">
           <div className="card bg-slate-900 text-white p-3 sm:px-5 sm:py-3.5 rounded-xl shadow-2xl flex items-center justify-between gap-3 border border-slate-800">
@@ -1741,154 +1981,18 @@ export function CatalogBrowser(props: {
               </span>
               <div className="min-w-0">
                 <p className="text-xs sm:text-sm font-bold text-white leading-tight truncate">سبد سفارش همکار</p>
-                <p className="text-[10px] sm:text-[11px] text-slate-600 mt-0.5 nums truncate">
-                  {toFaDigits(cartSummary.itemCount)} قطعه · مجموع: {formatToman(cartSummary.subtotal)} ت
+                <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 nums truncate font-mono">
+                  {toFaDigits(cartSummary.itemCount)} قطعه · مجموع: {formatToman(cartSummary.total)} تومان
                 </p>
               </div>
             </div>
 
             <button
-              onClick={() => setShowCartDrawer(true)}
-              className="btn btn-orange text-xs px-3.5 sm:px-5 py-2 font-black shadow-md shadow-orange-500/20 hover:scale-102 transition-transform shrink-0"
+              onClick={() => topCartRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="btn btn-blue text-xs px-3.5 sm:px-5 py-2 font-black shadow-md shadow-blue-500/20 hover:scale-102 transition-transform shrink-0"
             >
-              مشاهده سبد سفارش
+              مشاهده جدول سفارش ↑
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* شیت / کشوی سبد سفارش چندقلمی */}
-      {showCartDrawer && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/60 backdrop-blur-xs">
-          <div className="card w-full max-w-lg h-full overflow-y-auto p-4 sm:p-6 bg-white shadow-2xl flex flex-col justify-between border-s border-slate-200 animate-in slide-in-from-left duration-200 rounded-none sm:rounded-s-2xl">
-            <div>
-              <div className="flex items-center justify-between pb-3.5 border-b border-slate-200">
-                <div>
-                  <h2 className="font-extrabold text-base text-slate-900">سبد سفارش B2B</h2>
-                  <p className="text-xs text-slate-500">
-                    {toFaDigits(cartSummary.distinctCount)} ردیف کالای انتخابی
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowCartDrawer(false)}
-                  className="text-slate-600 hover:text-slate-700 text-xl font-bold p-1"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {checkoutError && (
-                <div className="mt-3 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">
-                  {checkoutError}
-                </div>
-              )}
-
-              {/* لیست اقلام سبد */}
-              <div className="mt-4 divide-y divide-slate-100">
-                {cart.map((c) => (
-                  <div key={c.item.id} className="py-3.5 flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-xs sm:text-sm text-slate-900 leading-snug">{c.item.name}</p>
-                      <p className="text-[11px] text-slate-600 font-mono nums mt-0.5">
-                        {c.item.sku} · {c.item.brand} {c.item.partBrand ? `· ${c.item.partBrand}` : ""}
-                      </p>
-                      <p className="text-xs text-blue-600 font-extrabold nums mt-1">
-                        فی: {formatToman(c.item.price ?? 0)} تومان
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-2">
-                      <div className="flex items-center gap-1 border border-slate-200 rounded-lg bg-slate-50 p-0.5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (c.qty > 1) {
-                              updateCartQty(c.item.id, c.qty - 1);
-                            } else {
-                              removeCartItem(c.item.id);
-                            }
-                          }}
-                          className="size-7 grid place-items-center text-xs font-bold hover:bg-rose-50 hover:text-rose-600 rounded transition cursor-pointer"
-                          title={c.qty > 1 ? "کاهش یک عدد" : "حذف از سبد"}
-                        >
-                          −
-                        </button>
-                        <span className="nums text-xs font-bold px-2 text-slate-800">{toFaDigits(c.qty)}</span>
-                        <button
-                          type="button"
-                          onClick={() => updateCartQty(c.item.id, c.qty + 1)}
-                          disabled={c.item.stockQty > 0 && c.qty >= c.item.stockQty}
-                          className="size-7 grid place-items-center text-xs font-bold hover:bg-slate-200 rounded transition cursor-pointer disabled:opacity-40"
-                          title="افزایش یک عدد"
-                        >
-                          +
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={() => removeCartItem(c.item.id)}
-                        className="text-[11px] text-rose-600 hover:underline font-medium"
-                      >
-                        حذف
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* بخش نهایی و صدور */}
-            <div className="pt-4 border-t border-slate-200 space-y-3.5 mt-6">
-              <div>
-                <label className="label block mb-1">روش ارسال باربری:</label>
-                <select
-                  value={cartShippingId}
-                  onChange={(e) => setCartShippingId(e.target.value)}
-                  className="input text-xs border-slate-300 rounded-lg"
-                >
-                  {props.shipping.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.cost > 0 ? `${formatToman(s.cost)} ت` : "پس‌کرایه"})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">جمع ناخالص کالاها:</span>
-                  <span className="nums font-bold text-slate-800">{formatToman(cartSummary.subtotal)} ت</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">کرایه حمل و نقل:</span>
-                  <span className="nums text-slate-800 font-medium">
-                    {cartSummary.shippingCost > 0 ? `${formatToman(cartSummary.shippingCost)} ت` : "رایگان"}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t border-slate-200 pt-2 font-bold text-sm">
-                  <span className="text-slate-900">مبلغ پیش‌فاکتور:</span>
-                  <span className="nums text-blue-600 font-extrabold text-base">{formatToman(cartSummary.total)} تومان</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCartDrawer(false)}
-                  className="btn btn-ghost text-xs px-3 py-2.5 flex-1 rounded-lg"
-                >
-                  ادامه انتخاب
-                </button>
-                <button
-                  type="button"
-                  onClick={submitCartOrder}
-                  disabled={checkoutBusy || cart.length === 0}
-                  className="btn btn-emerald text-sm px-4 py-2.5 flex-2 font-black rounded-xl shadow-md shadow-emerald-500/25 active:scale-98"
-                >
-                  {checkoutBusy ? "در حال ثبت..." : "تأیید و صدور پیش‌فاکتور ←"}
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}
