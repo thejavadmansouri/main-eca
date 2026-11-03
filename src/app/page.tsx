@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SESSION_COOKIE, verifySession } from "@/lib/session";
 import { MarketTicker } from "@/components/ui/market-ticker";
+import { Icon } from "@/components/ui/icon";
 
 export const instant = false;
 
@@ -40,12 +41,12 @@ export default async function Home() {
   ];
 
   const vehicleCategories = [
-    { name: "پراید، تیبا و ساینا", query: "پراید", icon: "🚗", count: "۳,۲۰۰ قطعه", badge: "پرفروش‌ترین" },
-    { name: "پژو ۴۰۵، پارس و سمند", query: "پژو ۴۰۵", icon: "🚘", count: "۲,۹۵۰ قطعه", badge: "ارسال فوری" },
-    { name: "پژو ۲۰۶ و ۲۰۷", query: "پژو ۲۰۶", icon: "🏎️", count: "۲,۱۰۰ قطعه", badge: "اصلی شرکتی" },
-    { name: "دنا و سمند موتور EF7", query: "دنا", icon: "🚙", count: "۱,۸۰۰ قطعه", badge: "تضمین قیمت" },
-    { name: "کوییک و اطلس", query: "کوییک", icon: "🛞", count: "۱,۴۵۰ قطعه", badge: "موجودی کامل" },
-    { name: "تندر ۹۰ و ساندرو", query: "ال۹۰", icon: "🚐", count: "۹۸۰ قطعه", badge: "کیفیت استاندارد" },
+    { name: "پراید، تیبا و ساینا", query: "پراید", count: "۳,۲۰۰ قطعه", badge: "پرفروش‌ترین" },
+    { name: "پژو ۴۰۵، پارس و سمند", query: "پژو ۴۰۵", count: "۲,۹۵۰ قطعه", badge: "ارسال فوری" },
+    { name: "پژو ۲۰۶ و ۲۰۷", query: "پژو ۲۰۶", count: "۲,۱۰۰ قطعه", badge: "اصلی شرکتی" },
+    { name: "دنا و سمند موتور EF7", query: "دنا", count: "۱,۸۰۰ قطعه", badge: "تضمین قیمت" },
+    { name: "کوییک و اطلس", query: "کوییک", count: "۱,۴۵۰ قطعه", badge: "موجودی کامل" },
+    { name: "تندر ۹۰ و ساندرو", query: "ال۹۰", count: "۹۸۰ قطعه", badge: "کیفیت استاندارد" },
   ];
 
   const partnerBrands = [
@@ -126,6 +127,7 @@ export default async function Home() {
         </div>
       </header>
 
+      <main>
       {/* ۳. بخش Hero: زمینه ملایم و آرامش‌بخش Slate 50، سرچ‌بار کپسولی M3 و تایپوگرافی چشم‌نواز */}
       <section className="px-4 sm:px-6 pt-12 sm:pt-20 pb-14 sm:pb-20 relative overflow-hidden">
         {/* هاله محو نورانی برای عمق‌بخشی به صفحه بدون ایجاد شلوغی */}
@@ -157,7 +159,9 @@ export default async function Home() {
               method="GET"
               className="relative rounded-full bg-white border border-slate-300 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-blue-600 p-1.5 sm:p-2 flex items-center gap-2 transition-all"
             >
-              <div className="pr-3.5 text-slate-400 text-base">🔍</div>
+              <div className="pr-3.5 text-slate-500">
+                <Icon name="search" />
+              </div>
               <input
                 type="text"
                 name="q"
@@ -174,7 +178,7 @@ export default async function Home() {
 
             {/* چیپ‌های پرجستجو به سبک Material Chips */}
             <div className="flex items-center justify-center gap-2 flex-wrap pt-3.5 text-xs font-medium">
-              <span className="text-slate-500 text-[11px]">پرفروش‌های هفته:</span>
+              <span className="text-slate-600 text-[11px]">پرفروش‌های هفته:</span>
               {popularSearches.map((ps) => (
                 <Link
                   key={ps.query}
@@ -204,7 +208,9 @@ export default async function Home() {
               className="w-full sm:flex-1 h-12 sm:h-13 px-6 rounded-xl sm:rounded-2xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-bold text-sm sm:text-base transition-all flex items-center justify-center gap-2 active:scale-98 shadow-2xs"
             >
               <span>سفارش با فایل اکسل</span>
-              <span className="text-xs text-blue-600">📊</span>
+              <span className="text-slate-600">
+                <Icon name="excel" className="size-4" />
+              </span>
             </Link>
           </div>
         </div>
@@ -239,7 +245,10 @@ export default async function Home() {
         <div className="flex items-center justify-between border-b border-slate-200 pb-3 flex-wrap gap-2">
           <div>
             <h2 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
-              <span>🚗 تفکیک و دسترسی سریع به قطعات بر اساس خودرو</span>
+              <span className="text-blue-600">
+                <Icon name="car" className="size-5" />
+              </span>
+              <span>تفکیک و دسترسی سریع به قطعات بر اساس خودرو</span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               جهت مشاهده فوری قطعات موجود، خودروی مورد نظرتان را انتخاب کنید:
@@ -259,7 +268,9 @@ export default async function Home() {
               className="rounded-2xl bg-white border border-slate-200 hover:border-blue-400 p-4 flex flex-col justify-between shadow-2xs hover:shadow-md transition-all duration-200 group active:scale-95"
             >
               <div className="flex items-center justify-between">
-                <span className="text-2xl group-hover:scale-110 transition-transform duration-200">{v.icon}</span>
+                <span className="grid size-9 place-items-center rounded-xl bg-blue-50 text-blue-600 transition-transform duration-200 group-hover:scale-110">
+                  <Icon name="car" className="size-5" />
+                </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-50 text-slate-700 border border-slate-200">
                   {v.badge}
                 </span>
@@ -286,8 +297,8 @@ export default async function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="rounded-2xl p-5 bg-slate-50 border border-slate-200 space-y-2.5">
-              <span className="size-10 rounded-xl bg-blue-100 text-blue-700 grid place-items-center text-lg font-bold">
-                🏢
+              <span className="grid size-10 place-items-center rounded-xl bg-blue-100 text-blue-700">
+                <Icon name="building" />
               </span>
               <h3 className="font-black text-sm text-slate-900">انبار مرکزی استان کرمان</h3>
               <p className="text-xs text-slate-600 leading-5">
@@ -296,8 +307,8 @@ export default async function Home() {
             </div>
 
             <div className="rounded-2xl p-5 bg-slate-50 border border-slate-200 space-y-2.5">
-              <span className="size-10 rounded-xl bg-blue-100 text-blue-700 grid place-items-center text-lg font-bold">
-                💰
+              <span className="grid size-10 place-items-center rounded-xl bg-blue-100 text-blue-700">
+                <Icon name="wallet" />
               </span>
               <h3 className="font-black text-sm text-slate-900">تخفیف پلکانی تیراژ</h3>
               <p className="text-xs text-slate-600 leading-5">
@@ -306,8 +317,8 @@ export default async function Home() {
             </div>
 
             <div className="rounded-2xl p-5 bg-slate-50 border border-slate-200 space-y-2.5">
-              <span className="size-10 rounded-xl bg-blue-100 text-blue-700 grid place-items-center text-lg font-bold">
-                🧾
+              <span className="grid size-10 place-items-center rounded-xl bg-blue-100 text-blue-700">
+                <Icon name="receipt" />
               </span>
               <h3 className="font-black text-sm text-slate-900">خرید اعتباری و چک صیادی</h3>
               <p className="text-xs text-slate-600 leading-5">
@@ -316,8 +327,8 @@ export default async function Home() {
             </div>
 
             <div className="rounded-2xl p-5 bg-slate-50 border border-slate-200 space-y-2.5">
-              <span className="size-10 rounded-xl bg-emerald-100 text-emerald-700 grid place-items-center text-lg font-bold">
-                🛡️
+              <span className="grid size-10 place-items-center rounded-xl bg-emerald-100 text-emerald-700">
+                <Icon name="shield" />
               </span>
               <h3 className="font-black text-sm text-slate-900">تضمین اصالت و گارانتی ۴۸h</h3>
               <p className="text-xs text-slate-600 leading-5">
@@ -349,11 +360,13 @@ export default async function Home() {
                 {b.name}
               </p>
               <p className="text-[9px] font-mono text-slate-500 mt-0.5 tracking-wider uppercase font-bold">{b.latin}</p>
-              <p className="text-[9px] text-slate-400 mt-1 truncate">{b.note}</p>
+              <p className="text-[9px] text-slate-500 mt-1 truncate">{b.note}</p>
             </Link>
           ))}
         </div>
       </section>
+
+      </main>
 
       {/* ۸. فوتر رسمی و شفاف کاردو B2B */}
       <footer className="bg-white border-t border-slate-200 py-10">

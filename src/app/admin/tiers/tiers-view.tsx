@@ -183,7 +183,7 @@ export function TiersView() {
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg"
+                className="text-slate-600 hover:text-slate-600 text-lg"
               >
                 ✕
               </button>
@@ -256,7 +256,7 @@ export function TiersView() {
               <button
                 type="button"
                 onClick={() => setEditingTier(null)}
-                className="text-slate-400 hover:text-slate-600 text-lg"
+                className="text-slate-600 hover:text-slate-600 text-lg"
               >
                 ✕
               </button>

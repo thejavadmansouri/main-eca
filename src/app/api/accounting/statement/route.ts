@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
     if (amount > 0) {
       rows.push({
         date: w.createdAt,
-        docNumber: w.refId || "TX-DEPOSIT",
+        docNumber: w.refId || `TRX-${String(w.id).slice(-6).toUpperCase()}`,
         description: w.note || (w.type === "REFUND" ? "عودت وجه مرجوعی کالا به کیف پول" : "شارژ / افزایش بستانکاری کیف پول"),
         debit: 0,
         credit: amount,

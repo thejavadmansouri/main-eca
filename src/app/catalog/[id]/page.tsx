@@ -57,11 +57,23 @@ export default async function ProductDetailPage({
     });
 
     if (customer) {
-      const [wallet, openCreditAgg] = await Promise.all([
+      const [wallet, openCreditAgg, inTransitCount, activeChequesCount] = await Promise.all([
         walletBalance(customer.id),
         prisma.order.aggregate({
           where: { customerId: customer.id, status: "APPROVED_CREDIT" },
           _sum: { creditAmount: true },
+        }),
+        prisma.order.count({
+          where: {
+            customerId: customer.id,
+            status: { in: ["APPROVED_CREDIT", "PAID"] },
+          },
+        }),
+        prisma.cheque.count({
+          where: {
+            customerId: customer.id,
+            status: { in: ["RECEIVED", "REGISTERED_SAYAD"] },
+          },
         }),
       ]);
 
@@ -79,8 +91,21 @@ export default async function ProductDetailPage({
         availableCredit,
         tierDiscount,
         customerDiscount,
+        inTransitCount,
+        activeChequesCount,
       };
     }
+  }
+
+  let inTransitCountAdmin = 0;
+  let activeChequesCountAdmin = 0;
+  if (isAdmin) {
+    const [openOrders, openCheques] = await Promise.all([
+      prisma.order.count({ where: { status: "PAID" } }),
+      prisma.cheque.count({ where: { status: "RECEIVED" } }),
+    ]);
+    inTransitCountAdmin = openOrders;
+    activeChequesCountAdmin = openCheques;
   }
 
   // واکشی کامل مشخصات محصول، پله‌های تخفیف و موجودی انبارها
@@ -194,6 +219,12 @@ export default async function ProductDetailPage({
       canOrder={canOrder}
       wallet={customerInfo?.wallet ?? 0}
       availableCredit={customerInfo?.availableCredit ?? 0}
+      creditLimit={customerInfo?.creditLimit ?? 0}
+      tierName={customerInfo?.customer?.tier?.name}
+      tierDiscount={customerInfo?.tierDiscount ?? 0}
+      customerDiscount={customerInfo?.customerDiscount ?? 0}
+      inTransitCount={isAdmin ? inTransitCountAdmin : (customerInfo?.inTransitCount ?? 0)}
+      activeChequesCount={isAdmin ? activeChequesCountAdmin : (customerInfo?.activeChequesCount ?? 0)}
       shippingMethods={shippingMethods.map((s) => ({
         id: s.id,
         name: s.name,
@@ -251,7 +282,7 @@ export default async function ProductDetailPage({
             </span>
             <div className="flex flex-col">
               <span className="font-black text-base text-slate-900 leading-tight">کاردو B2B</span>
-              <span className="text-[10px] text-slate-400">انبار مرکزی کرمان</span>
+              <span className="text-[10px] text-slate-600">انبار مرکزی کرمان</span>
             </div>
           </Link>
           <div className="flex items-center gap-3">

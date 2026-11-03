@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Icon } from "@/components/ui/icon";
 import { useRouter } from "next/navigation";
 import { formatToman, toFaDigits } from "@/lib/digits";
 import { faDate } from "@/lib/date";
@@ -171,7 +172,7 @@ export function InquiriesView(props: { initialInquiries: InquiryRecord[] }) {
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="size-8 grid place-items-center text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 text-lg"
+                className="size-8 grid place-items-center text-slate-600 hover:text-slate-700 rounded-full hover:bg-slate-100 text-lg"
               >
                 ✕
               </button>
@@ -323,8 +324,8 @@ export function InquiriesView(props: { initialInquiries: InquiryRecord[] }) {
       <div className="mt-5">
         {inquiries.length === 0 ? (
           <div className="card p-12 text-center text-slate-500 bg-white border border-slate-200 rounded-xl space-y-3">
-            <div className="size-12 rounded-full bg-slate-100 text-slate-400 grid place-items-center mx-auto text-xl">
-              📝
+            <div className="size-12 rounded-full bg-slate-100 text-slate-600 grid place-items-center mx-auto">
+              <Icon name="note" className="size-5" />
             </div>
             <p className="font-bold text-slate-800 text-base">هنوز استعلام قیمتی ثبت نکرده‌اید.</p>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -373,7 +374,7 @@ export function InquiriesView(props: { initialInquiries: InquiryRecord[] }) {
                         {inq.totalQuoted && inq.totalQuoted > 0 ? (
                           <span className="text-blue-700 font-extrabold">{formatToman(inq.totalQuoted)} تومان</span>
                         ) : (
-                          <span className="text-slate-400 font-normal">در انتظار قیمت‌گذاری</span>
+                          <span className="text-slate-600 font-normal">در انتظار قیمت‌گذاری</span>
                         )}
                       </div>
                     </div>
@@ -411,7 +412,7 @@ export function InquiriesView(props: { initialInquiries: InquiryRecord[] }) {
                     >
                       <div>
                         <p className="font-bold text-xs nums text-blue-700">{inq.number}</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">{faDate(inq.createdAt)}</p>
+                        <p className="text-[11px] text-slate-600 mt-0.5">{faDate(inq.createdAt)}</p>
                       </div>
 
                       <div className="min-w-0">
@@ -419,7 +420,7 @@ export function InquiriesView(props: { initialInquiries: InquiryRecord[] }) {
                           {inq.items.map((i) => i.partName).join("، ")}
                         </p>
                         {inq.customerNote && (
-                          <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                          <p className="text-[11px] text-slate-600 truncate mt-0.5">
                             یادداشت: {inq.customerNote}
                           </p>
                         )}
@@ -433,7 +434,7 @@ export function InquiriesView(props: { initialInquiries: InquiryRecord[] }) {
                         {inq.totalQuoted && inq.totalQuoted > 0 ? (
                           <span className="text-slate-900 font-extrabold">{formatToman(inq.totalQuoted)} ت</span>
                         ) : (
-                          <span className="text-slate-400 font-normal">در حال بررسی</span>
+                          <span className="text-slate-600 font-normal">در حال بررسی</span>
                         )}
                       </div>
 

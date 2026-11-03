@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { formatToman, toFaDigits } from "@/lib/digits";
 import { faDate } from "@/lib/date";
+import { Icon } from "@/components/ui/icon";
 import * as XLSX from "xlsx";
 
 export type PrintCatalogItem = {
@@ -113,7 +114,7 @@ export function PrintCatalogClient({
             onClick={handleExportExcel}
             className="text-xs font-bold px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm flex items-center gap-1.5 active:scale-95"
           >
-            <span>📊</span>
+            <Icon name="excel" className="size-4" />
             <span>خروجی اکسل</span>
           </button>
 
@@ -121,7 +122,7 @@ export function PrintCatalogClient({
             onClick={() => window.print()}
             className="text-xs font-bold px-4 py-2 rounded-xl bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 transition-all shadow-md shadow-orange-500/20 flex items-center gap-1.5 font-black active:scale-95"
           >
-            <span>🖨️</span>
+            <Icon name="printer" className="size-4" />
             <span>چاپ و ذخیره PDF</span>
           </button>
         </div>
@@ -214,7 +215,7 @@ export function PrintCatalogClient({
                       {inStock ? (
                         <span className="text-emerald-700">موجود ({toFaDigits(item.stockQty)})</span>
                       ) : (
-                        <span className="text-slate-400">تماس</span>
+                        <span className="text-slate-600">تماس</span>
                       )}
                     </td>
                   </tr>

@@ -2,6 +2,7 @@
 export const instant = false;
 
 import Link from "next/link";
+import { Icon } from "@/components/ui/icon";
 import { connection } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireCustomer } from "@/lib/server-account";
@@ -63,8 +64,8 @@ export default async function OrdersPage() {
         <div className="mt-5">
           {orders.length === 0 ? (
             <div className="card p-12 text-center text-slate-500 bg-white border border-slate-200 rounded-xl space-y-3">
-              <div className="size-12 rounded-full bg-slate-100 text-slate-400 grid place-items-center mx-auto text-xl">
-                📋
+              <div className="size-12 rounded-full bg-slate-100 text-slate-600 grid place-items-center mx-auto">
+                <Icon name="list" className="size-5" />
               </div>
               <p className="font-bold text-slate-800 text-base">هنوز سندی برای شما صادر نشده است.</p>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">

@@ -6,8 +6,7 @@ import Link from "next/link";
 import { formatToman, toFaDigits } from "@/lib/digits";
 import type { CatalogItem } from "@/lib/catalog";
 import { QuickBuySheet } from "./quick-buy-sheet";
-import { BrandMarquee } from "@/components/ui/brand-marquee";
-import { CustomerKpiCards } from "@/components/customer/customer-kpi-cards";
+import { Icon } from "@/components/ui/icon";
 
 export type { CatalogItem };
 
@@ -409,31 +408,13 @@ export function CatalogBrowser(props: {
         </div>
       )}
 
-      {/* ۱. کارت‌های داشبورد گرافیکی همکار (KPI Cards) — بهینه‌شده، فشرده و متناسب با موبایل */}
-      <CustomerKpiCards
-        wallet={props.wallet}
-        availableCredit={props.availableCredit}
-        creditLimit={props.creditLimit}
-        tierName={props.tierName}
-        tierDiscount={props.tierDiscount}
-        customerDiscount={props.customerDiscount}
-        inTransitCount={props.inTransitCount}
-        activeChequesCount={props.activeChequesCount}
-        isAdmin={props.isAdmin}
-      />
-
-      {/* ۲. اسلایدر متحرک برندهای معتبر قطعه‌سازی */}
-      <div className="mb-4 sm:mb-6 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xs border border-slate-200/80">
-        <BrandMarquee onSelectBrand={(brandName) => setPartBrand(brandName)} />
-      </div>
-
       {/* سر صفحه و وضعیت تخفیف‌ها */}
       <div className="flex items-center justify-between gap-4 flex-wrap pb-3 border-b border-slate-200">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-900">
             کاتالوگ قطعات یدکی خودرو
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-500 mt-0.5">
             فیلتر پیشرفته بر اساس خودرو، مدل، قسمت فنی، برند سازنده قطعه و تاریخ ورود
           </p>
         </div>
@@ -455,7 +436,7 @@ export function CatalogBrowser(props: {
             className="btn bg-slate-900 hover:bg-slate-800 text-white text-xs px-3 py-1.5 flex items-center gap-1.5 rounded-lg shadow-sm font-bold active:scale-95 transition-all"
             title="دانلود کاتالوگ چاپی و اکسل قیمت‌ها"
           >
-            <span>🖨️</span>
+            <Icon name="printer" className="size-4" />
             <span>کاتالوگ چاپی / PDF</span>
           </Link>
           {cart.length > 0 && (
@@ -473,10 +454,10 @@ export function CatalogBrowser(props: {
       </div>
 
       {/* مرکز صفحه: بخش جست‌وجوی هوشمند با زوم کامل (Focal Hero Search Console) */}
-      <div className="mt-4 p-4 sm:p-6 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-3.5">
+      <div className="mt-3 sm:mt-4 p-3.5 sm:p-6 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-3.5">
         {/* ۱. نوار جست‌وجوی بزرگ و برجسته (Hero Zoom Search) */}
         <div className="relative w-full group">
-          <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-600 transition-colors">
+          <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-600 group-focus-within:text-blue-600 transition-colors">
             <svg className="size-5.5 sm:size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" x2="16.65" y1="21" y2="16.65" />
@@ -486,30 +467,27 @@ export function CatalogBrowser(props: {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="جست‌وجوی سریع نام قطعه، کد فنی SKU، کد OEM، بارکد یا نام برند قطعه‌ساز..."
-            className="w-full h-14 sm:h-16 pr-12 sm:pr-14 pl-24 sm:pl-28 text-sm sm:text-base border-2 border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 rounded-2xl bg-slate-50/40 hover:bg-white focus:bg-white shadow-2xs focus:shadow-md transition-all font-medium placeholder:text-slate-400 text-slate-900 outline-none"
+            className="w-full h-14 sm:h-16 pr-12 sm:pr-14 pl-12 sm:pl-14 text-sm sm:text-base border-2 border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 rounded-2xl bg-slate-50/40 hover:bg-white focus:bg-white shadow-2xs focus:shadow-md transition-all font-medium placeholder:text-slate-400 text-slate-900 outline-none"
             autoComplete="off"
           />
-          <div className="absolute inset-y-0 left-3 flex items-center gap-1.5">
-            {query && (
+          {query && (
+            <div className="absolute inset-y-0 left-3 flex items-center">
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                className="size-8 grid place-items-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors text-sm"
+                className="size-8 grid place-items-center text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors text-sm"
                 aria-label="پاک کردن متن جست‌وجو"
               >
                 ✕
               </button>
-            )}
-            <span className="hidden sm:inline-flex items-center text-[11px] font-mono font-medium text-slate-400 bg-slate-100 border border-slate-200/80 px-2 py-1 rounded-lg select-none">
-              اینتر ↵
-            </span>
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* ۲. نوار ابزار: دکمه فیلترهای پیشرفته و تیک سفارش مجدد هوشمند */}
+        {/* ۲. نوار ابزار: دکمه فیلترها و تیک سفارش مجدد هوشمند */}
         <div className="flex items-center justify-between gap-3 flex-wrap pt-0.5">
           <div className="flex items-center gap-2.5 flex-wrap">
-            {/* دکمه فیلترهای پیشرفته */}
+            {/* دکمه فیلترها */}
             <button
               type="button"
               onClick={() => setShowAdvancedFilters((prev) => !prev)}
@@ -522,7 +500,7 @@ export function CatalogBrowser(props: {
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
               </svg>
-              <span>فیلترهای پیشرفته و سازنده</span>
+              <span>فیلترها</span>
               {activeFiltersCount > 0 && (
                 <span className="size-5 rounded-full bg-blue-600 text-white grid place-items-center text-[10px] font-black nums">
                   {toFaDigits(activeFiltersCount)}
@@ -717,7 +695,7 @@ export function CatalogBrowser(props: {
                 </div>
                 <button
                   onClick={() => setShowAdvancedFilters(false)}
-                  className="size-8 grid place-items-center text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 text-base"
+                  className="size-8 grid place-items-center text-slate-600 hover:text-slate-700 rounded-full hover:bg-slate-100 text-base"
                   aria-label="بستن فیلترها"
                 >
                   ✕
@@ -934,7 +912,7 @@ export function CatalogBrowser(props: {
         <div className="mt-4 p-4 sm:p-5 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-slate-50 border border-amber-300 rounded-2xl shadow-xs space-y-3 animate-in fade-in slide-in-from-top-2 duration-150">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-base">🔄</span>
+              <Icon name="refresh" className="size-4 shrink-0 text-amber-700" />
               <div>
                 <h3 className="text-xs sm:text-sm font-black text-slate-900">
                   سفارش مجدد هوشمند (اقلام پرتکرار شما در ماه‌های اخیر)
@@ -955,7 +933,7 @@ export function CatalogBrowser(props: {
               )}
               <button
                 onClick={() => setShowSmartReorder(false)}
-                className="text-xs text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100"
+                className="text-xs text-slate-600 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100"
                 title="بستن بخش پیشنهادی"
               >
                 ✕
@@ -1078,7 +1056,7 @@ export function CatalogBrowser(props: {
                             className="max-h-full max-w-full object-contain"
                           />
                         ) : (
-                          <span className="text-xl text-slate-300">⚙️</span>
+                          <Icon name="gear" className="size-9 text-slate-400" />
                         )}
                       </Link>
 
@@ -1114,19 +1092,19 @@ export function CatalogBrowser(props: {
                       <div className="flex items-center gap-1.5 flex-wrap mt-2">
                         {item.stockQty > 15 && (
                           <span className="text-[10px] font-black text-rose-700 bg-rose-50 border border-rose-200/80 px-2 py-0.5 rounded-md flex items-center gap-1">
-                            <span>🔥</span>
+                            <Icon name="flame" className="size-3" />
                             <span>پرفروش هفته کرمان</span>
                           </span>
                         )}
                         {item.priceBefore && item.priceBefore > (item.price ?? 0) && (
                           <span className="text-[10px] font-black text-amber-800 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded-md flex items-center gap-1">
-                            <span>⚡</span>
+                            <Icon name="bolt" className="size-3" />
                             <span>آفر نقدی</span>
                           </span>
                         )}
                         {item.stockQty > 0 && (
                           <span className="text-[10px] font-medium text-emerald-800 bg-emerald-50/80 border border-emerald-200 px-1.5 py-0.5 rounded-md flex items-center gap-1">
-                            <span>📦</span>
+                            <Icon name="box" className="size-3" />
                             <span>انبار مرکزی: آماده ارسال</span>
                           </span>
                         )}
@@ -1137,7 +1115,7 @@ export function CatalogBrowser(props: {
                       <span className="text-xs text-slate-500 font-medium">قیمت همکاری:</span>
                       <div className="text-left nums">
                         {item.priceBefore && item.priceBefore > (item.price ?? 0) && (
-                          <span className="block text-[11px] text-slate-400 line-through">
+                          <span className="block text-[11px] text-slate-600 line-through">
                             {formatToman(item.priceBefore)} تومان
                           </span>
                         )}
@@ -1150,7 +1128,7 @@ export function CatalogBrowser(props: {
                               <span className="text-xs text-slate-500 font-bold">تومان</span>
                             </>
                           ) : (
-                            <span className="text-xs text-slate-400">پس از تأیید حساب</span>
+                            <span className="text-xs text-slate-600">پس از تأیید حساب</span>
                           )}
                         </div>
                       </div>
@@ -1162,7 +1140,7 @@ export function CatalogBrowser(props: {
                         <div className="flex items-center gap-1.5 text-xs text-slate-700 font-bold">
                           <span>تعداد موردنیاز:</span>
                           {item.packSize > 1 && (
-                            <span className="text-[10px] text-slate-400 font-medium">
+                            <span className="text-[10px] text-slate-600 font-medium">
                               (بسته {toFaDigits(item.packSize)} عددی)
                             </span>
                           )}
@@ -1205,7 +1183,7 @@ export function CatalogBrowser(props: {
                       {/* چیپس‌های میانبر پله‌های تخفیف تیراژ در صورت وجود */}
                       {hasVolumeDiscount && item.volumePrices.length > 0 && (
                         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none text-[11px]">
-                          <span className="text-slate-400 text-[10px] shrink-0 font-medium">پله‌های تیراژ:</span>
+                          <span className="text-slate-600 text-[10px] shrink-0 font-medium">پله‌های تیراژ:</span>
                           {item.volumePrices.map((vp) => (
                             <button
                               key={vp.qtyFrom}
@@ -1237,7 +1215,14 @@ export function CatalogBrowser(props: {
                               : "bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-md shadow-orange-500/20"
                           }`}
                         >
-                          <span>{subscribedAlerts[item.id] ? "✓ درخواست اطلاع‌رسانی شما ثبت شد" : "موجود شد به من اطلاع بده 🔔"}</span>
+                          {subscribedAlerts[item.id] ? (
+                            <span>✓ درخواست اطلاع‌رسانی شما ثبت شد</span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1">
+                              موجود شد به من اطلاع بده
+                              <Icon name="bell" className="size-3.5" />
+                            </span>
+                          )}
                         </button>
                       </div>
                     ) : (
@@ -1319,7 +1304,7 @@ export function CatalogBrowser(props: {
                           </span>
                         )}
                         {item.oemCode && (
-                          <span className="text-[10px] text-slate-400 font-mono hidden lg:inline">
+                          <span className="text-[10px] text-slate-600 font-mono hidden lg:inline">
                             OEM: {item.oemCode}
                           </span>
                         )}
@@ -1338,7 +1323,7 @@ export function CatalogBrowser(props: {
                               className="max-h-full max-w-full object-contain"
                             />
                           ) : (
-                            <span className="text-base text-slate-300">⚙️</span>
+                            <Icon name="gear" className="size-7 text-slate-400" />
                           )}
                         </Link>
 
@@ -1352,7 +1337,7 @@ export function CatalogBrowser(props: {
                           <div className="flex items-center gap-2 text-xs text-slate-500 mt-1 flex-wrap">
                             <span className="font-semibold text-slate-800">{item.brand}</span>
                             {item.model && <span>· {item.model}</span>}
-                            <span className="text-slate-400">· {item.category}</span>
+                            <span className="text-slate-600">· {item.category}</span>
                             {item.packSize > 1 && (
                               <span className="text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded text-[10px] nums font-medium">
                                 بسته {toFaDigits(item.packSize)} تایی
@@ -1376,19 +1361,19 @@ export function CatalogBrowser(props: {
                         <div className="flex items-center gap-1.5 flex-wrap mt-1">
                           {item.stockQty > 15 && (
                             <span className="text-[9px] font-black text-rose-700 bg-rose-50 border border-rose-200/80 px-1.5 py-0.2 rounded-md flex items-center gap-0.5">
-                              <span>🔥</span>
+                              <Icon name="flame" className="size-3" />
                               <span>پرفروش هفته کرمان</span>
                             </span>
                           )}
                           {item.priceBefore && item.priceBefore > (item.price ?? 0) && (
                             <span className="text-[9px] font-black text-amber-800 bg-amber-50 border border-amber-300 px-1.5 py-0.2 rounded-md flex items-center gap-0.5">
-                              <span>⚡</span>
+                              <Icon name="bolt" className="size-3" />
                               <span>آفر ویژه</span>
                             </span>
                           )}
                           {item.stockQty > 0 && (
                             <span className="text-[9px] font-medium text-emerald-800 bg-emerald-50/80 border border-emerald-200 px-1.5 py-0.2 rounded-md flex items-center gap-0.5">
-                              <span>📦</span>
+                              <Icon name="box" className="size-3" />
                               <span>انبار مرکزی</span>
                             </span>
                           )}
@@ -1414,15 +1399,15 @@ export function CatalogBrowser(props: {
                         {item.price !== null ? (
                           <div className="nums">
                             {item.priceBefore && item.priceBefore > item.price && (
-                              <span className="block text-[10px] text-slate-400 line-through">
+                              <span className="block text-[10px] text-slate-600 line-through">
                                 {formatToman(item.priceBefore)}
                               </span>
                             )}
                             <span className="font-black text-base text-blue-700">{formatToman(item.price)}</span>
-                            <span className="text-[11px] text-slate-400 font-normal ms-1">تومان</span>
+                            <span className="text-[11px] text-slate-600 font-normal ms-1">تومان</span>
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-400 font-medium">پس از تأیید حساب</span>
+                          <span className="text-xs text-slate-600 font-medium">پس از تأیید حساب</span>
                         )}
                       </div>
 
@@ -1471,7 +1456,14 @@ export function CatalogBrowser(props: {
                                   : "bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-900 shadow-2xs"
                               }`}
                             >
-                              <span>{subscribedAlerts[item.id] ? "✓ ثبت شد" : "موجود شد خبرم کن 🔔"}</span>
+                              {subscribedAlerts[item.id] ? (
+                                <span>✓ ثبت شد</span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1">
+                                  موجود شد خبرم کن
+                                  <Icon name="bell" className="size-3.5" />
+                                </span>
+                              )}
                             </button>
                           </div>
                         ) : inCart ? (
@@ -1538,7 +1530,7 @@ export function CatalogBrowser(props: {
               </span>
               <div className="min-w-0">
                 <p className="text-xs sm:text-sm font-bold text-white leading-tight truncate">سبد سفارش همکار</p>
-                <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 nums truncate">
+                <p className="text-[10px] sm:text-[11px] text-slate-600 mt-0.5 nums truncate">
                   {toFaDigits(cartSummary.itemCount)} قطعه · مجموع: {formatToman(cartSummary.subtotal)} ت
                 </p>
               </div>
@@ -1568,7 +1560,7 @@ export function CatalogBrowser(props: {
                 </div>
                 <button
                   onClick={() => setShowCartDrawer(false)}
-                  className="text-slate-400 hover:text-slate-700 text-xl font-bold p-1"
+                  className="text-slate-600 hover:text-slate-700 text-xl font-bold p-1"
                 >
                   ✕
                 </button>
@@ -1586,7 +1578,7 @@ export function CatalogBrowser(props: {
                   <div key={c.item.id} className="py-3.5 flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="font-bold text-xs sm:text-sm text-slate-900 leading-snug">{c.item.name}</p>
-                      <p className="text-[11px] text-slate-400 font-mono nums mt-0.5">
+                      <p className="text-[11px] text-slate-600 font-mono nums mt-0.5">
                         {c.item.sku} · {c.item.brand} {c.item.partBrand ? `· ${c.item.partBrand}` : ""}
                       </p>
                       <p className="text-xs text-blue-600 font-extrabold nums mt-1">

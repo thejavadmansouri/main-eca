@@ -477,7 +477,7 @@ async function main() {
         balanceAfter: 5_000_000,
         refType: "MANUAL",
         idempotencyKey: "seed:demo:wallet:initial",
-        note: "موجودی نمایشی seed",
+        note: "شارژ اولیه کیف پول همکار",
       },
     });
 

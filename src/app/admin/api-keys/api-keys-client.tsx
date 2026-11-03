@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/icon";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -219,10 +220,10 @@ export function ApiKeysClient({ initialKeys }: { initialKeys: ApiKeyItem[] }) {
       <Card className="bg-slate-900 text-white border-slate-800 shadow-xl">
         <CardHeader className="border-slate-800">
           <CardTitle className="text-white text-base flex items-center gap-2">
-            <span>📘</span>
+            <Icon name="book" className="size-4" />
             مستندات وب‌سرویس حسابداری جهت ارتباط خودکار با پارسیان و سپیدار
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-slate-600">
             برنامه‌نویس یا کارشناس IT نرم‌افزار حسابداری می‌تواند از وب‌سرویس‌های زیر جهت خواندن سفارش‌ها و به‌روزرسانی موجودی و مانده‌حساب استفاده کند:
           </CardDescription>
         </CardHeader>
@@ -232,7 +233,7 @@ export function ApiKeysClient({ initialKeys }: { initialKeys: ApiKeyItem[] }) {
               <span className="bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">GET</span>
               <span className="text-slate-200">/api/v1/accounting/orders</span>
             </div>
-            <p className="text-slate-400 text-[11px] font-sans">
+            <p className="text-slate-600 text-[11px] font-sans">
               دریافت لیست سفارش‌های جدید ثبت‌شده در سایت، مبالغ، تخفیفات و اقلام سبد به همراه کد ملی، شماره موبایل و آدرس مشتری جهت ثبت خودکار فاکتور فروش در حسابداری.
             </p>
             <div className="text-slate-500 text-[10px]" dir="ltr">
@@ -245,7 +246,7 @@ export function ApiKeysClient({ initialKeys }: { initialKeys: ApiKeyItem[] }) {
               <span className="bg-blue-950 px-2 py-0.5 rounded border border-blue-800">POST</span>
               <span className="text-slate-200">/api/v1/accounting/sync-inventory</span>
             </div>
-            <p className="text-slate-400 text-[11px] font-sans">
+            <p className="text-slate-600 text-[11px] font-sans">
               به‌روزرسانی دسته‌ای موجودی انبار و قیمت قطعات از نرم‌افزار حسابداری به وب‌سایت.
             </p>
             <div className="text-slate-500 text-[10px]" dir="ltr">
@@ -258,7 +259,7 @@ export function ApiKeysClient({ initialKeys }: { initialKeys: ApiKeyItem[] }) {
               <span className="bg-amber-950 px-2 py-0.5 rounded border border-amber-800">POST</span>
               <span className="text-slate-200">/api/v1/accounting/sync-balance</span>
             </div>
-            <p className="text-slate-400 text-[11px] font-sans">
+            <p className="text-slate-600 text-[11px] font-sans">
               به‌روزرسانی مانده حساب بدهکار/بستانکار و سقف اعتبار مشتری بر اساس شماره تلفن یا کد ملی.
             </p>
             <div className="text-slate-500 text-[10px]" dir="ltr">

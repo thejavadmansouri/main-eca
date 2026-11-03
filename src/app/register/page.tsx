@@ -125,10 +125,7 @@ export default function RegisterPage() {
               {busy ? (
                 "در حال ثبت اطلاعات…"
               ) : (
-                <>
-                  <span>ثبت‌نام و افتتاح حساب</span>
-                  <span className="text-[11px] font-normal px-2 py-0.5 rounded-md bg-white/20">اینتر ↵</span>
-                </>
+                <span>ثبت‌نام و افتتاح حساب</span>
               )}
             </button>
           </form>

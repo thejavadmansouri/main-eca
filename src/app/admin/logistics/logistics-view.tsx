@@ -197,7 +197,7 @@ export function LogisticsView() {
                   <div className="flex items-center gap-2">
                     <span className="nums font-extrabold text-sm text-slate-900">{o.number}</span>
                     <span className="text-xs text-slate-700 font-medium">{o.companyName}</span>
-                    <span className="text-xs text-slate-400 font-mono nums" dir="ltr">{o.phone}</span>
+                    <span className="text-xs text-slate-600 font-mono nums" dir="ltr">{o.phone}</span>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
                     مبلغ: <span className="nums font-bold text-slate-800">{formatToman(o.total)} ت</span> · آدرس: {o.address || "نامشخص"}
@@ -276,7 +276,7 @@ export function LogisticsView() {
       ) : error ? (
         <div className="p-4 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200">{error}</div>
       ) : shipments.length === 0 ? (
-        <div className="p-12 text-center text-slate-400 text-sm card bg-white">
+        <div className="p-12 text-center text-slate-600 text-sm card bg-white">
           هیچ حواله ارسالی با این مشخصات یافت نشد.
         </div>
       ) : (
@@ -294,7 +294,7 @@ export function LogisticsView() {
                     <div className="flex items-center gap-2">
                       <span className="nums font-extrabold text-sm text-slate-900">سند {s.orderNumber}</span>
                       <span className="text-xs font-bold text-slate-700">{s.customerName}</span>
-                      <span className="text-xs text-slate-400 nums font-mono" dir="ltr">{s.customerPhone}</span>
+                      <span className="text-xs text-slate-600 nums font-mono" dir="ltr">{s.customerPhone}</span>
                     </div>
                     <p className="text-xs text-slate-500 mt-1">
                       مقصد: <b className="text-blue-700 font-bold">{s.destinationCity}</b> · اقلام: {toFaDigits(s.itemCount)} قلم ({s.itemsSummary})
@@ -311,7 +311,7 @@ export function LogisticsView() {
                   <div>
                     <span className="text-slate-500">حامل / باربری:</span>
                     <p className="font-bold text-slate-800 mt-0.5">{s.carrierName}</p>
-                    {s.carrierPhone && <p className="text-slate-400 font-mono nums mt-0.5">{s.carrierPhone}</p>}
+                    {s.carrierPhone && <p className="text-slate-600 font-mono nums mt-0.5">{s.carrierPhone}</p>}
                   </div>
 
                   <div>
@@ -319,7 +319,7 @@ export function LogisticsView() {
                     <p className="font-extrabold text-sm text-indigo-700 mt-0.5 nums">
                       {s.waybillNumber ? toFaDigits(s.waybillNumber) : "هنوز ثبت نشده"}
                     </p>
-                    <p className="text-slate-400 text-[11px] mt-0.5">{FREIGHT_PAYMENT_LABELS[s.freightPaymentType] || s.freightPaymentType}</p>
+                    <p className="text-slate-600 text-[11px] mt-0.5">{FREIGHT_PAYMENT_LABELS[s.freightPaymentType] || s.freightPaymentType}</p>
                   </div>
 
                   <div>
@@ -329,7 +329,7 @@ export function LogisticsView() {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
-                  <span className="text-slate-400 nums">
+                  <span className="text-slate-600 nums">
                     ثبت حواله: {new Date(s.createdAt).toLocaleDateString("fa-IR")}
                     {s.shippedAt && ` · خروج از انبار: ${new Date(s.shippedAt).toLocaleDateString("fa-IR")}`}
                     {s.deliveredAt && ` · تحویل: ${new Date(s.deliveredAt).toLocaleDateString("fa-IR")}`}
@@ -383,7 +383,7 @@ export function LogisticsView() {
               <button
                 type="button"
                 onClick={() => setTargetOrder(null)}
-                className="text-slate-400 hover:text-slate-600 text-lg"
+                className="text-slate-600 hover:text-slate-600 text-lg"
               >
                 ✕
               </button>
@@ -493,7 +493,7 @@ export function LogisticsView() {
               <button
                 type="button"
                 onClick={() => setEditingShipment(null)}
-                className="text-slate-400 hover:text-slate-600 text-lg"
+                className="text-slate-600 hover:text-slate-600 text-lg"
               >
                 ✕
               </button>

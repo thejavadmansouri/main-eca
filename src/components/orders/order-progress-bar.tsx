@@ -167,7 +167,7 @@ export function OrderProgressBar({
                   ? "bg-emerald-50/60 border-emerald-200 text-emerald-950"
                   : isCurrent
                   ? "bg-amber-50/70 border-amber-300 text-amber-950 shadow-xs ring-2 ring-amber-400/20"
-                  : "bg-slate-50/40 border-slate-200/70 text-slate-400"
+                  : "bg-slate-50/40 border-slate-200/70 text-slate-600"
               }`}
             >
               <div className="flex items-center justify-between mb-2">

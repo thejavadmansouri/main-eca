@@ -149,13 +149,13 @@ export function InquiryDetail(props: {
 
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs nums">
                 <div>
-                  <span className="text-slate-400 block text-[10px]">قیمت واحد:</span>
+                  <span className="text-slate-600 block text-[10px]">قیمت واحد:</span>
                   <span className="font-semibold text-slate-700">
                     {item.quotedUnitPrice ? `${formatToman(item.quotedUnitPrice)} ت` : "در انتظار قیمت"}
                   </span>
                 </div>
                 <div className="text-left">
-                  <span className="text-slate-400 block text-[10px]">جمع ردیف:</span>
+                  <span className="text-slate-600 block text-[10px]">جمع ردیف:</span>
                   <span className="font-extrabold text-sm text-slate-900">
                     {item.lineTotal ? `${formatToman(item.lineTotal)} تومان` : "—"}
                   </span>
@@ -202,14 +202,14 @@ export function InquiryDetail(props: {
                     {item.quotedUnitPrice ? (
                       formatToman(item.quotedUnitPrice)
                     ) : (
-                      <span className="text-slate-400 text-[11px]">در انتظار قیمت</span>
+                      <span className="text-slate-600 text-[11px]">در انتظار قیمت</span>
                     )}
                   </td>
                   <td className="py-3 px-3 text-end nums font-extrabold text-slate-900">
                     {item.lineTotal ? (
                       formatToman(item.lineTotal)
                     ) : (
-                      <span className="text-slate-400 font-normal">—</span>
+                      <span className="text-slate-600 font-normal">—</span>
                     )}
                   </td>
                 </tr>

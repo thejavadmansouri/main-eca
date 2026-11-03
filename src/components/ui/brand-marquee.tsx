@@ -14,15 +14,15 @@ interface BrandItem {
 
 const BRANDS: BrandItem[] = [
   { id: "isaco", name: "ایساکو", latin: "ISACO", category: "قطعات ایران‌خودرو", badge: "اصلی", color: "from-blue-600 to-indigo-700" },
-  { id: "saipa", name: "سایپا یدک", latin: "SAIPA YADAK", category: "قطعات سایپا و زامیاد", badge: "اصلی", color: "from-orange-500 to-amber-600" },
+  { id: "saipa", name: "سایپا یدک", latin: "SAIPA YADAK", category: "قطعات سایپا و زامیاد", badge: "اصلی", color: "from-orange-700 to-amber-700" },
   { id: "ezam", name: "گروه عظام", latin: "EZAM GROUP", category: "موتوری، تعلیق و گیربکس", badge: "استاندارد", color: "from-red-600 to-rose-700" },
-  { id: "serkan", name: "فیلتر سرکان", latin: "SERKAN", category: "انواع فیلتراسیون خودرو", badge: "تضمین اصالت", color: "from-emerald-600 to-teal-700" },
-  { id: "valeo", name: "والئو", latin: "VALEO", category: "دیسک، صفحه و کلاچ", badge: "فرانسه", color: "from-cyan-600 to-blue-700" },
+  { id: "serkan", name: "فیلتر سرکان", latin: "SERKAN", category: "انواع فیلتراسیون خودرو", badge: "تضمین اصالت", color: "from-emerald-700 to-teal-800" },
+  { id: "valeo", name: "والئو", latin: "VALEO", category: "دیسک، صفحه و کلاچ", badge: "فرانسه", color: "from-cyan-700 to-blue-800" },
   { id: "crouse", name: "صنایع کروز", latin: "CROUSE", category: "سیستم برقی و کنترل موتور", badge: "گرید A", color: "from-indigo-600 to-purple-700" },
-  { id: "dayco", name: "دایکو", latin: "DAYCO", category: "تسمه تایم و تسمه دینام", badge: "ایتالیا", color: "from-amber-600 to-orange-700" },
+  { id: "dayco", name: "دایکو", latin: "DAYCO", category: "تسمه تایم و تسمه دینام", badge: "ایتالیا", color: "from-amber-700 to-orange-800" },
   { id: "amata", name: "آماتا صمد", latin: "AMATA SAMAD", category: "جلوبندی و سیبک‌جات", badge: "صادراتی", color: "from-slate-700 to-slate-900" },
   { id: "dinapart", name: "دینا پارت", latin: "DINA PART", category: "قطعات یدکی شرکتی", badge: "گارانتی‌دار", color: "from-rose-600 to-red-700" },
-  { id: "parslent", name: "لنت پارس", latin: "PARS LENT", category: "لنت ترمز سرامیکی و متالیک", badge: "پرفروش", color: "from-teal-600 to-emerald-700" },
+  { id: "parslent", name: "لنت پارس", latin: "PARS LENT", category: "لنت ترمز سرامیکی و متالیک", badge: "پرفروش", color: "from-teal-700 to-emerald-800" },
 ];
 
 export function BrandMarquee({ onSelectBrand }: { onSelectBrand?: (brandName: string) => void }) {
@@ -63,7 +63,7 @@ export function BrandMarquee({ onSelectBrand }: { onSelectBrand?: (brandName: st
                     {b.badge}
                   </span>
                 </div>
-                <div className="text-[10px] text-slate-400 truncate mt-0.5">{b.latin}</div>
+                <div className="text-[10px] text-slate-600 truncate mt-0.5">{b.latin}</div>
               </div>
             </button>
           ))}

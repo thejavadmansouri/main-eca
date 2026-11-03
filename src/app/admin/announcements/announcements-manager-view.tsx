@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/icon";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -165,7 +166,8 @@ export function AnnouncementsManagerView({ initialItems }: { initialItems: Annou
       <div className="flex items-center justify-between gap-4 flex-wrap border-b border-slate-200 pb-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <span>📢 مدیریت اطلاعیه‌ها و نوار بالای صفحه (Ticker)</span>
+            <Icon name="bell" className="size-5 shrink-0 text-slate-600" />
+            <span>مدیریت اطلاعیه‌ها و نوار بالای صفحه (Ticker)</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             تنظیم متن‌های نوار متحرک بالای سایت، پیام‌های فوری، اطلاعیه‌های انبارداری کرمان و آفرها
@@ -183,9 +185,10 @@ export function AnnouncementsManagerView({ initialItems }: { initialItems: Annou
       <div className="rounded-2xl border border-slate-300/80 bg-slate-950 p-4 shadow-sm space-y-2">
         <div className="flex items-center justify-between text-xs text-slate-400 pb-1 border-b border-slate-800">
           <span className="font-bold flex items-center gap-1.5 text-amber-400">
-            <span>👁️ پیش‌نمایش زنده در نمای کاربر:</span>
+            <Icon name="eye" className="size-3.5" />
+            <span>پیش‌نمایش زنده در نمای کاربر:</span>
           </span>
-          <span className="text-[11px] text-slate-500">متن‌ها قابل انتخاب و هایلایت هستند</span>
+          <span className="text-[11px] text-slate-400">متن‌ها قابل انتخاب و هایلایت هستند</span>
         </div>
 
         <div className="w-full bg-slate-950 text-slate-100 text-xs py-2 px-2 overflow-x-auto select-text">
@@ -240,7 +243,8 @@ export function AnnouncementsManagerView({ initialItems }: { initialItems: Annou
       {/* فرم ایجاد اطلاعیه جدید */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
         <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">
-          <span>➕ افزودن اطلاعیه / خبر جدید به نوار بالا</span>
+          <Icon name="plus" className="size-4 text-slate-600" />
+          <span>افزودن اطلاعیه / خبر جدید به نوار بالا</span>
         </h2>
 
         <form onSubmit={handleCreate} className="space-y-4">
@@ -260,7 +264,7 @@ export function AnnouncementsManagerView({ initialItems }: { initialItems: Annou
                     {p}
                   </option>
                 ))}
-                <option value="custom">✏️ عنوان دلخواه...</option>
+                <option value="custom">عنوان دلخواه...</option>
               </select>
 
               {badge === "custom" && (
@@ -284,10 +288,10 @@ export function AnnouncementsManagerView({ initialItems }: { initialItems: Annou
                 onChange={(e) => setLevel(e.target.value as any)}
                 className="w-full h-10 px-3 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
               >
-                <option value="INFO">🔵 اطلاع‌رسانی و وضعیت انبار (آبی)</option>
-                <option value="SUCCESS">🟢 تخفیف، آفر ویژه و تسویه (سبز)</option>
-                <option value="WARNING">🟡 نوسان بازار و نرخ قیمت‌ها (نارنجی / زرد)</option>
-                <option value="URGENT">🔴 اطلاعیه فوری و مهم باربری (قرمز)</option>
+                <option value="INFO">�اطلاع‌رسانی و وضعیت انبار (آبی)</option>
+                <option value="SUCCESS">�تخفیف، آفر ویژه و تسویه (سبز)</option>
+                <option value="WARNING">�نوسان بازار و نرخ قیمت‌ها (نارنجی / زرد)</option>
+                <option value="URGENT">�اطلاعیه فوری و مهم باربری (قرمز)</option>
               </select>
             </div>
           </div>
@@ -365,7 +369,8 @@ export function AnnouncementsManagerView({ initialItems }: { initialItems: Annou
       {/* لیست اطلاعیه‌های موجود */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
         <h2 className="text-sm font-black text-slate-800 pb-2 border-b border-slate-100 flex items-center justify-between">
-          <span>📋 لیست پیام‌ها و اطلاعیه‌های ثبت‌شده</span>
+          <Icon name="list" className="size-4 text-slate-600" />
+            <span>لیست پیام‌ها و اطلاعیه‌های ثبت‌شده</span>
           <span className="text-xs font-normal text-slate-500">
             برای ویرایش یا تغییر وضعیت هر پیام از دکمه‌های روبرو استفاده کنید
           </span>
@@ -395,7 +400,7 @@ export function AnnouncementsManagerView({ initialItems }: { initialItems: Annou
                     {item.title}
                   </span>
 
-                  <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                  <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
                     مخاطب: {item.target === "ALL" ? "عمومی" : item.target === "CUSTOMER" ? "خریداران" : "مدیران"}
                   </span>
 
@@ -450,14 +455,14 @@ export function AnnouncementsManagerView({ initialItems }: { initialItems: Annou
                   className="text-xs px-2.5 py-1.5 rounded-lg font-bold text-rose-600 hover:bg-rose-50 transition"
                   title="حذف"
                 >
-                  🗑️
+                  <Icon name="trash" className="size-4" />
                 </button>
               </div>
             </div>
           ))}
 
           {items.length === 0 && (
-            <div className="py-8 text-center text-xs text-slate-400">
+            <div className="py-8 text-center text-xs text-slate-600">
               هنوز اطلاعیه‌ای ثبت نشده است. از فرم بالا اولین اطلاعیه را اضافه کنید.
             </div>
           )}
@@ -469,11 +474,11 @@ export function AnnouncementsManagerView({ initialItems }: { initialItems: Annou
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-black text-sm text-slate-900">✏️ ویرایش اطلاعیه</h3>
+              <h3 className="font-black text-sm text-slate-900 flex items-center gap-1.5"><Icon name="note" className="size-4 text-slate-600" />ویرایش اطلاعیه</h3>
               <button
                 type="button"
                 onClick={() => setEditingItem(null)}
-                className="text-slate-400 hover:text-slate-700 text-lg"
+                className="text-slate-600 hover:text-slate-700 text-lg"
               >
                 ✕
               </button>
@@ -501,10 +506,10 @@ export function AnnouncementsManagerView({ initialItems }: { initialItems: Annou
                   onChange={(e) => setEditingItem({ ...editingItem, level: e.target.value as any })}
                   className="w-full h-10 px-3 rounded-xl border border-slate-300 text-xs font-bold text-slate-900 focus:outline-none"
                 >
-                  <option value="INFO">🔵 اطلاع‌رسانی (آبی)</option>
-                  <option value="SUCCESS">🟢 تخفیف و آفر (سبز)</option>
-                  <option value="WARNING">🟡 نوسان بازار (نارنجی)</option>
-                  <option value="URGENT">🔴 فوری و مهم (قرمز)</option>
+                  <option value="INFO">�اطلاع‌رسانی (آبی)</option>
+                  <option value="SUCCESS">�تخفیف و آفر (سبز)</option>
+                  <option value="WARNING">�نوسان بازار (نارنجی)</option>
+                  <option value="URGENT">�فوری و مهم (قرمز)</option>
                 </select>
               </div>
 

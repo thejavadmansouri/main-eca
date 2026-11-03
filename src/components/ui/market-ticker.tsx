@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 
 export interface TickerItem {
@@ -10,6 +10,35 @@ export interface TickerItem {
   link?: string | null;
   trend?: "up" | "down" | "hot" | "info";
 }
+
+interface AnnouncementApiItem {
+  id: string;
+  title: string;
+  message: string;
+  level?: "INFO" | "SUCCESS" | "WARNING" | "URGENT";
+  link?: string | null;
+}
+
+const DISMISS_TTL = 12 * 60 * 60 * 1000;
+
+/** خواندن مقدار بستن نوار از localStorage با کش، تا snapshot پایدار بماند. */
+let cachedKey: string | null = null;
+let cachedClosedAt = 0;
+function readDismissedAt(key: string): number {
+  if (typeof window === "undefined") return 0;
+  if (cachedKey === key) return cachedClosedAt;
+  cachedKey = key;
+  const closedAt = Number(localStorage.getItem(key) || 0) || 0;
+  cachedClosedAt = closedAt && Date.now() - closedAt < DISMISS_TTL ? closedAt : 0;
+  return cachedClosedAt;
+}
+
+function subscribeDismissal(onChange: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("storage", onChange);
+  return () => window.removeEventListener("storage", onChange);
+}
+
 
 const DEFAULT_ITEMS: TickerItem[] = [
   {
@@ -40,17 +69,34 @@ const DEFAULT_ITEMS: TickerItem[] = [
   },
 ];
 
-export function MarketTicker() {
+type TickerTarget = "ALL" | "CUSTOMER" | "ADMIN";
+
+export function MarketTicker({ target = "ALL" }: { target?: TickerTarget }) {
   const [closed, setClosed] = useState(false);
   const [paused, setPaused] = useState(false);
   const [items, setItems] = useState<TickerItem[]>(DEFAULT_ITEMS);
 
+  // بستن نوار برای ۱۲ ساعت ماندگار می‌ماند تا با هر جابه‌جایی صفحه دوباره ظاهر نشود
+  const storageKey = `kardo_ticker_closed_at_${target}`;
+  const dismissedAt = useSyncExternalStore(
+    subscribeDismissal,
+    () => readDismissedAt(storageKey),
+    () => 0,
+  );
+
+  const handleClose = () => {
+    setClosed(true);
+    try {
+      localStorage.setItem(storageKey, String(Date.now()));
+    } catch {}
+  };
+
   useEffect(() => {
-    fetch("/api/announcements?target=ALL")
+    fetch(`/api/announcements?target=${target}`)
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: { ok?: boolean; items?: AnnouncementApiItem[] }) => {
         if (data.ok && Array.isArray(data.items) && data.items.length > 0) {
-          const mapped: TickerItem[] = data.items.map((it: any) => {
+          const mapped: TickerItem[] = data.items.map((it) => {
             let trend: "up" | "down" | "hot" | "info" = "info";
             if (it.level === "URGENT") trend = "hot";
             else if (it.level === "WARNING") trend = "up";
@@ -68,9 +114,11 @@ export function MarketTicker() {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [target]);
 
-  if (closed || items.length === 0) return null;
+  const recentlyDismissed = dismissedAt > 0;
+
+  if (closed || recentlyDismissed || items.length === 0) return null;
 
   return (
     <div
@@ -86,7 +134,7 @@ export function MarketTicker() {
           </span>
           <span className="font-black text-[11px] tracking-tight text-white whitespace-nowrap flex items-center gap-1.5">
             <span className="text-blue-400 font-black">نبض بازار</span>
-            <span className="text-slate-600 font-normal">|</span>
+            <span className="text-slate-400 font-normal">|</span>
           </span>
         </div>
 
@@ -117,8 +165,8 @@ export function MarketTicker() {
 
         {/* دکمه بستن */}
         <button
-          onClick={() => setClosed(true)}
-          className="text-slate-500 hover:text-slate-300 transition-colors shrink-0 z-10 pr-1 text-xs select-none"
+          onClick={handleClose}
+          className="text-slate-400 hover:text-white transition-colors shrink-0 z-10 pr-1 text-xs select-none"
           title="بستن نوار اعلان"
         >
           ✕

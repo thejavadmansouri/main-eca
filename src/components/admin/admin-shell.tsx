@@ -283,7 +283,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
                 onClick={() => setCollapsed(true)}
                 title="جمع کردن منو"
                 aria-label="جمع کردن منو"
-                className="size-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 grid place-items-center transition-colors"
+                className="size-7 rounded-lg text-slate-600 hover:text-slate-700 hover:bg-slate-100 grid place-items-center transition-colors"
               >
                 <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -312,7 +312,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
             {navGroups.map((group, gIdx) => (
               <div key={gIdx} className="space-y-1">
                 {!collapsed && (
-                  <div className="px-3 pb-1 text-[11px] font-bold text-slate-400 tracking-wider">
+                  <div className="px-3 pb-1 text-[11px] font-bold text-slate-600 tracking-wider">
                     {group.title}
                   </div>
                 )}
@@ -336,7 +336,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
 
                       <span
                         className={`transition-colors shrink-0 ${
-                          isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-700"
+                          isActive ? "text-blue-600" : "text-slate-600 group-hover:text-slate-700"
                         }`}
                       >
                         {item.icon}
@@ -369,7 +369,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
                   <div className="text-xs font-bold text-slate-900 truncate">
                     {admin.name ?? admin.username}
                   </div>
-                  <div className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+                  <div className="text-[11px] text-emerald-700 font-medium flex items-center gap-1">
                     <span className="size-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
                     {admin.role === "ACCOUNTANT" ? "حسابدار مالی" : "مدیر ارشد سامانه"}
                   </div>
@@ -415,7 +415,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
                 title="مشاهده نمای مشتریان"
               >
                 <span>مشاهده کاتالوگ فروشگاه</span>
-                <svg className="size-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="size-3.5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                 </svg>
               </Link>
@@ -455,7 +455,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
               </div>
               <button
                 onClick={() => setMobileOpen(false)}
-                className="size-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 grid place-items-center"
+                className="size-8 rounded-lg text-slate-600 hover:text-slate-700 hover:bg-slate-100 grid place-items-center"
               >
                 <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -467,7 +467,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
             <div className="flex-1 overflow-y-auto p-3 space-y-6">
               {navGroups.map((group, gIdx) => (
                 <div key={gIdx} className="space-y-1">
-                  <div className="px-3 pb-1 text-[11px] font-bold text-slate-400">
+                  <div className="px-3 pb-1 text-[11px] font-bold text-slate-600">
                     {group.title}
                   </div>
                   {group.items.map((item) => {
@@ -483,7 +483,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
                             : "text-slate-600 hover:bg-slate-100"
                         }`}
                       >
-                        <span className={isActive ? "text-blue-600" : "text-slate-400"}>
+                        <span className={isActive ? "text-blue-600" : "text-slate-600"}>
                           {item.icon}
                         </span>
                         <span className="flex-1 text-right">{item.label}</span>

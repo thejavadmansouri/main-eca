@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { formatToman, toFaDigits } from "@/lib/digits";
+import { Icon } from "@/components/ui/icon";
 
 export interface CustomerKpiProps {
   wallet: number;
@@ -38,7 +39,7 @@ export function CustomerKpiCards({
 
   if (isAdmin) {
     return (
-      <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 my-2.5 sm:my-4 animate-fadeIn">
+      <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 my-2 sm:my-3 animate-fadeIn">
         {/* ادمین کارت ۱: مدیریت قطعات */}
         <Link
           href="/admin/products"
@@ -48,7 +49,7 @@ export function CustomerKpiCards({
           <div className="flex items-center justify-between gap-1 mb-1">
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="size-5 sm:size-6 rounded-md bg-amber-400/15 text-amber-400 grid place-items-center text-xs font-bold shrink-0 border border-amber-400/25">
-                📦
+                <Icon name="box" className="size-3.5" />
               </span>
               <span className="text-[10px] sm:text-xs font-bold text-slate-300 truncate">
                 محصولات انبار
@@ -78,7 +79,7 @@ export function CustomerKpiCards({
           <div className="flex items-center justify-between gap-1 mb-1">
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="size-5 sm:size-6 rounded-md bg-blue-500/15 text-blue-300 grid place-items-center text-xs font-bold shrink-0 border border-blue-500/25">
-                ⚡
+                <Icon name="bolt" className="size-3.5" />
               </span>
               <span className="text-[10px] sm:text-xs font-bold text-blue-200 truncate">
                 سفارش‌های جدید
@@ -117,7 +118,7 @@ export function CustomerKpiCards({
           <div className="flex items-center justify-between gap-1 mb-1">
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="size-5 sm:size-6 rounded-md bg-amber-500/15 text-amber-300 grid place-items-center text-xs font-bold shrink-0 border border-amber-500/25">
-                🛡️
+                <Icon name="shield" className="size-3.5" />
               </span>
               <span className="text-[10px] sm:text-xs font-bold text-amber-200 truncate">
                 سطح دسترسی
@@ -147,7 +148,7 @@ export function CustomerKpiCards({
           <div className="flex items-center justify-between gap-1 mb-1">
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="size-5 sm:size-6 rounded-md bg-emerald-500/15 text-emerald-300 grid place-items-center text-xs font-bold shrink-0 border border-emerald-500/25">
-                🧾
+                <Icon name="receipt" className="size-3.5" />
               </span>
               <span className="text-[10px] sm:text-xs font-bold text-emerald-200 truncate">
                 چک‌های صیادی
@@ -182,7 +183,7 @@ export function CustomerKpiCards({
 
   // نمای مشتری همکار (B2B Customer)
   return (
-    <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 my-2.5 sm:my-4 animate-fadeIn">
+    <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 my-2 sm:my-3 animate-fadeIn">
       {/* کارت ۱: موجودی کیف پول و خرید اعتباری */}
       <Link
         href="/wallet"
@@ -192,7 +193,7 @@ export function CustomerKpiCards({
         <div className="flex items-center justify-between gap-1 mb-1">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="size-5 sm:size-6 rounded-md bg-amber-400/15 text-amber-400 grid place-items-center text-xs font-bold shrink-0 border border-amber-400/25">
-              💳
+              <Icon name="card" className="size-3.5" />
             </span>
             <span className="text-[10px] sm:text-xs font-bold text-slate-300 truncate">
               کیف پول و اعتبار
@@ -236,7 +237,7 @@ export function CustomerKpiCards({
         <div className="flex items-center justify-between gap-1 mb-1">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="size-5 sm:size-6 rounded-md bg-blue-500/15 text-blue-300 grid place-items-center text-xs font-bold shrink-0 border border-blue-500/25">
-              🚚
+              <Icon name="truck" className="size-3.5" />
             </span>
             <span className="text-[10px] sm:text-xs font-bold text-blue-200 truncate">
               سفارش‌های در جریان
@@ -277,7 +278,7 @@ export function CustomerKpiCards({
         <div className="flex items-center justify-between gap-1 mb-1">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="size-5 sm:size-6 rounded-md bg-amber-500/15 text-amber-300 grid place-items-center text-xs font-bold shrink-0 border border-amber-500/25">
-              👑
+              <Icon name="crown" className="size-3.5" />
             </span>
             <span className="text-[10px] sm:text-xs font-bold text-amber-200 truncate">
               تخفیف همکاری
@@ -318,7 +319,7 @@ export function CustomerKpiCards({
         <div className="flex items-center justify-between gap-1 mb-1">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="size-5 sm:size-6 rounded-md bg-emerald-500/15 text-emerald-300 grid place-items-center text-xs font-bold shrink-0 border border-emerald-500/25">
-              🧾
+              <Icon name="receipt" className="size-3.5" />
             </span>
             <span className="text-[10px] sm:text-xs font-bold text-emerald-200 truncate">
               چک‌های صیادی

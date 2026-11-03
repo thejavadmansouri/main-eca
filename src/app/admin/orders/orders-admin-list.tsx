@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatToman, toFaDigits } from "@/lib/digits";
+import { Icon } from "@/components/ui/icon";
 import { OrderDetailsModal } from "@/components/orders/order-details-modal";
 
 export type AdminOrder = {
@@ -81,7 +82,7 @@ export function OrdersAdminList({ orders }: { orders: AdminOrder[] }) {
                     title="مشاهده سریع اقلام فاکتور"
                   >
                     <span>{o.number}</span>
-                    <span className="text-xs text-amber-500 font-bold">🔍</span>
+                    <Icon name="search" className="size-3.5 text-amber-700" />
                   </button>
 
                   <span

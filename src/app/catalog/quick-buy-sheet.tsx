@@ -161,7 +161,7 @@ export function QuickBuySheet(props: {
           </div>
           <button
             onClick={props.onClose}
-            className="size-8 grid place-items-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 text-lg transition-colors shrink-0"
+            className="size-8 grid place-items-center rounded-full hover:bg-slate-100 text-slate-600 hover:text-slate-700 text-lg transition-colors shrink-0"
             aria-label="بستن"
           >
             ✕

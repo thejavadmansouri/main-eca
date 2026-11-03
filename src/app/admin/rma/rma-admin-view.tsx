@@ -174,7 +174,7 @@ export function RmaAdminView() {
       ) : error ? (
         <div className="p-4 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200">{error}</div>
       ) : rmas.length === 0 ? (
-        <div className="p-12 text-center text-slate-400 text-sm card bg-white">
+        <div className="p-12 text-center text-slate-600 text-sm card bg-white">
           هیچ درخواست مرجوعی یا گارانتی با این مشخصات یافت نشد.
         </div>
       ) : (
@@ -194,7 +194,7 @@ export function RmaAdminView() {
                       <span className="nums font-extrabold text-sm text-slate-900">{r.number}</span>
                       <span className="text-xs text-slate-500">فاکتور: {r.orderNumber}</span>
                       <span className="text-xs font-bold text-slate-700">({r.customerName})</span>
-                      <span className="text-xs text-slate-400 nums font-mono" dir="ltr">{r.customerPhone}</span>
+                      <span className="text-xs text-slate-600 nums font-mono" dir="ltr">{r.customerPhone}</span>
                     </div>
                     <p className="text-sm font-bold text-slate-900 mt-1">
                       {r.productName} <span className="font-mono text-xs font-normal text-slate-500 nums">({r.sku})</span>
@@ -229,7 +229,7 @@ export function RmaAdminView() {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
-                  <span className="text-slate-400 nums">
+                  <span className="text-slate-600 nums">
                     ثبت درخواست: {new Date(r.createdAt).toLocaleDateString("fa-IR")}
                     {r.resolvedAt && ` · تاریخ تسویه: ${new Date(r.resolvedAt).toLocaleDateString("fa-IR")}`}
                   </span>
@@ -312,7 +312,7 @@ export function RmaAdminView() {
               <button
                 type="button"
                 onClick={() => setActionRma(null)}
-                className="text-slate-400 hover:text-slate-600 text-lg"
+                className="text-slate-600 hover:text-slate-600 text-lg"
               >
                 ✕
               </button>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/icon";
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { toFaDigits } from "@/lib/digits";
@@ -52,13 +53,13 @@ export function AdminCustomersTable({
             placeholder="جستجو بر اساس نام فروشگاه، نام مسئول، شماره موبایل یا کد ملی..."
             className="w-full rounded-xl border border-stone-200 bg-white py-2 pr-9 pl-4 text-xs shadow-sm focus:border-amber-500 focus:outline-none"
           />
-          <span className="absolute right-3 top-2.5 text-stone-400 text-xs">
-            🔍
+          <span className="absolute right-3 top-2.5 text-stone-500">
+            <Icon name="search" className="size-4" />
           </span>
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute left-3 top-2.5 text-stone-400 hover:text-stone-700 text-xs"
+              className="absolute left-3 top-2.5 text-stone-500 hover:text-stone-700 text-xs"
             >
               ✕
             </button>
@@ -102,7 +103,7 @@ export function AdminCustomersTable({
       {/* جدول مشتریان با دسترسی به پرونده ۳۶۰ درجه */}
       <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
         {filtered.length === 0 ? (
-          <div className="p-8 text-center text-xs text-stone-400">
+          <div className="p-8 text-center text-xs text-stone-500">
             مشتری با این مشخصات یافت نشد.
           </div>
         ) : (
@@ -133,7 +134,7 @@ export function AdminCustomersTable({
                     <td className="py-3 px-4 font-mono text-stone-600" dir="ltr">
                       {toFaDigits(c.phone)}
                       {c.username && (
-                        <span className="block text-[11px] text-stone-400">
+                        <span className="block text-[11px] text-stone-500">
                           @{c.username}
                         </span>
                       )}
@@ -159,7 +160,8 @@ export function AdminCustomersTable({
                         href={`/admin/customers/${c.id}`}
                         className="inline-flex items-center gap-1 rounded-xl bg-stone-900 px-3 py-1.5 text-[11px] font-bold text-white shadow-xs transition hover:bg-stone-800"
                       >
-                        <span>🔍 پرونده ۳۶۰ و تحلیل سرچ</span>
+                        <Icon name="search" className="size-3.5" />
+            <span>پرونده ۳۶۰ و تحلیل سرچ</span>
                       </Link>
                     </td>
                   </tr>

@@ -144,7 +144,7 @@ export function RmaView() {
       ) : error ? (
         <div className="p-4 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200">{error}</div>
       ) : rmas.length === 0 ? (
-        <div className="p-12 text-center text-slate-400 text-sm card bg-white border border-slate-200 rounded-xl">
+        <div className="p-12 text-center text-slate-600 text-sm card bg-white border border-slate-200 rounded-xl">
           تاکنون هیچ درخواست مرجوعی یا خدمات گارانتی برای حساب شما ثبت نشده است.
         </div>
       ) : (
@@ -165,7 +165,7 @@ export function RmaView() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="nums font-extrabold text-sm text-slate-900">{r.number}</span>
-                      <span className="text-xs text-slate-400">|</span>
+                      <span className="text-xs text-slate-600">|</span>
                       <Link
                         href={`/orders/${r.orderId}`}
                         prefetch={false}
@@ -208,7 +208,7 @@ export function RmaView() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-slate-400 pt-1 nums">
+                <div className="flex items-center justify-between text-xs text-slate-600 pt-1 nums">
                   <span>تاریخ ثبت فرم: {new Date(r.createdAt).toLocaleDateString("fa-IR")}</span>
                   {r.status === "REFUNDED" && (
                     <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -233,7 +233,7 @@ export function RmaView() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg"
+                className="text-slate-600 hover:text-slate-900 text-lg"
               >
                 ✕
               </button>
@@ -242,7 +242,7 @@ export function RmaView() {
             {eligibleItems.length === 0 ? (
               <div className="p-6 text-center text-xs text-slate-500 space-y-2">
                 <p>شما در حال حاضر فاکتور تسویه‌شده‌ای برای مرجوعی قطعه ندارید.</p>
-                <p className="text-slate-400">
+                <p className="text-slate-600">
                   تنها اقلام سفارش‌های تسویه‌شده یا اعتباری تأییدشده امکان ثبت مرجوعی دارند.
                 </p>
               </div>
@@ -290,7 +290,7 @@ export function RmaView() {
                       onChange={(e) => setQty(Math.max(1, Number(e.target.value)))}
                       className="w-full input px-3 py-2 border rounded-lg nums font-bold text-center"
                     />
-                    <span className="text-[10px] text-slate-400 mt-0.5 block">
+                    <span className="text-[10px] text-slate-600 mt-0.5 block">
                       حداکثر مجاز: {selectedEligible ? toFaDigits(selectedEligible.qty) : 1} {selectedEligible?.unit}
                     </span>
                   </div>

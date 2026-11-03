@@ -24,7 +24,7 @@
   --paper: #f8fafc;              /* Slate 50 — پس‌زمینه یکدست و بسیار آرام کل صفحات */
   --paper-raised: #ffffff;       /* سفید خالص برای کارت‌ها، پنل‌ها و فرم‌ها */
   --ink: #0f172a;                /* Slate 900 — متن اصلی با خوانایی بالا بدون خستگی چشم */
-  --ink-soft: #64748b;           /* Slate 500 — متن ثانویه و توضیحات */
+  --ink-soft: #475569;           /* Slate 600 — متن ثانویه با کنتراست استاندارد ۴.۵:۱ */
   --rule: #e2e8f0;               /* Slate 200 — خطوط حاشیه بسیار ظریف و تمیز */
   --rule-strong: #cbd5e1;        /* Slate 300 */
 
@@ -131,34 +131,6 @@ body {
     box-shadow: none !important;
   }
 
-  .btn-ace-red {
-    background-color: var(--ace-red);
-    color: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 4px 14px -2px rgba(237, 37, 10, 0.35);
-    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .btn-ace-red:hover:not(:disabled) {
-    background-color: var(--ace-red-hover);
-    box-shadow: 0 6px 20px -2px rgba(237, 37, 10, 0.45);
-    transform: translateY(-1px);
-  }
-
-  .btn-ace-navy {
-    background-color: var(--ace-navy);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 4px 14px -2px rgba(11, 31, 58, 0.3);
-    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .btn-ace-navy:hover:not(:disabled) {
-    background-color: var(--ace-navy-hover);
-    box-shadow: 0 6px 20px -2px rgba(11, 31, 58, 0.4);
-    transform: translateY(-1px);
-  }
-
   .btn-primary,
   .btn-blue,
   .btn-brass {
@@ -237,6 +209,18 @@ body {
     letter-spacing: 0.02em;
     display: inline-block;
   }
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * حداقل خوانایی: هیچ متنی کوچک‌تر از ۱۲px رندر نمی‌شود.
+ * کلاس‌های اندازه‌ی دلخواه ریز در پروژه به این حداقل نگاشت می‌شوند.
+ * ───────────────────────────────────────────────────────────── */
+.text-\[9px\],
+.text-\[9\.5px\],
+.text-\[10px\],
+.text-\[10\.5px\],
+.text-\[11px\] {
+  font-size: 0.75rem; /* 12px */
 }
 
 /* چاپ فاکتور استاندارد اداری — بدون پس‌زمینه و حاشیه‌های زاید */

@@ -1,3 +1,4 @@
+import { Icon } from "@/components/ui/icon";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireCustomer } from "@/lib/server-account";
@@ -140,9 +141,9 @@ export default async function ShippingLabelPage({
 
           {/* علائم استاندارد حمل قطعات حساس */}
           <div className="pt-2 border-t border-slate-200 flex items-center justify-around text-[10px] text-slate-600 font-bold">
-            <span>☂️ دور از رطوبت</span>
-            <span>⬆️ جهت صحیح کارتن</span>
-            <span>⚠️ قطعات حساس خودرو</span>
+            <span className="inline-flex items-center gap-1"><Icon name="shield" className="size-3.5" />دور از رطوبت</span>
+            <span className="inline-flex items-center gap-1"><Icon name="arrowUp" className="size-3.5" />جهت صحیح کارتن</span>
+            <span className="inline-flex items-center gap-1"><Icon name="alert" className="size-3.5" />قطعات حساس خودرو</span>
           </div>
         </div>
       </div>

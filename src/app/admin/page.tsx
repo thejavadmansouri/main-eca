@@ -8,6 +8,7 @@ import { AdminCreateForm } from "@/app/admin/admin-create-form";
 import { AdminCustomersTable } from "@/app/admin/customers-table";
 import { toFaDigits } from "@/lib/digits";
 import Link from "next/link";
+import { Icon, type IconName } from "@/components/ui/icon";
 
 // این پنل برای همه‌ی بازدیدکننده‌ها شخصی است — رندر مسدودی، بدون پیش-ساخت
 export const instant = false;
@@ -79,23 +80,23 @@ export default async function AdminPage() {
           label="در انتظار بررسی"
           value={pending.length}
           tone={pending.length ? "brass" : undefined}
-          icon="⏳"
+          icon="clock"
         />
         <Stat
           label="همکاران فعال"
           value={actives.filter((a) => a.status === "ACTIVE").length}
-          icon="👥"
+          icon="users"
         />
         <Stat
           label="کل اسناد فاکتور"
           value={orderCount}
-          icon="📑"
+          icon="list"
         />
         <Stat
           label="اعتباری در انتظار"
           value={awaitingCredit}
           tone={awaitingCredit ? "alarm" : undefined}
-          icon="💳"
+          icon="card"
         />
       </div>
 
@@ -104,7 +105,7 @@ export default async function AdminPage() {
         <section className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-              <span>⚠️ مشتریان جدید در انتظار تأیید</span>
+              <Icon name="alert" className="size-4 text-amber-700 shrink-0" />`r`n              <span>مشتریان جدید در انتظار تأیید</span>
               <span className="rounded-full bg-amber-200 px-2 py-0.5 text-xs text-amber-900 font-bold">
                 {toFaDigits(pending.length)}
               </span>
@@ -151,21 +152,21 @@ export default async function AdminPage() {
         <div className="mt-4 flex flex-wrap gap-2 pt-2 border-t border-stone-200">
           <Link
             href="/admin/orders"
-            className="rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 shadow-xs hover:bg-stone-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 shadow-xs hover:bg-stone-50 transition-colors"
           >
-            📋 بررسی اسناد و باربری فاکتورها
+            <Icon name="list" className="size-3.5 text-slate-600" />`r`n            بررسی اسناد و باربری فاکتورها
           </Link>
           <Link
             href="/admin/wallet"
-            className="rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 shadow-xs hover:bg-stone-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 shadow-xs hover:bg-stone-50 transition-colors"
           >
-            💰 شارژ کیف پول و کنترل اعتبارات
+            <Icon name="wallet" className="size-3.5 text-slate-600" />`r`n            شارژ کیف پول و کنترل اعتبارات
           </Link>
           <Link
             href="/admin/products"
-            className="rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 shadow-xs hover:bg-stone-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 shadow-xs hover:bg-stone-50 transition-colors"
           >
-            📦 انبار و مدیریت قطعات یدکی
+            <Icon name="box" className="size-3.5 text-slate-600" />`r`n            انبار و مدیریت قطعات یدکی
           </Link>
         </div>
       </section>
@@ -182,13 +183,13 @@ function Stat({
   label: string;
   value: number;
   tone?: "brass" | "alarm";
-  icon?: string;
+  icon?: IconName;
 }) {
   return (
     <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs">
       <div className="flex items-center justify-between text-xs text-stone-500 font-medium">
         <span>{label}</span>
-        {icon && <span className="text-base">{icon}</span>}
+        {icon && <Icon name={icon} className="size-4 text-slate-500" />}
       </div>
       <p
         className={`nums text-2xl font-black mt-1 ${

@@ -239,10 +239,7 @@ function LoginForm() {
                       {busy ? (
                         "در حال ارسال…"
                       ) : (
-                        <>
-                          <span>دریافت کد تأیید</span>
-                          <span className="text-[11px] font-normal px-2 py-0.5 rounded-md bg-white/20">اینتر ↵</span>
-                        </>
+                        <span>دریافت کد تأیید</span>
                       )}
                     </button>
                   </form>
@@ -286,10 +283,7 @@ function LoginForm() {
                       {busy ? (
                         "در حال بررسی…"
                       ) : (
-                        <>
-                          <span>ورود به سامانه</span>
-                          <span className="text-[11px] font-normal px-2 py-0.5 rounded-md bg-white/20">اینتر ↵</span>
-                        </>
+                        <span>ورود به سامانه</span>
                       )}
                     </button>
                     <button
@@ -346,10 +340,7 @@ function LoginForm() {
                     {busy ? (
                       "در حال بررسی…"
                     ) : (
-                      <>
-                        <span>ورود به حساب</span>
-                        <span className="text-[11px] font-normal px-2 py-0.5 rounded-md bg-white/20">اینتر ↵</span>
-                      </>
+                      <span>ورود به حساب</span>
                     )}
                   </button>
                   <p className="text-[11px] text-slate-500 text-center font-medium">

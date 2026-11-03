@@ -35,51 +35,68 @@ export default async function DashboardPage() {
 
   if (!customer) {
     return (
-      <main className="min-h-dvh grid place-items-center px-4">
-        <div className="card p-6 text-center">
-          <p className="text-sm text-ink-soft">نشست نامعتبر — دوباره وارد شوید.</p>
-          <Link href="/login" className="btn btn-primary mt-4 px-5 py-2 text-sm">
-            ورود
+      <main className="min-h-dvh grid place-items-center bg-slate-50 px-4">
+        <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <p className="text-sm text-slate-600">نشست نامعتبر — دوباره وارد شوید.</p>
+          <Link
+            href="/login"
+            className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-blue-600 px-5 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+          >
+            ورود به سامانه
           </Link>
         </div>
       </main>
     );
   }
 
-  const statusMap: Record<string, { title: string; note: string; tone: string }> = {
+  const statusMap: Record<
+    string,
+    { title: string; note: string; tone: string; dot: string; label: string }
+  > = {
     PENDING: {
       title: "در انتظار تأیید ادمین",
       note: "حساب ساخته شده و در صف تأیید است. به‌محض تأیید، قیمت‌ها و موجودی فعال می‌شود — معمولاً کمتر از یک روز کاری.",
-      tone: "border-brass/40 bg-brass-soft/50 text-brass",
+      tone: "border-amber-200 bg-amber-50",
+      dot: "bg-amber-500",
+      label: "در انتظار",
     },
     ACTIVE: {
       title: "حساب فعال است",
       note: "کاتالوگ، قیمت‌های عمده و پیش‌فاکتور برای شما باز است.",
-      tone: "border-ledger-green/30 bg-ledger-green/5 text-ledger-green",
+      tone: "border-emerald-200 bg-emerald-50",
+      dot: "bg-emerald-500",
+      label: "فعال",
     },
     REJECTED: {
       title: "درخواست شما رد شد",
       note: "برای پیگیری با فروشگاه تماس بگیرید.",
-      tone: "border-alarm/30 bg-alarm-soft text-alarm",
+      tone: "border-rose-200 bg-rose-50",
+      dot: "bg-rose-500",
+      label: "رد شده",
     },
     BLOCKED: {
       title: "حساب مسدود شده",
       note: "دسترسی موقتاً بسته است. با فروشگاه تماس بگیرید.",
-      tone: "border-alarm/30 bg-alarm-soft text-alarm",
+      tone: "border-rose-200 bg-rose-50",
+      dot: "bg-rose-500",
+      label: "مسدود",
     },
   };
 
   const status = statusMap[customer.status] ?? statusMap.PENDING;
 
   return (
-    <main className="min-h-dvh flex flex-col">
-      <header className="border-b border-rule">
-        <div className="mx-auto w-full max-w-lg px-4 h-14 flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="size-7 grid place-items-center bg-ink text-paper text-sm font-bold rounded-[2px]">
+    <main className="min-h-dvh bg-slate-50">
+      <header className="border-b border-slate-200 bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex h-16 w-full max-w-2xl items-center gap-3 px-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="grid size-9 place-items-center rounded-xl bg-blue-600 text-sm font-extrabold text-white shadow-xs">
               ک
             </span>
-            <span className="font-bold tracking-tight text-sm">وضعیت حساب</span>
+            <span className="flex flex-col leading-tight">
+              <span className="text-sm font-extrabold text-slate-900">وضعیت حساب همکار</span>
+              <span className="text-[11px] text-slate-500">کاردو B2B</span>
+            </span>
           </Link>
           <div className="ms-auto">
             <LogoutButton />
@@ -87,44 +104,61 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-lg px-4 py-6">
-        <p className="label">حساب</p>
-        <h1 className="text-lg font-bold tracking-tight mt-1">{customer.companyName}</h1>
-        <p className="text-xs text-ink-soft mt-1">
-          {customer.contactName} · <span dir="ltr">{toFaDigits(customer.phone)}</span>
-        </p>
-
-        <section className={`mt-4 card border p-4 ${status.tone}`}>
-          <h2 className="font-bold text-sm">{status.title}</h2>
-          <p className="text-xs leading-6 mt-1">{status.note}</p>
-        </section>
-
-        <dl className="mt-4 grid grid-cols-2 gap-3">
-          <div className="card p-4">
-            <dt className="label">طبقه مشتری</dt>
-            <dd className="font-bold mt-1">{customer.tier?.name ?? "—"}</dd>
+      <div className="mx-auto w-full max-w-2xl px-4 py-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-blue-600 text-lg font-extrabold text-white shadow-xs">
+              {customer.companyName.charAt(0) || "ک"}
+            </span>
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium text-slate-500">حساب تجاری</p>
+              <h1 className="mt-0.5 truncate text-lg font-extrabold tracking-tight text-slate-900">
+                {customer.companyName}
+              </h1>
+              <p className="mt-1 text-xs text-slate-600">
+                {customer.contactName} ·{" "}
+                <span dir="ltr" className="nums font-mono text-slate-500">
+                  {toFaDigits(customer.phone ?? "")}
+                </span>
+              </p>
+            </div>
           </div>
-          <div className="card p-4">
-            <dt className="label">وضعیت</dt>
-            <dd className="font-bold mt-1">
-              {customer.status === "ACTIVE"
-                ? "فعال"
-                : customer.status === "PENDING"
-                  ? "در انتظار"
-                  : customer.status === "BLOCKED"
-                    ? "مسدود"
-                    : "رد شده"}
-            </dd>
+
+          <div className={`mt-5 flex items-start gap-3 rounded-xl border p-4 ${status.tone}`}>
+            <span className={`mt-1.5 size-2.5 shrink-0 rounded-full ${status.dot}`} />
+            <div>
+              <h2 className="text-sm font-bold text-slate-900">{status.title}</h2>
+              <p className="mt-1 text-xs leading-6 text-slate-600">{status.note}</p>
+            </div>
           </div>
-        </dl>
 
-        {customer.status === "ACTIVE" && (
-          <Link href="/catalog" className="btn btn-primary w-full mt-4 py-3">
-            ورود به کاتالوگ قطعات
-          </Link>
-        )}
+          <dl className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <dt className="text-[11px] font-medium text-slate-500">طبقه همکاری</dt>
+              <dd className="mt-1 text-sm font-bold text-slate-900">
+                {customer.tier?.name ?? "—"}
+              </dd>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <dt className="text-[11px] font-medium text-slate-500">وضعیت حساب</dt>
+              <dd className="mt-1 flex items-center gap-1.5 text-sm font-bold text-slate-900">
+                <span className={`size-2 rounded-full ${status.dot}`} />
+                {status.label}
+              </dd>
+            </div>
+          </dl>
 
-        <p className="mt-4 text-[11px] text-ink-soft text-center leading-5">
+          {customer.status === "ACTIVE" && (
+            <Link
+              href="/catalog"
+              className="mt-4 flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-xs transition-colors hover:bg-blue-700 active:scale-[0.99]"
+            >
+              ورود به کاتالوگ قطعات
+            </Link>
+          )}
+        </div>
+
+        <p className="mt-4 text-center text-xs leading-6 text-slate-500">
           سؤال دارید؟ با فروشگاه کاردو در کرمان تماس بگیرید.
         </p>
       </div>

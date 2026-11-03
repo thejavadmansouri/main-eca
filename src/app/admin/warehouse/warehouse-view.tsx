@@ -121,7 +121,7 @@ export function WarehouseView() {
       ) : error ? (
         <div className="p-4 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200">{error}</div>
       ) : pickList.length === 0 ? (
-        <div className="p-12 text-center text-slate-400 text-sm card bg-white">
+        <div className="p-12 text-center text-slate-600 text-sm card bg-white">
           در حال حاضر سفارشی در نوبت جمع‌آوری انبار وجود ندارد. تمامی سفارش‌ها تحویل باربری شده‌اند.
         </div>
       ) : (

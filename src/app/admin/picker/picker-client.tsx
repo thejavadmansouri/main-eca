@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/icon";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { toFaDigits } from "@/lib/digits";
@@ -115,7 +116,7 @@ export function PickerClient() {
       setTimeout(() => setScanFeedback(null), 3500);
       setBarcodeQuery("");
     } else {
-      setScanFeedback(`❌ بارکد «${barcodeQuery}» در اقلام این سفارش وجود ندارد!`);
+      setScanFeedback(`بارکد «${barcodeQuery}» در اقلام این سفارش وجود ندارد!`);
       setTimeout(() => setScanFeedback(null), 4000);
     }
   };
@@ -148,7 +149,7 @@ export function PickerClient() {
         return;
       }
 
-      alert(`✅ بسته سفارش آماده گردید و با شماره بیجک ${data.waybillNumber} تحویل باربری ثبت شد. پیامک اطلاع‌رسانی برای خریدار ارسال گردید.`);
+      alert(`بسته سفارش آماده گردید و با شماره بیجک ${data.waybillNumber} تحویل باربری ثبت شد. پیامک اطلاع‌رسانی برای خریدار ارسال گردید.`);
       setCustomBijak("");
       // بارگذاری مجدد سفارش‌ها
       await loadOrders();
@@ -166,7 +167,7 @@ export function PickerClient() {
       <header className="flex items-center justify-between gap-4 border-b border-slate-800 pb-4 flex-wrap">
         <div className="flex items-center gap-3">
           <span className="size-11 rounded-2xl bg-amber-500 text-slate-950 font-black text-xl grid place-items-center shadow-lg shadow-amber-500/20">
-            📦
+            <Icon name="box" className="size-4" />
           </span>
           <div>
             <div className="flex items-center gap-2">
@@ -177,7 +178,7 @@ export function PickerClient() {
                 {warehouseName}
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-600 mt-0.5">
               ترتیب بهینه قفسه‌ها، اسکن با بارکدخوان فیزیکی و تأیید بارگیری باربری‌های استان کرمان
             </p>
           </div>
@@ -188,7 +189,7 @@ export function PickerClient() {
             onClick={loadOrders}
             className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
           >
-            🔄 بازخوانی صف
+            <span className="inline-flex items-center gap-1.5"><Icon name="refresh" className="size-4" />بازخوانی صف</span>
           </button>
           <Link
             href="/admin"
@@ -209,7 +210,7 @@ export function PickerClient() {
       {pickLists.length > 0 ? (
         <div className="space-y-5">
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            <span className="text-xs text-slate-400 font-bold shrink-0">صف سفارش‌ها:</span>
+            <span className="text-xs text-slate-600 font-bold shrink-0">صف سفارش‌ها:</span>
             {pickLists.map((order, idx) => (
               <button
                 key={order.orderId}
@@ -235,17 +236,17 @@ export function PickerClient() {
               <div className="p-4 sm:p-5 rounded-2xl bg-slate-800/90 border border-slate-700/80 shadow-lg space-y-3">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
-                    <span className="text-xs text-slate-400 block font-medium">سفارش در دست جمع‌آوری:</span>
+                    <span className="text-xs text-slate-600 block font-medium">سفارش در دست جمع‌آوری:</span>
                     <span className="text-lg sm:text-xl font-black text-white">
                       {currentOrder.customerName} · مقصد: {currentOrder.customerCity}
                     </span>
-                    <span className="text-xs text-slate-400 block mt-0.5">
+                    <span className="text-xs text-slate-600 block mt-0.5">
                       ارسال با: <b className="text-amber-400">{currentOrder.carrierName}</b> · شماره سفارش: <span className="font-mono text-slate-300">{currentOrder.orderNumber}</span>
                     </span>
                   </div>
 
                   <div className="text-left bg-slate-900/90 border border-slate-700 p-3 rounded-xl nums">
-                    <span className="text-xs text-slate-400 block">پیشرفت جمع‌آوری</span>
+                    <span className="text-xs text-slate-600 block">پیشرفت جمع‌آوری</span>
                     <span className="text-xl font-black text-amber-400">
                       {toFaDigits(pickedCount)} از {toFaDigits(totalItemsCount)} قلم
                     </span>
@@ -266,14 +267,14 @@ export function PickerClient() {
                 onSubmit={handleBarcodeSubmit}
                 className="p-3.5 bg-slate-800/60 border border-slate-700 rounded-2xl flex items-center gap-3"
               >
-                <span className="text-xl shrink-0">📟</span>
+                <Icon name="list" className="size-5 shrink-0" />
                 <input
                   ref={barcodeInputRef}
                   type="text"
                   dir="ltr"
                   value={barcodeQuery}
                   onChange={(e) => setBarcodeQuery(e.target.value)}
-                  placeholder="بارکد یا کد فنی را اسکن یا تایپ کنید (اینتر ↵)"
+                  placeholder="بارکد یا کد فنی را اسکن یا تایپ کنید"
                   className="flex-1 bg-slate-900 border border-slate-600 rounded-xl px-4 h-12 text-white font-mono text-base focus:border-amber-500 outline-none"
                   autoFocus
                 />
@@ -299,7 +300,7 @@ export function PickerClient() {
 
               {/* لیست اقلام سفارش با فونت درشت و تفکیک راهروهای انبار */}
               <div className="space-y-3">
-                <span className="text-xs font-black text-slate-400 block px-1">
+                <span className="text-xs font-black text-slate-600 block px-1">
                   اقلام برگه جمع‌آوری (مرتب‌شده بر مبنای راهرو و قفسه انبار):
                 </span>
 
@@ -334,7 +335,7 @@ export function PickerClient() {
                               <span className="nums font-mono font-black text-xs sm:text-sm bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-lg">
                                 لوکیشن: {item.shelfLocation}
                               </span>
-                              <span className="font-mono text-xs text-slate-400 nums">
+                              <span className="font-mono text-xs text-slate-600 nums">
                                 SKU: {item.sku}
                               </span>
                             </div>
@@ -342,7 +343,7 @@ export function PickerClient() {
                             <p className="font-black text-sm sm:text-base leading-snug truncate">
                               {item.name}
                             </p>
-                            <p className="text-xs text-slate-400 mt-0.5">
+                            <p className="text-xs text-slate-600 mt-0.5">
                               {item.brand} {item.model ? `· ${item.model}` : ""} {item.partBrand ? `(${item.partBrand})` : ""}
                             </p>
                           </div>
@@ -350,7 +351,7 @@ export function PickerClient() {
 
                         {/* تعداد درشت */}
                         <div className="text-left shrink-0 bg-slate-900/90 border border-slate-700/80 px-4 py-2 rounded-xl nums">
-                          <span className="text-[10px] text-slate-400 block font-medium">تعداد کالا</span>
+                          <span className="text-[10px] text-slate-600 block font-medium">تعداد کالا</span>
                           <span className="text-xl sm:text-2xl font-black text-amber-400">
                             {toFaDigits(item.qty)}
                           </span>
@@ -385,7 +386,7 @@ export function PickerClient() {
                     className={`btn text-sm px-6 py-3.5 rounded-xl font-black shadow-lg transition-all shrink-0 ${
                       isAllPicked
                         ? "btn-emerald scale-102"
-                        : "bg-slate-700 text-slate-400 cursor-not-allowed opacity-60"
+                        : "bg-slate-700 text-slate-300 cursor-not-allowed opacity-60"
                     }`}
                   >
                     {completing
@@ -401,9 +402,9 @@ export function PickerClient() {
         </div>
       ) : (
         <div className="p-16 text-center rounded-2xl bg-slate-800/40 border border-slate-800 space-y-3">
-          <span className="text-4xl block">✨</span>
+          <Icon name="party" className="size-9 mx-auto text-emerald-600" />
           <h2 className="text-lg font-black text-white">صف جمع‌آوری انبار خالی است</h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-600">
             کلیه سفارش‌های پرداخت‌شده جمع‌آوری و به باربری‌های استان تحویل داده شده‌اند.
           </p>
         </div>

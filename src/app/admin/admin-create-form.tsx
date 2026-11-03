@@ -118,7 +118,7 @@ export function AdminCreateForm({
             setMsg(null);
             setError(null);
           }}
-          className="text-stone-400 hover:text-stone-700 text-sm"
+          className="text-stone-500 hover:text-stone-700 text-sm"
         >
           ✕
         </button>

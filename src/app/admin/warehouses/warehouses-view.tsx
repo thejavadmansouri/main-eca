@@ -381,7 +381,7 @@ export function WarehousesView() {
           {stocksLoading ? (
             <div className="p-8 text-center text-slate-500 text-sm">در حال بارگذاری اقلام قفسه‌های انبار...</div>
           ) : stocks.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 text-sm card bg-white">
+            <div className="p-12 text-center text-slate-600 text-sm card bg-white">
               هیچ قطعه‌ای در این انبار ثبت نشده است.
             </div>
           ) : (
@@ -479,7 +479,7 @@ export function WarehousesView() {
           {transfersLoading ? (
             <div className="p-8 text-center text-slate-500 text-sm">در حال بارگذاری حواله‌های انتقال...</div>
           ) : transfers.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 text-sm card bg-white">
+            <div className="p-12 text-center text-slate-600 text-sm card bg-white">
               تاکنون حواله جابجایی بین انبارها صادر نشده است.
             </div>
           ) : (
@@ -496,7 +496,7 @@ export function WarehousesView() {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="nums font-extrabold text-sm text-slate-900">{t.number}</span>
-                          <span className="text-xs text-slate-400">|</span>
+                          <span className="text-xs text-slate-600">|</span>
                           <span className="text-xs text-slate-700 font-bold">
                             از {t.fromWarehouse.name} به {t.toWarehouse.name}
                           </span>
@@ -525,7 +525,7 @@ export function WarehousesView() {
                     </div>
 
                     <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
-                      <span className="text-slate-400 nums">
+                      <span className="text-slate-600 nums">
                         صدور: {new Date(t.createdAt).toLocaleDateString("fa-IR")}
                         {t.dispatchedAt && ` · خروج از مبدأ: ${new Date(t.dispatchedAt).toLocaleDateString("fa-IR")}`}
                         {t.receivedAt && ` · وصول به مقصد: ${new Date(t.receivedAt).toLocaleDateString("fa-IR")}`}
@@ -571,7 +571,7 @@ export function WarehousesView() {
               <button
                 type="button"
                 onClick={() => setEditingStock(null)}
-                className="text-slate-400 hover:text-slate-600 text-lg"
+                className="text-slate-600 hover:text-slate-600 text-lg"
               >
                 ✕
               </button>
@@ -635,7 +635,7 @@ export function WarehousesView() {
               <button
                 type="button"
                 onClick={() => setShowNewTransferModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg"
+                className="text-slate-600 hover:text-slate-600 text-lg"
               >
                 ✕
               </button>

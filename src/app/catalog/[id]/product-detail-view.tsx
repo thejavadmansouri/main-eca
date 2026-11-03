@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatToman, toFaDigits } from "@/lib/digits";
+import { Icon } from "@/components/ui/icon";
+import { CustomerKpiCards } from "@/components/customer/customer-kpi-cards";
 
 interface VolumeStep {
   qtyFrom: number;
@@ -70,6 +72,12 @@ interface ProductDetailViewProps {
   canOrder: boolean;
   wallet: number;
   availableCredit: number;
+  creditLimit?: number;
+  tierName?: string | null;
+  tierDiscount?: number;
+  customerDiscount?: number;
+  inTransitCount?: number;
+  activeChequesCount?: number;
   shippingMethods: ShippingMethodItem[];
   relatedProducts: RelatedProduct[];
 }
@@ -80,6 +88,12 @@ export function ProductDetailView({
   canOrder,
   wallet,
   availableCredit,
+  creditLimit = 0,
+  tierName,
+  tierDiscount = 0,
+  customerDiscount = 0,
+  inTransitCount = 0,
+  activeChequesCount = 0,
   shippingMethods,
   relatedProducts,
 }: ProductDetailViewProps) {
@@ -222,18 +236,35 @@ export function ProductDetailView({
   };
 
   return (
-    <div className="space-y-8 pb-16">
+    <div className="space-y-4 sm:space-y-6 pb-36 lg:pb-16">
+      {/* چهار کارت شاخص همکار (کیف پول و اعتبار، سفارش‌های در جریان، تخفیف همکاری و چک‌های صیادی) به‌صورت یک ردیف افقی در بالای صفحه کالا */}
+      {(canOrder || isAdmin) && (
+        <div className="w-full">
+          <CustomerKpiCards
+            wallet={wallet}
+            availableCredit={availableCredit}
+            creditLimit={creditLimit}
+            tierName={tierName}
+            tierDiscount={tierDiscount}
+            customerDiscount={customerDiscount}
+            inTransitCount={inTransitCount}
+            activeChequesCount={activeChequesCount}
+            isAdmin={isAdmin}
+          />
+        </div>
+      )}
+
       {/* ردیف ناوبری و بازگشت */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/90 pb-4">
         <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
           <Link href="/catalog" className="text-blue-600 hover:underline font-bold flex items-center gap-1">
             <span>← بازگشت به کاتالوگ</span>
           </Link>
-          <span className="text-slate-300">/</span>
+          <span className="text-slate-600">/</span>
           <span>{product.brand}</span>
-          <span className="text-slate-300">/</span>
+          <span className="text-slate-600">/</span>
           <span>{product.category}</span>
-          <span className="text-slate-300">/</span>
+          <span className="text-slate-600">/</span>
           <span className="font-bold text-slate-800 truncate max-w-[200px] sm:max-w-xs">{product.name}</span>
         </div>
 
@@ -242,7 +273,10 @@ export function ProductDetailView({
             onClick={() => setIsEditOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition active:scale-95"
           >
-            <span>📷 ویرایش تصویر و مشخصات قطعه</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="camera" className="size-4" />
+              ویرایش تصویر و مشخصات قطعه
+            </span>
           </button>
         )}
       </div>
@@ -260,12 +294,12 @@ export function ProductDetailView({
               />
             ) : (
               <div className="flex flex-col items-center justify-center text-center p-6 space-y-3">
-                <div className="size-24 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 text-4xl shadow-inner">
-                  ⚙️
+                <div className="size-24 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 flex items-center justify-center shadow-inner">
+                  <Icon name="gear" className="size-10 text-slate-400" />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-500">تصویر رسمی قطعه‌ساز</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">انبار مرکزی کاردو دیار کریمان</p>
+                  <p className="text-[11px] text-slate-600 mt-0.5">انبار مرکزی کاردو دیار کریمان</p>
                 </div>
               </div>
             )}
@@ -278,8 +312,8 @@ export function ProductDetailView({
                 </span>
               )}
               {product.stockQty > 15 && (
-                <span className="rounded-xl bg-rose-500/90 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-white shadow-md flex items-center gap-1">
-                  <span>🔥</span>
+                <span className="rounded-xl bg-rose-700/95 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-white shadow-md flex items-center gap-1">
+                  <Icon name="flame" className="size-3.5" />
                   <span>پرفروش هفته کرمان</span>
                 </span>
               )}
@@ -300,15 +334,15 @@ export function ProductDetailView({
           {/* مزایای خرید این قطعه از کاردو */}
           <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2.5 text-xs text-slate-600">
             <div className="flex items-center gap-2">
-              <span className="text-base text-blue-600">🚚</span>
+              <Icon name="truck" className="size-4 shrink-0 text-blue-700" />
               <span>تحویل همان‌روز به کلیه باربری‌های کرمان (شمس‌العماره، وطن، پیشتاز، پیام)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-base text-emerald-600">🛡️</span>
+              <Icon name="shield" className="size-4 shrink-0 text-emerald-700" />
               <span>تضمین اصالت فیزیکی قطعه و مهلت مرجوعی ۴۸ ساعته کاردو</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-base text-amber-600">💳</span>
+              <Icon name="card" className="size-4 shrink-0 text-amber-700" />
               <span>امکان تسویه از سقف اعتبار باز یا پرداخت چکی ۳۰ روزه همکاران</span>
             </div>
           </div>
@@ -357,8 +391,8 @@ export function ProductDetailView({
           {/* اگر کاربر لاگین نکرده باشد یا حساب فعال نباشد */}
           {!canOrder ? (
             <div className="rounded-3xl border border-amber-200/90 bg-gradient-to-br from-amber-50/70 to-orange-50/40 p-6 text-center space-y-4 shadow-xs">
-              <div className="size-14 rounded-2xl bg-amber-100 text-amber-800 text-2xl font-black mx-auto flex items-center justify-center shadow-inner">
-                🔒
+              <div className="size-14 rounded-2xl bg-amber-100 text-amber-800 mx-auto flex items-center justify-center shadow-inner">
+                <Icon name="lock" className="size-6" />
               </div>
               <div className="space-y-1">
                 <h3 className="font-black text-base text-slate-900">
@@ -384,8 +418,8 @@ export function ProductDetailView({
               <div className="rounded-3xl border border-blue-200/90 bg-gradient-to-br from-blue-50/50 via-white to-slate-50/50 p-5 shadow-xs space-y-4">
                 <div className="flex flex-wrap items-baseline justify-between gap-3">
                   <div>
-                    <span className="text-xs text-slate-400 block mb-0.5">قیمت مصوب مصرف‌کننده:</span>
-                    <span className="text-sm text-slate-400 line-through nums font-bold font-mono">
+                    <span className="text-xs text-slate-600 block mb-0.5">قیمت مصوب مصرف‌کننده:</span>
+                    <span className="text-sm text-slate-600 line-through nums font-bold font-mono">
                       {formatToman(product.basePrice)} تومان
                     </span>
                   </div>
@@ -408,7 +442,7 @@ export function ProductDetailView({
                       سود همکار در هر عدد: <strong className="text-emerald-700 font-mono">{formatToman(product.basePrice - effectiveUnitPrice)} تومان</strong>
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-400">واحد فروش: هر {product.unit}</span>
+                  <span className="text-[11px] text-slate-600">واحد فروش: هر {product.unit}</span>
                 </div>
               </div>
 
@@ -417,7 +451,7 @@ export function ProductDetailView({
                 <div className="rounded-2xl border border-amber-200/90 bg-amber-50/40 p-4 space-y-2.5">
                   <div className="flex items-center justify-between text-xs font-bold text-amber-950">
                     <span className="flex items-center gap-1.5">
-                      <span>⚡</span>
+                      <Icon name="bolt" className="size-3.5" />
                       <span>تخفیف‌های پلکانی تیراژ (خرید عمده‌تر = قیمت ارزان‌تر)</span>
                     </span>
                     <span className="text-[11px] font-normal text-amber-800">کلیک روی هر ردیف برای تنظیم تعداد</span>
@@ -504,8 +538,9 @@ export function ProductDetailView({
                 </div>
 
                 {partnerSavings > 0 && (
-                  <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-2 text-center text-xs text-emerald-800 font-bold">
-                    🎉 شما در این سفارش مبلغ {formatToman(partnerSavings)} تومان سود همکار کسب می‌کنید.
+                  <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-2 text-center text-xs text-emerald-800 font-bold flex items-center justify-center gap-1.5">
+                    <Icon name="party" className="size-4 shrink-0" />
+                    <span>شما در این سفارش مبلغ {formatToman(partnerSavings)} تومان سود همکار کسب می‌کنید.</span>
                   </div>
                 )}
 
@@ -532,7 +567,16 @@ export function ProductDetailView({
                     disabled={orderBusy || product.stockQty <= 0}
                     className="h-12 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-40"
                   >
-                    <span>{orderBusy ? "در حال صدور پیش‌فاکتور..." : "⚡ صدور فوری پیش‌فاکتور"}</span>
+                    <span>
+                      {orderBusy ? (
+                        "در حال صدور پیش‌فاکتور..."
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5">
+                          <Icon name="bolt" className="size-4" />
+                          صدور فوری پیش‌فاکتور
+                        </span>
+                      )}
+                    </span>
                   </button>
 
                   <button
@@ -541,7 +585,10 @@ export function ProductDetailView({
                     disabled={product.stockQty <= 0}
                     className="h-12 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm shadow-xs transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-40"
                   >
-                    <span>🛒 افزودن به سبد و ادامه</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Icon name="cart" className="size-4" />
+                      افزودن به سبد و ادامه
+                    </span>
                   </button>
                 </div>
               </div>
@@ -553,7 +600,8 @@ export function ProductDetailView({
       {/* جدول مشخصات فنی کامل (Technical Specifications Table) */}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
         <h3 className="text-base font-black text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-          <span>📋 مشخصات فنی و استانداردهای قطعه</span>
+          <Icon name="list" className="size-4 text-slate-500" />
+          <span>مشخصات فنی و استانداردهای قطعه</span>
         </h3>
 
         <div className="overflow-x-auto">
@@ -611,7 +659,8 @@ export function ProductDetailView({
       {/* بخش توضیحات و نکات نصب */}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-3">
         <h3 className="text-base font-black text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-          <span>📖 توضیحات و نکات فنی نصب</span>
+          <Icon name="book" className="size-4 text-slate-500" />
+          <span>توضیحات و نکات فنی نصب</span>
         </h3>
         <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
           {product.description ||
@@ -646,11 +695,11 @@ export function ProductDetailView({
                       className="max-h-full max-w-full object-contain group-hover:scale-105 transition"
                     />
                   ) : (
-                    <span className="text-2xl text-slate-300">📦</span>
+                    <Icon name="box" className="size-9 text-slate-400" />
                   )}
                 </div>
                 <div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mb-1">
+                  <div className="flex items-center justify-between text-[11px] text-slate-600 font-mono mb-1">
                     <span>{rel.sku}</span>
                     <span className="text-blue-700 font-sans font-bold">{rel.partBrand || rel.brand}</span>
                   </div>
@@ -682,7 +731,7 @@ export function ProductDetailView({
               </h3>
               <button
                 onClick={() => setIsEditOpen(false)}
-                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                className="rounded-full p-1 text-slate-600 hover:bg-slate-100 hover:text-slate-700"
               >
                 ✕
               </button>
@@ -708,7 +757,7 @@ export function ProductDetailView({
                     placeholder="https://... یا /images/parts/..."
                     className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono focus:border-amber-500 focus:outline-none"
                   />
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <p className="text-[11px] text-slate-600 mt-1">
                     می‌توانید لینک مستقیم تصویر محصول را از هاست یا اینترنت در این قسمت قرار دهید.
                   </p>
                 </div>
@@ -811,6 +860,37 @@ export function ProductDetailView({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* نوار خرید چسبیده در موبایل — قیمت و اقدام اصلی همیشه در دسترس */}
+      {canOrder && product.stockQty > 0 && (
+        <div className="lg:hidden fixed inset-x-0 bottom-[calc(3.5rem+max(env(safe-area-inset-bottom),0.35rem))] z-40 border-t border-slate-200 bg-white/95 px-3 py-2 shadow-[0_-4px_16px_rgba(15,23,42,0.08)] backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1 leading-tight">
+              <span className="block text-[10px] text-slate-500">
+                مبلغ کل ({toFaDigits(qty)} {product.unit})
+              </span>
+              <span className="nums font-black text-base text-slate-900 whitespace-nowrap">
+                {formatToman(totalPrice)} <span className="text-[10px] font-normal text-slate-500">تومان</span>
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleDirectOrder}
+              disabled={orderBusy}
+              className="h-11 shrink-0 rounded-xl bg-amber-500 hover:bg-amber-400 px-4 text-xs font-black text-slate-950 shadow-sm transition active:scale-98 disabled:opacity-50"
+            >
+              {orderBusy ? (
+                "در حال صدور..."
+              ) : (
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="bolt" className="size-3.5" />
+                  صدور پیش‌فاکتور
+                </span>
+              )}
+            </button>
           </div>
         </div>
       )}

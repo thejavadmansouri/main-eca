@@ -55,7 +55,7 @@ export default async function WalletPage() {
               </div>
               <div>
                 <span className="text-slate-500 block mb-0.5">اعتبار آزاد برای خرید</span>
-                <p className="nums font-bold text-emerald-600 text-sm">
+                <p className="nums font-bold text-emerald-700 text-sm">
                   {formatToman(acc.availableCredit)} ت
                 </p>
               </div>
@@ -96,13 +96,13 @@ export default async function WalletPage() {
                           {WALLET_TX_LABEL[t.type] ?? t.type}
                           {t.note && <span className="text-slate-500 font-normal"> — {t.note}</span>}
                         </p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">{faDateTime(t.createdAt)}</p>
+                        <p className="text-[11px] text-slate-600 mt-0.5">{faDateTime(t.createdAt)}</p>
                       </div>
                       <div className="text-end shrink-0">
-                        <p className={`nums font-extrabold text-sm ${amount >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                        <p className={`nums font-extrabold text-sm ${amount >= 0 ? "text-emerald-700" : "text-rose-600"}`}>
                           {amount >= 0 ? "+" : "−"} {formatToman(Math.abs(amount))} ت
                         </p>
-                        <p className="text-[10px] text-slate-400 nums mt-0.5">
+                        <p className="text-[10px] text-slate-600 nums mt-0.5">
                           مانده حساب: {formatToman(t.balanceAfter)}
                         </p>
                       </div>

@@ -51,28 +51,28 @@ export function AnnouncementBanner({ target = "ALL" }: { target?: "ALL" | "CUSTO
       border: "border-rose-600/50",
       text: "text-rose-100",
       badge: "bg-rose-500 text-white",
-      icon: "🚨",
+      icon: "alert",
     },
     WARNING: {
       bg: "bg-linear-to-r from-amber-950 via-orange-950 to-amber-950",
       border: "border-amber-500/40",
       text: "text-amber-100",
       badge: "bg-amber-500 text-slate-950",
-      icon: "⚡",
+      icon: "bolt",
     },
     SUCCESS: {
       bg: "bg-linear-to-r from-emerald-950 via-teal-950 to-emerald-950",
       border: "border-emerald-500/40",
       text: "text-emerald-100",
       badge: "bg-emerald-500 text-slate-950",
-      icon: "🎉",
+      icon: "party",
     },
     INFO: {
       bg: "bg-linear-to-r from-slate-900 via-blue-950 to-slate-900",
       border: "border-blue-500/30",
       text: "text-blue-100",
       badge: "bg-blue-600 text-white",
-      icon: "📢",
+      icon: "bell",
     },
   };
 

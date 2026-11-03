@@ -83,7 +83,7 @@ export function TopupForm() {
         {busy ? "در حال انتقال به درگاه…" : `شارژ ${numeric ? formatToman(numeric) : ""} تومان`}
       </button>
 
-      <p className="mt-2.5 text-[11px] text-slate-400 text-center leading-relaxed">
+      <p className="mt-2.5 text-[11px] text-slate-600 text-center leading-relaxed">
         حداقل مبلغ شارژ {toFaDigits(50)} هزار تومان — تسویه آنی از طریق شبکه شاپرک و درگاه زرین‌پال.
       </p>
     </div>

@@ -132,7 +132,7 @@ export function NotificationBell() {
 
           <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
             {notifications.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-400">
+              <div className="p-6 text-center text-xs text-slate-600">
                 هیچ اعلانی یافت نشد.
               </div>
             ) : (

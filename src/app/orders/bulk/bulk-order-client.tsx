@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatToman, toFaDigits } from "@/lib/digits";
 import type { ValidatedBulkItem, UnrecognizedBulkItem } from "@/app/api/orders/bulk-validate/route";
+import { Icon } from "@/components/ui/icon";
 
 interface ShippingOption {
   id: string;
@@ -156,7 +157,7 @@ DF-FLT-05 30`;
 
       {error && (
         <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2">
-          <span>⚠️</span>
+          <Icon name="alert" className="size-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
@@ -173,7 +174,7 @@ DF-FLT-05 30`;
                 : "text-slate-600 hover:bg-slate-100"
             }`}
           >
-            📋 درج متنی سریع (Paste)
+            <span className="inline-flex items-center gap-1.5"><Icon name="list" className="size-4" />درج متنی سریع (Paste)</span>
           </button>
           <button
             type="button"
@@ -184,7 +185,7 @@ DF-FLT-05 30`;
                 : "text-slate-600 hover:bg-slate-100"
             }`}
           >
-            📊 بارگذاری فایل اکسل (.xlsx / .csv)
+            <span className="inline-flex items-center gap-1.5"><Icon name="excel" className="size-4" />بارگذاری فایل اکسل (.xlsx / .csv)</span>
           </button>
         </div>
 
@@ -220,7 +221,7 @@ DF-FLT-05 30`;
                 id="excel-file-upload"
               />
               <label htmlFor="excel-file-upload" className="cursor-pointer block space-y-2">
-                <span className="text-3xl block">📄</span>
+                <Icon name="excel" className="size-8 mx-auto text-slate-400" />
                 <span className="text-xs sm:text-sm font-black text-slate-800 block">
                   {file ? file.name : "برای انتخاب یا کشیدن فایل اکسل اینجا کلیک کنید"}
                 </span>
@@ -238,7 +239,7 @@ DF-FLT-05 30`;
           disabled={validating}
           className="w-full sm:w-auto btn btn-blue px-6 py-2.5 rounded-xl font-black text-xs sm:text-sm shadow-md"
         >
-          {validating ? "در حال پردازش و استعلام موجودی…" : "🔍 استعلام و اعتبارسنجی اقلام"}
+          {validating ? "در حال پردازش و استعلام موجودی…" : <span className="inline-flex items-center gap-1.5"><Icon name="search" className="size-4" />استعلام و اعتبارسنجی اقلام</span>}
         </button>
       </div>
 
@@ -276,8 +277,9 @@ DF-FLT-05 30`;
           {/* هشدارهای اقلام نامعتبر در صورت وجود */}
           {unrecognizedItems.length > 0 && (
             <div className="card p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2">
-              <span className="font-black text-amber-900 block">
-                ⚠️ موارد زیر در سیستم شناسایی نشدند و در سفارش لحاظ نمی‌گردند:
+              <span className="font-black text-amber-900 flex items-center gap-1.5">
+                <Icon name="alert" className="size-4 shrink-0" />
+                موارد زیر در سیستم شناسایی نشدند و در سفارش لحاظ نمی‌گردند:
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-amber-800 nums">
                 {unrecognizedItems.map((u, i) => (

@@ -111,25 +111,25 @@ export function AnalyticsView() {
         <div className="card p-4 sm:p-5 bg-white border border-slate-200 shadow-2xs rounded-xl">
           <p className="text-xs font-bold text-slate-500">فروش کل تسویه‌شده</p>
           <p className="text-xl sm:text-2xl font-black text-slate-900 mt-1 nums">
-            {formatToman(kpis.totalRevenue)} <span className="text-xs font-normal text-slate-400">ت</span>
+            {formatToman(kpis.totalRevenue)} <span className="text-xs font-normal text-slate-600">ت</span>
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">تعداد کل فاکتورها: {toFaDigits(kpis.totalOrdersCount)} سند</p>
+          <p className="text-[11px] text-slate-600 mt-1">تعداد کل فاکتورها: {toFaDigits(kpis.totalOrdersCount)} سند</p>
         </div>
 
         <div className="card p-4 sm:p-5 bg-white border border-slate-200 shadow-2xs rounded-xl">
           <p className="text-xs font-bold text-slate-500">میانگین ارزش هر سفارش</p>
           <p className="text-xl sm:text-2xl font-black text-blue-600 mt-1 nums">
-            {formatToman(kpis.avgOrderValue)} <span className="text-xs font-normal text-slate-400">ت</span>
+            {formatToman(kpis.avgOrderValue)} <span className="text-xs font-normal text-slate-600">ت</span>
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">سبد خرید عمده همکاران</p>
+          <p className="text-[11px] text-slate-600 mt-1">سبد خرید عمده همکاران</p>
         </div>
 
         <div className="card p-4 sm:p-5 bg-white border border-slate-200 shadow-2xs rounded-xl">
           <p className="text-xs font-bold text-slate-500">فروش اعتباری ۳۰ روزه</p>
           <p className="text-xl sm:text-2xl font-black text-amber-700 mt-1 nums">
-            {formatToman(kpis.totalCreditOrders)} <span className="text-xs font-normal text-slate-400">ت</span>
+            {formatToman(kpis.totalCreditOrders)} <span className="text-xs font-normal text-slate-600">ت</span>
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">بر مبنای حد اعتبار و چک صیاد</p>
+          <p className="text-[11px] text-slate-600 mt-1">بر مبنای حد اعتبار و چک صیاد</p>
         </div>
 
         <div className="card p-4 sm:p-5 bg-white border border-slate-200 shadow-2xs rounded-xl">
@@ -137,7 +137,7 @@ export function AnalyticsView() {
           <p className="text-xl sm:text-2xl font-black text-emerald-700 mt-1 nums">
             {toFaDigits(kpis.rmaRate)}٪
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">{toFaDigits(kpis.totalRefundedRmas)} مورد تسویه‌شده</p>
+          <p className="text-[11px] text-slate-600 mt-1">{toFaDigits(kpis.totalRefundedRmas)} مورد تسویه‌شده</p>
         </div>
       </div>
 
@@ -162,7 +162,7 @@ export function AnalyticsView() {
         </div>
 
         {citySales.length === 0 ? (
-          <p className="text-xs text-slate-400 text-center py-6">هنوز داده‌ی ارسال ثبت نشده است.</p>
+          <p className="text-xs text-slate-600 text-center py-6">هنوز داده‌ی ارسال ثبت نشده است.</p>
         ) : (
           <div className="space-y-3">
             {citySales.map((c) => (
@@ -205,7 +205,7 @@ export function AnalyticsView() {
               <tbody className="divide-y divide-slate-50">
                 {topProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="p-4 text-center text-slate-400">سفارشی ثبت نشده است</td>
+                    <td colSpan={4} className="p-4 text-center text-slate-600">سفارشی ثبت نشده است</td>
                   </tr>
                 ) : (
                   topProducts.map((p) => (
@@ -248,7 +248,7 @@ export function AnalyticsView() {
               چک‌های صیادی در آستانه سررسید (۳۰ روز آینده):
             </span>
             {creditAndCheques.upcomingCheques.length === 0 ? (
-              <p className="text-xs text-slate-400">چکی در آستانه سررسید وجود ندارد.</p>
+              <p className="text-xs text-slate-600">چکی در آستانه سررسید وجود ندارد.</p>
             ) : (
               <div className="space-y-1.5 max-h-48 overflow-y-auto">
                 {creditAndCheques.upcomingCheques.map((c) => (
@@ -258,7 +258,7 @@ export function AnalyticsView() {
                   >
                     <div>
                       <span className="font-bold text-slate-800">{c.customerName}</span>
-                      <span className="text-slate-400 text-[11px] mr-2 nums">({c.bankName})</span>
+                      <span className="text-slate-600 text-[11px] mr-2 nums">({c.bankName})</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="nums font-bold text-blue-700">{formatToman(c.amount)} ت</span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/icon";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatToman, toFaDigits } from "@/lib/digits";
@@ -243,7 +244,7 @@ export function CustomerProfileView({
             onClick={() => setIsEditOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-stone-800 active:scale-95"
           >
-            ✏️ ویرایش مشخصات و دسترسی
+            <span className="inline-flex items-center gap-1.5"><Icon name="note" className="size-3.5" />ویرایش مشخصات و دسترسی</span>
           </button>
 
           {data.status === "PENDING" && (
@@ -260,7 +261,7 @@ export function CustomerProfileView({
               onClick={() => handleQuickStatus("block")}
               className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100"
             >
-              🚫 مسدود کردن حساب
+              <span className="inline-flex items-center gap-1.5"><Icon name="lock" className="size-3.5" />مسدود کردن حساب</span>
             </button>
           )}
 
@@ -281,7 +282,7 @@ export function CustomerProfileView({
         <div className="rounded-2xl border border-stone-200/90 bg-gradient-to-br from-white to-stone-50/50 p-4 shadow-sm">
           <div className="flex items-center justify-between text-xs text-stone-500 font-medium">
             <span>مجموع خرید تاریخی</span>
-            <span className="text-base">💼</span>
+            <Icon name="building" className="size-4" />
           </div>
           <div className="mt-2 text-xl font-black text-stone-900">
             {formatToman(data.behavior.totalLifetimePurchase)}
@@ -295,7 +296,7 @@ export function CustomerProfileView({
         <div className="rounded-2xl border border-stone-200/90 bg-gradient-to-br from-white to-stone-50/50 p-4 shadow-sm">
           <div className="flex items-center justify-between text-xs text-stone-500 font-medium">
             <span>میانگین ارزش سبد خرید (AOV)</span>
-            <span className="text-base">📊</span>
+            <Icon name="chart" className="size-4" />
           </div>
           <div className="mt-2 text-xl font-black text-stone-900">
             {formatToman(data.behavior.averageOrderValue)}
@@ -309,7 +310,7 @@ export function CustomerProfileView({
         <div className="rounded-2xl border border-stone-200/90 bg-gradient-to-br from-white to-stone-50/50 p-4 shadow-sm">
           <div className="flex items-center justify-between text-xs text-stone-500 font-medium">
             <span>الگوی تسویه (اعتباری / نقدی)</span>
-            <span className="text-base">💳</span>
+            <Icon name="card" className="size-4" />
           </div>
           <div className="mt-2 text-xl font-black text-amber-600">
             {toFaDigits(data.behavior.creditPreferenceRatio)}٪ <span className="text-xs text-stone-600 font-normal">اعتباری</span>
@@ -323,7 +324,7 @@ export function CustomerProfileView({
         <div className="rounded-2xl border border-stone-200/90 bg-gradient-to-br from-white to-stone-50/50 p-4 shadow-sm">
           <div className="flex items-center justify-between text-xs text-stone-500 font-medium">
             <span>کیف پول و اعتبار باز</span>
-            <span className="text-base">🏦</span>
+            <Icon name="wallet" className="size-4" />
           </div>
           <div className="mt-2 text-xl font-black text-emerald-700">
             {formatToman(data.financials.availableCredit)}
@@ -346,7 +347,8 @@ export function CustomerProfileView({
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
-            <span>🔍 آمار و رفتار سرچ همکار</span>
+            <Icon name="search" className="size-3.5" />
+            <span>آمار و رفتار سرچ همکار</span>
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
               {toFaDigits(data.searchAnalytics.totalSearchesLogged)}
             </span>
@@ -360,7 +362,8 @@ export function CustomerProfileView({
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
-            <span>📄 فاکتورها و سوابق خرید</span>
+            <Icon name="receipt" className="size-3.5" />
+            <span>فاکتورها و سوابق خرید</span>
             <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-700">
               {toFaDigits(data.orders.length)}
             </span>
@@ -374,7 +377,8 @@ export function CustomerProfileView({
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
-            <span>📦 قطعات پرمصرف و پرخرید</span>
+            <Icon name="box" className="size-3.5" />
+            <span>قطعات پرمصرف و پرخرید</span>
             <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-700">
               {toFaDigits(data.behavior.topPurchasedProducts?.length || 0)}
             </span>
@@ -388,7 +392,8 @@ export function CustomerProfileView({
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
-            <span>📑 چک‌های صیادی</span>
+            <Icon name="card" className="size-3.5" />
+            <span>چک‌های صیادی</span>
             <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-700">
               {toFaDigits(data.cheques.length)}
             </span>
@@ -402,7 +407,8 @@ export function CustomerProfileView({
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
-            <span>🏢 مشخصات رسمی و نشانی</span>
+            <Icon name="building" className="size-3.5" />
+            <span>مشخصات رسمی و نشانی</span>
           </button>
         </nav>
       </div>
@@ -413,14 +419,15 @@ export function CustomerProfileView({
           {/* کلمات کلیدی بیشترین سرچ */}
           <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
             <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <span>🔥 بیشترین قطعات و کلمات جستجو شده توسط این همکار</span>
+              <Icon name="flame" className="size-3.5" />
+            <span>بیشترین قطعات و کلمات جستجو شده توسط این همکار</span>
               <span className="text-xs font-normal text-stone-500">
                 (شناسایی دقیق نیاز و قطعات مدنظر مشتری جهت بازاریابی و فروش تلفنی)
               </span>
             </h3>
 
             {data.searchAnalytics.topSearchedKeywords.length === 0 ? (
-              <p className="mt-4 text-xs text-stone-400">
+              <p className="mt-4 text-xs text-stone-500">
                 هنوز کلمه کلیدی با فراوانی مشخص ثبت نشده است. به محض اینکه همکار در کاتالوگ جستجو کند، کلمات پرتکرار در اینجا نمایش داده خواهند شد.
               </p>
             ) : (
@@ -431,7 +438,8 @@ export function CustomerProfileView({
                       key={idx}
                       className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-1.5 text-xs font-semibold text-amber-950 transition hover:bg-amber-100"
                     >
-                      <span>🔎 {item.query}</span>
+                      <Icon name="search" className="size-3 text-slate-500" />
+                <span>{item.query}</span>
                       <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-black text-amber-900">
                         {toFaDigits(item.count)} مرتبه
                       </span>
@@ -449,7 +457,7 @@ export function CustomerProfileView({
             </h3>
 
             {data.searchAnalytics.recentSearchLogs.length === 0 ? (
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-stone-500">
                 هیچ جستجویی ثبت نشده است.
               </p>
             ) : (
@@ -468,7 +476,7 @@ export function CustomerProfileView({
                     {data.searchAnalytics.recentSearchLogs.map((log: any) => (
                       <tr key={log.id} className="hover:bg-stone-50/50">
                         <td className="py-2.5 px-3 font-bold text-stone-900">
-                          {log.query || <span className="text-stone-400 font-normal">تمام کاتالوگ (فیلتر بدون متن)</span>}
+                          {log.query || <span className="text-stone-500 font-normal">تمام کاتالوگ (فیلتر بدون متن)</span>}
                         </td>
                         <td className="py-2.5 px-3 text-stone-600">
                           {log.category || "-"}
@@ -511,7 +519,7 @@ export function CustomerProfileView({
           </h3>
 
           {data.orders.length === 0 ? (
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-stone-500">
               هنوز هیچ سفارشی توسط این مشتری ثبت نشده است.
             </p>
           ) : (
@@ -554,11 +562,11 @@ export function CustomerProfileView({
                         <td className="py-3 px-3 text-stone-600">
                           {order.carrierName ? (
                             <span className="inline-flex items-center gap-1 font-bold text-amber-700">
-                              🚚 {order.carrierName}
+                              <Icon name="truck" className="size-3.5" /> {order.carrierName}
                               {order.waybillNumber && ` (${order.waybillNumber})`}
                             </span>
                           ) : (
-                            <span className="text-stone-400">در حال آماده‌سازی</span>
+                            <span className="text-stone-500">در حال آماده‌سازی</span>
                           )}
                         </td>
                         <td className="py-3 px-3 text-center">
@@ -587,7 +595,7 @@ export function CustomerProfileView({
           </h3>
 
           {data.behavior.topPurchasedProducts.length === 0 ? (
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-stone-500">
               هنوز کالایی به طور نهایی خریداری نشده است.
             </p>
           ) : (
@@ -633,7 +641,7 @@ export function CustomerProfileView({
           </h3>
 
           {data.cheques.length === 0 ? (
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-stone-500">
               هیچ چک صیادی برای این مشتری ثبت نشده است.
             </p>
           ) : (
@@ -754,7 +762,7 @@ export function CustomerProfileView({
               </h3>
               <button
                 onClick={() => setIsEditOpen(false)}
-                className="rounded-full p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+                className="rounded-full p-1 text-stone-500 hover:bg-stone-100 hover:text-stone-700"
               >
                 ✕
               </button>

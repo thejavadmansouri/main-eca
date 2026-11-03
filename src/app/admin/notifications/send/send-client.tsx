@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/icon";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -245,7 +246,7 @@ export function SendNotificationClient({
         <Card className="lg:col-span-1 bg-slate-900 text-white border-slate-800 shadow-md">
           <CardHeader className="border-slate-800">
             <CardTitle className="text-white text-base">پیش‌نمایش ظاهر اعلان</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-slate-600">
               این پیام دقیقاً به شکل زیر در گوشه بالای صفحه مشتریان ظاهر خواهد شد.
             </CardDescription>
           </CardHeader>
@@ -255,7 +256,7 @@ export function SendNotificationClient({
                 <span className="text-xs font-bold text-amber-400">
                   {title || "عنوان اعلان"}
                 </span>
-                <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-mono">
+                <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-300 font-mono">
                   هم‌اکنون
                 </span>
               </div>
@@ -270,7 +271,7 @@ export function SendNotificationClient({
             </div>
 
             <div className="text-xs text-slate-400 space-y-1.5 pt-2 border-t border-slate-800">
-              <p className="font-bold text-slate-300">💡 نکته کاربردی:</p>
+              <p className="font-bold text-slate-200 flex items-center gap-1.5"><Icon name="bolt" className="size-3.5 text-amber-400" />نکته کاربردی:</p>
               <p className="text-[11px] leading-relaxed">
                 اعلان‌های ارسال شده بلافاصله در آیکون زنگوله کاتالوگ همکاران قرمز می‌شود و با کلیک روی آن لیست پیام‌ها باز می‌شود.
               </p>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Icon } from "@/components/ui/icon";
 import { formatToman, toFaDigits } from "@/lib/digits";
 import { faDate } from "@/lib/date";
 import { CHEQUE_STATUS, IRANIAN_BANKS, isValidSayadId, type ChequeStatusKey } from "@/lib/cheques";
@@ -132,29 +133,29 @@ export function ChequesView(props: {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs">
         <div className="card p-4 bg-white border border-slate-200 rounded-xl shadow-2xs space-y-1">
           <span className="text-slate-500 font-medium block">اعتبار فعال ناشی از چک‌های صیاد</span>
-          <div className="nums text-lg sm:text-xl font-extrabold text-emerald-600 flex items-baseline gap-1">
+          <div className="nums text-lg sm:text-xl font-extrabold text-emerald-700 flex items-baseline gap-1">
             <span>{formatToman(summary.activeRegisteredAmount)}</span>
-            <span className="text-xs font-normal text-slate-400">تومان</span>
+            <span className="text-xs font-normal text-slate-600">تومان</span>
           </div>
-          <p className="text-[10px] text-slate-400">تأییدشده در سامانه صیاد بانک مرکزی</p>
+          <p className="text-[10px] text-slate-600">تأییدشده در سامانه صیاد بانک مرکزی</p>
         </div>
 
         <div className="card p-4 bg-white border border-slate-200 rounded-xl shadow-2xs space-y-1">
           <span className="text-slate-500 font-medium block">چک‌های در نوبت بررسی مالی</span>
-          <div className="nums text-lg sm:text-xl font-extrabold text-amber-600 flex items-baseline gap-1">
+          <div className="nums text-lg sm:text-xl font-extrabold text-amber-700 flex items-baseline gap-1">
             <span>{formatToman(summary.pendingAmount)}</span>
-            <span className="text-xs font-normal text-slate-400">تومان</span>
+            <span className="text-xs font-normal text-slate-600">تومان</span>
           </div>
-          <p className="text-[10px] text-slate-400">در صف استعلام کارشناسان کاردو</p>
+          <p className="text-[10px] text-slate-600">در صف استعلام کارشناسان کاردو</p>
         </div>
 
         <div className="card p-4 bg-white border border-slate-200 rounded-xl shadow-2xs space-y-1">
           <span className="text-slate-500 font-medium block">مجموع چک‌های وصول و تسویه‌شده</span>
           <div className="nums text-lg sm:text-xl font-extrabold text-slate-800 flex items-baseline gap-1">
             <span>{formatToman(summary.clearedAmount)}</span>
-            <span className="text-xs font-normal text-slate-400">تومان</span>
+            <span className="text-xs font-normal text-slate-600">تومان</span>
           </div>
-          <p className="text-[10px] text-slate-400">اسناد مالی تسویه‌شده کامل</p>
+          <p className="text-[10px] text-slate-600">اسناد مالی تسویه‌شده کامل</p>
         </div>
       </div>
 
@@ -171,7 +172,7 @@ export function ChequesView(props: {
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="size-8 grid place-items-center text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 text-lg"
+                className="size-8 grid place-items-center text-slate-600 hover:text-slate-700 rounded-full hover:bg-slate-100 text-lg"
               >
                 ✕
               </button>
@@ -197,7 +198,7 @@ export function ChequesView(props: {
                   onChange={(e) => setSayadId(e.target.value.replace(/\D/g, ""))}
                   className="input h-11 text-center font-mono font-bold text-base tracking-widest border-slate-300 rounded-lg"
                 />
-                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                <span className="text-[10px] text-slate-600 mt-0.5 block">
                   کد ۱۶ رقمی بالای برگه چک صیادی بنفش
                 </span>
               </div>
@@ -325,8 +326,8 @@ export function ChequesView(props: {
 
         {cheques.length === 0 ? (
           <div className="card p-12 text-center text-slate-500 bg-white border border-slate-200 rounded-xl space-y-3">
-            <div className="size-12 rounded-full bg-slate-100 text-slate-400 grid place-items-center mx-auto text-xl">
-              💳
+            <div className="size-12 rounded-full bg-slate-100 text-slate-600 grid place-items-center mx-auto">
+              <Icon name="card" className="size-5" />
             </div>
             <p className="font-bold text-slate-800 text-base">هنوز چکی ثبت نکرده‌اید.</p>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -406,7 +407,7 @@ export function ChequesView(props: {
                         <td className="py-3 px-3 nums font-mono font-bold text-blue-700">{c.sayadId}</td>
                         <td className="py-3 px-3">
                           <p className="font-bold text-slate-800">{c.bankName}</p>
-                          <p className="text-[10px] text-slate-400 font-mono nums">{c.chequeNumber}</p>
+                          <p className="text-[10px] text-slate-600 font-mono nums">{c.chequeNumber}</p>
                         </td>
                         <td className="py-3 px-3 font-medium text-slate-700">{c.drawerName}</td>
                         <td className="py-3 px-3 text-center nums text-slate-600 font-bold">{faDate(c.dueDate)}</td>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatToman, toFaDigits } from "@/lib/digits";
+import { Icon } from "@/components/ui/icon";
 
 interface StatementData {
   companyInfo: {
@@ -131,7 +132,10 @@ export function StatementClient() {
             onClick={() => window.print()}
             className="btn btn-blue text-xs px-4 py-2 rounded-xl font-black shadow-md flex items-center gap-1.5"
           >
-            <span>🖨️ چاپ رسمی صورت‌حساب</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="printer" className="size-4" />
+              چاپ رسمی صورت‌حساب
+            </span>
           </button>
         </div>
       </div>
@@ -143,7 +147,7 @@ export function StatementClient() {
       )}
 
       {loading ? (
-        <div className="card p-12 text-center text-xs text-slate-400">
+        <div className="card p-12 text-center text-xs text-slate-600">
           در حال استعلام و محاسبه معین مالی…
         </div>
       ) : data ? (
@@ -237,14 +241,14 @@ export function StatementClient() {
               <tbody className="divide-y divide-slate-100 nums">
                 {data.rows.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-6 text-center text-slate-400">
+                    <td colSpan={7} className="p-6 text-center text-slate-600">
                       هیچ سند مالی در این بازه ثبت نشده است.
                     </td>
                   </tr>
                 ) : (
                   data.rows.map((r, i) => (
                     <tr key={i} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="p-3 text-slate-400">{toFaDigits(i + 1)}</td>
+                      <td className="p-3 text-slate-600">{toFaDigits(i + 1)}</td>
                       <td className="p-3 font-medium">{new Date(r.date).toLocaleDateString("fa-IR")}</td>
                       <td className="p-3 font-mono font-bold text-slate-800">{r.docNumber}</td>
                       <td className="p-3 text-slate-700">{r.description}</td>
@@ -271,11 +275,11 @@ export function StatementClient() {
           <div className="pt-6 border-t border-slate-200 grid grid-cols-2 text-center text-xs text-slate-600 gap-8">
             <div className="space-y-12">
               <span className="font-bold text-slate-800 block">امضا و تأیید طرف حساب (مشتری):</span>
-              <p className="text-[11px] text-slate-400">مهر و امضای مجاز شرکت / فروشگاه</p>
+              <p className="text-[11px] text-slate-600">مهر و امضای مجاز شرکت / فروشگاه</p>
             </div>
             <div className="space-y-12">
               <span className="font-bold text-slate-800 block">امضا و تأیید امور مالی کاردو B2B:</span>
-              <p className="text-[11px] text-slate-400">مهر و امضای امور مالی دیار کریمان</p>
+              <p className="text-[11px] text-slate-600">مهر و امضای امور مالی دیار کریمان</p>
             </div>
           </div>
         </div>

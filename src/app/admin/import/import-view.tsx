@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/icon";
 import { useState } from "react";
 import Link from "next/link";
 import { formatToman, toFaDigits } from "@/lib/digits";
@@ -131,7 +132,7 @@ export function ImportView() {
         <div>
           <label className="text-xs font-bold text-slate-800 block mb-2">فایل اکسل کاتالوگ:</label>
           <div className="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl p-6 sm:p-8 text-center bg-slate-50/50 hover:bg-blue-50/30 transition-all flex flex-col items-center justify-center gap-3">
-            <svg className="size-10 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg className="size-10 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
               <line x1="12" x2="12" y1="18" y2="12" />
@@ -155,13 +156,14 @@ export function ImportView() {
               >
                 <span>انتخاب فایل از رایانه</span>
               </label>
-              <p className="text-[11px] text-slate-400 mt-1.5">پشتیبانی از فرمت‌های XLSX, XLS, CSV</p>
+              <p className="text-[11px] text-slate-600 mt-1.5">پشتیبانی از فرمت‌های XLSX, XLS, CSV</p>
             </div>
 
             {file && (
               <div className="mt-2 inline-flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-800 shadow-2xs">
-                <span>📄 {file.name}</span>
-                <span className="nums text-slate-400 font-normal">({Math.round(file.size / 1024)} KB)</span>
+                <Icon name="excel" className="size-4" />
+                <span>{file.name}</span>
+                <span className="nums text-slate-600 font-normal">({Math.round(file.size / 1024)} KB)</span>
                 <button
                   type="button"
                   onClick={() => setFile(null)}

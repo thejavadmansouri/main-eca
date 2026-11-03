@@ -198,28 +198,28 @@ export function ChequesAdminView(props: { initialCheques: AdminChequeItem[] }) {
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <div>
-                      <span className="text-slate-400 block text-[10px]">شناسه صیاد ۱۶ رقمی:</span>
+                      <span className="text-slate-600 block text-[10px]">شناسه صیاد ۱۶ رقمی:</span>
                       <span className="nums font-mono font-bold text-blue-700 text-xs sm:text-sm">
                         {c.sayadId}
                       </span>
                     </div>
 
                     <div>
-                      <span className="text-slate-400 block text-[10px]">بانک و شماره سریال:</span>
+                      <span className="text-slate-600 block text-[10px]">بانک و شماره سریال:</span>
                       <span className="font-bold text-slate-800 text-xs">
                         {c.bankName} — <span className="font-mono">{c.chequeNumber}</span>
                       </span>
                     </div>
 
                     <div>
-                      <span className="text-slate-400 block text-[10px]">مبلغ چک:</span>
+                      <span className="text-slate-600 block text-[10px]">مبلغ چک:</span>
                       <span className="nums font-extrabold text-slate-900 text-xs sm:text-sm">
                         {formatToman(c.amount)} تومان
                       </span>
                     </div>
 
                     <div>
-                      <span className="text-slate-400 block text-[10px]">تاریخ سررسید:</span>
+                      <span className="text-slate-600 block text-[10px]">تاریخ سررسید:</span>
                       <span className="nums font-bold text-slate-800 text-xs">
                         {faDate(c.dueDate)}
                       </span>
@@ -300,7 +300,7 @@ export function ChequesAdminView(props: { initialCheques: AdminChequeItem[] }) {
               </div>
               <button
                 onClick={() => setSelectedCheque(null)}
-                className="size-8 grid place-items-center text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 text-lg"
+                className="size-8 grid place-items-center text-slate-600 hover:text-slate-700 rounded-full hover:bg-slate-100 text-lg"
               >
                 ✕
               </button>

@@ -1,3 +1,4 @@
+import { Icon } from "@/components/ui/icon";
 import { requireAdminPage } from "@/lib/server-account";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +39,7 @@ export default async function DesignSystemPage() {
       {/* بخش ۱: پالت رنگی کاردو */}
       <section className="space-y-3">
         <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-          <span>🎨</span> پالت رنگی سازمانی (Brand Color Palette)
+          <Icon name="gear" className="size-4 text-slate-600" /> پالت رنگی سازمانی (Brand Color Palette)
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
           <div className="p-4 rounded-2xl bg-amber-500 text-slate-950 font-bold space-y-1 shadow-sm">
@@ -77,7 +78,7 @@ export default async function DesignSystemPage() {
       {/* بخش ۲: دکمه‌ها */}
       <section className="space-y-3">
         <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-          <span>🔘</span> دکمه‌ها و تعاملات (Buttons)
+          <Icon name="check" className="size-4 text-slate-600" /> دکمه‌ها و تعاملات (Buttons)
         </h2>
         <Card className="bg-white border-slate-200 text-slate-900 shadow-sm p-6 space-y-4">
           <div className="flex flex-wrap items-center gap-3">
@@ -101,7 +102,7 @@ export default async function DesignSystemPage() {
       {/* بخش ۳: نشان‌ها و وضعیت‌ها */}
       <section className="space-y-3">
         <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-          <span>🏷️</span> نشان‌ها و برچسب‌های وضعیت (Badges & Pills)
+          <Icon name="tag" className="size-4 text-slate-600" /> نشان‌ها و برچسب‌های وضعیت (Badges & Pills)
         </h2>
         <Card className="bg-white border-slate-200 text-slate-900 shadow-sm p-6">
           <div className="flex flex-wrap items-center gap-2.5">
@@ -119,7 +120,7 @@ export default async function DesignSystemPage() {
       {/* بخش ۴: فیلدهای ورودی */}
       <section className="space-y-3">
         <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-          <span>📝</span> فیلدهای ورودی فرم (Inputs & Forms)
+          <Icon name="note" className="size-4 text-slate-600" /> فیلدهای ورودی فرم (Inputs & Forms)
         </h2>
         <Card className="bg-white border-slate-200 text-slate-900 shadow-sm p-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -133,7 +134,7 @@ export default async function DesignSystemPage() {
       {/* بخش ۵: کارت‌ها و باکس‌ها */}
       <section className="space-y-3">
         <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-          <span>📦</span> کارت محصول و آمار (Cards & KPI Widgets)
+          <Icon name="box" className="size-4 text-slate-600" /> کارت محصول و آمار (Cards & KPI Widgets)
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="bg-white border-slate-200 text-slate-900 shadow-sm">
@@ -141,7 +142,7 @@ export default async function DesignSystemPage() {
               <span className="text-xs font-bold text-slate-500">فروش کل امروز</span>
               <div className="text-2xl font-black text-slate-900 nums mt-1">۱۲۵,۴۰۰,۰۰۰ تومان</div>
             </CardHeader>
-            <CardContent className="pt-2 text-xs text-emerald-600 font-bold flex items-center gap-1">
+            <CardContent className="pt-2 text-xs text-emerald-700 font-bold flex items-center gap-1">
               <span>↑ ۱۸٪ رشد نسبت به هفته گذشته</span>
             </CardContent>
           </Card>
@@ -151,7 +152,7 @@ export default async function DesignSystemPage() {
               <span className="text-xs font-bold text-amber-400">سفارش‌های جدید B2B</span>
               <div className="text-2xl font-black text-white nums mt-1">۲۸ سفارش</div>
             </CardHeader>
-            <CardContent className="pt-2 text-xs text-slate-400 font-medium">
+            <CardContent className="pt-2 text-xs text-slate-600 font-medium">
               همگام‌سازی شده با سیستم حسابداری
             </CardContent>
           </Card>

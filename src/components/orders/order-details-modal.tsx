@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { Icon } from "@/components/ui/icon";
 import { formatToman, toFaDigits, numberToTomanWords } from "@/lib/digits";
 import { faDateTime } from "@/lib/date";
 import { OrderProgressBar } from "./order-progress-bar";
@@ -106,7 +107,7 @@ export function OrderDetailsModal({
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-4 bg-slate-50/80 shrink-0">
           <div className="flex items-center gap-3">
             <span className="size-9 rounded-xl bg-slate-900 text-white grid place-items-center font-bold text-sm shadow-xs">
-              📄
+              <Icon name="receipt" className="size-4.5" />
             </span>
             <div>
               <div className="flex items-center gap-2">
@@ -135,7 +136,7 @@ export function OrderDetailsModal({
 
           <button
             onClick={onClose}
-            className="size-8 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 grid place-items-center transition-colors"
+            className="size-8 rounded-xl text-slate-600 hover:text-slate-700 hover:bg-slate-200/60 grid place-items-center transition-colors"
             title="بستن"
           >
             ✕
@@ -210,7 +211,7 @@ export function OrderDetailsModal({
                         disabled={actionBusy}
                         className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-xs transition-colors"
                       >
-                        📦 شروع جمع‌آوری در انبار مرکزی (۵۰٪)
+                        <span className="inline-flex items-center gap-1.5"><Icon name="box" className="size-4" />شروع جمع‌آوری در انبار مرکزی (۵۰٪)</span>
                       </button>
                     )}
 
@@ -218,7 +219,7 @@ export function OrderDetailsModal({
                       onClick={() => setShowShippingForm(!showShippingForm)}
                       className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors"
                     >
-                      🚚 ثبت بیجک و تحویل باربری (۸۰٪)
+                      <span className="inline-flex items-center gap-1.5"><Icon name="truck" className="size-4" />ثبت بیجک و تحویل باربری (۸۰٪)</span>
                     </button>
 
                     <button
@@ -226,7 +227,7 @@ export function OrderDetailsModal({
                       disabled={actionBusy}
                       className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors"
                     >
-                      ✅ ثبت تحویل قطعی به مشتری (۱۰۰٪)
+                      <span className="inline-flex items-center gap-1.5"><Icon name="check" className="size-4" />ثبت تحویل قطعی به مشتری (۱۰۰٪)</span>
                     </button>
                   </div>
 
@@ -299,16 +300,16 @@ export function OrderDetailsModal({
                     <tbody className="divide-y divide-slate-100">
                       {order.items.map((it: any, idx: number) => (
                         <tr key={it.id} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-3 px-3 nums text-slate-400 font-bold">{toFaDigits(idx + 1)}</td>
+                          <td className="py-3 px-3 nums text-slate-600 font-bold">{toFaDigits(idx + 1)}</td>
                           <td className="py-3 px-3">
                             <div className="font-bold text-slate-900">{it.name}</div>
                             {it.brand && (
-                              <span className="text-[10px] text-slate-400">خودرو: {it.brand}</span>
+                              <span className="text-[10px] text-slate-600">خودرو: {it.brand}</span>
                             )}
                           </td>
                           <td className="py-3 px-3 font-mono text-[11px] text-slate-600">{it.sku}</td>
                           <td className="py-3 px-3 font-bold nums">
-                            {toFaDigits(it.qty)} <span className="text-[10px] text-slate-400">{it.unit}</span>
+                            {toFaDigits(it.qty)} <span className="text-[10px] text-slate-600">{it.unit}</span>
                           </td>
                           <td className="py-3 px-3 nums text-slate-700">{formatToman(it.unitPrice)}</td>
                           <td className="py-3 px-3 nums font-extrabold text-slate-900">
@@ -361,21 +362,21 @@ export function OrderDetailsModal({
                 target="_blank"
                 className="px-3.5 py-1.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-colors"
               >
-                نسخه چاپی A4 🖨️
+                <span className="inline-flex items-center gap-1.5">نسخه چاپی A4<Icon name="printer" className="size-3.5" /></span>
               </Link>
               <Link
                 href={`/orders/${order.id}/tax-invoice`}
                 target="_blank"
                 className="px-3.5 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold transition-colors"
               >
-                صورت‌حساب مودیان 📄
+                <span className="inline-flex items-center gap-1.5">صورت‌حساب مودیان<Icon name="receipt" className="size-3.5" /></span>
               </Link>
               <Link
                 href={`/orders/${order.id}/shipping-label`}
                 target="_blank"
                 className="px-3.5 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors"
               >
-                برچسب کارتن باربری 🏷️
+                <span className="inline-flex items-center gap-1.5">برچسب کارتن باربری<Icon name="tag" className="size-3.5" /></span>
               </Link>
             </div>
 

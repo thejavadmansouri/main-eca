@@ -3,6 +3,7 @@ export const instant = false;
 
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { Icon } from "@/components/ui/icon";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { requireCustomer } from "@/lib/server-account";
@@ -75,7 +76,7 @@ export default async function OrderPage({
                 <span>←</span>
                 <span>فهرست اسناد</span>
               </Link>
-              <span className="text-slate-300">|</span>
+              <span className="text-slate-600">|</span>
               <span className="text-xs text-slate-500">{isNew ? "پیش‌فاکتور جدید" : "سند رسمی"}</span>
             </div>
             <h1 className="nums text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">{order.number}</h1>
@@ -89,11 +90,11 @@ export default async function OrderPage({
                 <span>↗</span>
               </Link>
               <Link href={`/orders/${order.id}/tax-invoice`} target="_blank" className="text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors">
-                <span>📄 صورت‌حساب رسمی سامانه مودیان</span>
+                <Icon name="receipt" className="size-4" /><span>صورت‌حساب رسمی سامانه مودیان</span>
                 <span>↗</span>
               </Link>
               <Link href={`/orders/${order.id}/shipping-label`} target="_blank" className="text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors">
-                <span>🏷️ برچسب باربری کارتن (۱۰×۱۵)</span>
+                <Icon name="tag" className="size-4" /><span>برچسب باربری کارتن (۱۰×۱۵)</span>
                 <span>↗</span>
               </Link>
             </div>
@@ -141,7 +142,7 @@ export default async function OrderPage({
                 <span className="text-slate-500">شرکت باربری / حامل:</span>
                 <p className="font-bold text-slate-800 mt-0.5">{order.shipment.carrierName}</p>
                 {order.shipment.carrierPhone && (
-                  <p className="text-slate-400 font-mono nums mt-0.5">{order.shipment.carrierPhone}</p>
+                  <p className="text-slate-600 font-mono nums mt-0.5">{order.shipment.carrierPhone}</p>
                 )}
               </div>
 
@@ -314,7 +315,7 @@ function Row(props: { label: string; value: string; tone?: "green" | "amber" }) 
       <span>{props.label}</span>
       <span
         className={`nums font-bold ${
-          props.tone === "green" ? "text-emerald-600" : props.tone === "amber" ? "text-amber-600" : "text-slate-800"
+          props.tone === "green" ? "text-emerald-700" : props.tone === "amber" ? "text-amber-700" : "text-slate-800"
         }`}
       >
         {props.value}

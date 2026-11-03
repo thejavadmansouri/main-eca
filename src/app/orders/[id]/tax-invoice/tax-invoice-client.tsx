@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Icon } from "@/components/ui/icon";
 import { formatToman, toFaDigits, numberToTomanWords } from "@/lib/digits";
 import { faDate } from "@/lib/date";
 
@@ -127,7 +128,7 @@ export function TaxInvoiceClient({ order, seller, buyer, fiscalTaxId }: TaxInvoi
             onClick={downloadMoadianJson}
             className="text-xs font-bold px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-sm flex items-center gap-1.5 active:scale-95"
           >
-            <span>📥</span>
+            <Icon name="download" className="size-4" />
             <span>خروجی استاندارد سامانه مودیان (JSON)</span>
           </button>
 
@@ -135,7 +136,7 @@ export function TaxInvoiceClient({ order, seller, buyer, fiscalTaxId }: TaxInvoi
             onClick={() => window.print()}
             className="text-xs font-bold px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-md flex items-center gap-1.5 active:scale-95"
           >
-            <span>🖨️</span>
+            <Icon name="printer" className="size-4" />
             <span>چاپ رسمی صورت‌حساب دارایی</span>
           </button>
         </div>
@@ -318,7 +319,7 @@ export function TaxInvoiceClient({ order, seller, buyer, fiscalTaxId }: TaxInvoi
         <div className="border-x border-b border-slate-900 rounded-b-xl p-6 bg-white grid grid-cols-2 gap-8 text-center text-xs">
           <div className="border border-slate-200 rounded-xl p-4">
             <div className="font-black text-slate-900 mb-10">امضا و اثر انگشت خریدار / تحویل‌گیرنده</div>
-            <div className="text-[10px] text-slate-400">تاریخ و امضا</div>
+            <div className="text-[10px] text-slate-600">تاریخ و امضا</div>
           </div>
 
           <div className="border border-slate-200 rounded-xl p-4 relative">
