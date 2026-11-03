@@ -453,6 +453,176 @@ export function CatalogBrowser(props: {
         </div>
       </div>
 
+      {/* ۰. باکس جدولی سبد سفارش جاری در بالای قسمت سرچ (Top Cart Table Box) — به محض اضافه شدن اولین کالا باز می‌شود */}
+      {cart.length > 0 && (
+        <div className="mt-3 sm:mt-4 p-4 sm:p-5 bg-white border-2 border-blue-200/90 rounded-2xl shadow-xs space-y-3.5 animate-in fade-in slide-in-from-top-3 duration-200">
+          {/* هدر باکس سبد بالا */}
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="size-8 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 grid place-items-center">
+                <Icon name="cart" className="size-4.5" />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-extrabold text-sm sm:text-base text-slate-900">
+                    سبد سفارش جاری شما
+                  </h3>
+                  <span className="nums text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                    {toFaDigits(cart.length)} قلم کالا
+                  </span>
+                  <span className="nums text-xs text-slate-500 hidden sm:inline">
+                    ({toFaDigits(cartSummary.itemCount)} عدد)
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5 hidden sm:block">
+                  اقلام انتخابی شما به‌صورت آنی به این لیست افزوده می‌شوند و می‌توانید تعداد را ویرایش کنید.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCart([])}
+                className="text-xs text-slate-400 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors font-medium"
+              >
+                تخلیه سبد
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCartDrawer(true)}
+                className="btn btn-blue text-xs px-3.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5 shadow-xs"
+              >
+                <span>مشاهده و نهایی‌سازی</span>
+                <span>←</span>
+              </button>
+            </div>
+          </div>
+
+          {/* جدول اقلام سبد */}
+          <div className="overflow-x-auto scrollbar-thin rounded-xl border border-slate-200/80">
+            <table className="min-w-full divide-y divide-slate-200 text-xs text-right">
+              <thead className="bg-slate-50 text-slate-600 font-bold">
+                <tr>
+                  <th className="py-2.5 px-3">نام و مشخصات کالا</th>
+                  <th className="py-2.5 px-3">کد فنی (SKU)</th>
+                  <th className="py-2.5 px-3 text-center">تعداد بسته</th>
+                  <th className="py-2.5 px-3 text-center">تعداد سفارش</th>
+                  <th className="py-2.5 px-3 text-left">قیمت واحد (تومان)</th>
+                  <th className="py-2.5 px-3 text-left">جمع ردیف (تومان)</th>
+                  <th className="py-2.5 px-2 text-center w-10">حذف</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {cart.map(({ item, qty }) => {
+                  const base = item.priceBefore ?? item.price ?? 0;
+                  let volumeDiscount = 0;
+                  for (const v of item.volumePrices) {
+                    if (qty >= v.qtyFrom) volumeDiscount = Math.max(volumeDiscount, v.discountPercent);
+                  }
+                  const totalDisc = Math.min(90, volumeDiscount + props.tierDiscount + props.customerDiscount);
+                  const effectiveUnitPrice = Math.round(base * (1 - totalDisc / 100));
+                  const lineTotal = effectiveUnitPrice * qty;
+                  const step = Math.max(1, item.packSize);
+
+                  return (
+                    <tr key={item.id} className="hover:bg-blue-50/30 transition-colors">
+                      <td className="py-2.5 px-3">
+                        <div className="font-bold text-slate-900 truncate max-w-xs">{item.name}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+                          <span>{item.brand}</span>
+                          {item.partBrand && <span>· سازنده: {item.partBrand}</span>}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 font-mono text-[11px] text-slate-600 nums">
+                        {item.sku}
+                      </td>
+                      <td className="py-2.5 px-3 text-center nums text-slate-600">
+                        {toFaDigits(item.packSize)} {item.unit}
+                      </td>
+                      <td className="py-2.5 px-3 text-center">
+                        <div className="inline-flex items-center gap-1 bg-slate-100/90 border border-slate-200 rounded-lg p-0.5">
+                          <button
+                            type="button"
+                            onClick={() => updateCartQty(item.id, qty - step)}
+                            disabled={qty <= Math.max(1, item.minQty)}
+                            className="size-6 grid place-items-center rounded bg-white text-slate-700 hover:bg-slate-200 font-bold disabled:opacity-40 disabled:hover:bg-white"
+                            title="کاهش تعداد"
+                          >
+                            −
+                          </button>
+                          <span className="w-10 text-center font-bold text-xs nums text-slate-900">
+                            {toFaDigits(qty)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateCartQty(item.id, qty + step)}
+                            disabled={qty >= item.stockQty}
+                            className="size-6 grid place-items-center rounded bg-blue-600 text-white hover:bg-blue-700 font-bold disabled:opacity-40"
+                            title="افزایش تعداد"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-left font-mono font-bold text-slate-700 nums">
+                        {formatToman(effectiveUnitPrice)}
+                      </td>
+                      <td className="py-2.5 px-3 text-left font-mono font-black text-blue-700 nums text-sm">
+                        {formatToman(lineTotal)}
+                      </td>
+                      <td className="py-2.5 px-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeCartItem(item.id)}
+                          className="size-7 grid place-items-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors mx-auto"
+                          title="حذف از سبد"
+                        >
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* نوار پایین جدول: جمع کل و ثبت مستقیم فاکتور */}
+          <div className="pt-2 flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3 text-xs">
+              <span className="text-slate-500 font-medium">مجموع مبالغ اقلام:</span>
+              <span className="nums font-black text-base text-slate-900">
+                {formatToman(cartSummary.subtotal)} <span className="text-xs font-normal text-slate-500">تومان</span>
+              </span>
+              {(props.tierDiscount > 0 || props.customerDiscount > 0) && (
+                <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
+                  {toFaDigits(props.tierDiscount + props.customerDiscount)}٪ تخفیف همکاری اعمال شد
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowCartDrawer(true)}
+                className="btn text-xs px-3.5 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold"
+              >
+                انتخاب نحوه باربری و آدرس
+              </button>
+              <button
+                type="button"
+                onClick={submitCartOrder}
+                disabled={checkoutBusy}
+                className="btn btn-emerald text-xs px-4 py-2 rounded-xl font-black shadow-xs active:scale-95 transition-all flex items-center gap-1.5"
+              >
+                {checkoutBusy ? "در حال ثبت…" : "ثبت پیش‌فاکتور رسمی ←"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* مرکز صفحه: بخش جست‌وجوی هوشمند با زوم کامل (Focal Hero Search Console) */}
       <div className="mt-3 sm:mt-4 p-3.5 sm:p-6 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-3.5">
         {/* ۱. نوار جست‌وجوی بزرگ و برجسته (Hero Zoom Search) */}
