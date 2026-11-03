@@ -8,6 +8,13 @@ export function toFaDigits(input: string | number): string {
   return String(input).replace(/[0-9]/g, (d) => FA_DIGITS[Number(d)]);
 }
 
+/** تبدیل ارقام فارسی و عربی به ارقام استاندارد انگلیسی برای محاسبات و اینپوت‌ها */
+export function toEnDigits(input: string | number): string {
+  return String(input)
+    .replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+    .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+}
+
 /** هر چیزی که به عدد/رشته تبدیل‌شدنی است — شامل Decimal پریزما */
 export type NumericLike = number | string | { toString(): string };
 

@@ -5,8 +5,8 @@ import { PwaRegister } from "@/components/pwa-register";
 
 const vazirmatn = Vazirmatn({
   variable: "--font-vazirmatn",
-  subsets: ["arabic"],
-  weight: ["400", "500", "700"],
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   display: "swap",
 });
 

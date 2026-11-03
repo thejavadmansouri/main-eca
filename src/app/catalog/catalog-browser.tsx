@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { formatToman, toFaDigits } from "@/lib/digits";
+import { formatToman, toFaDigits, toEnDigits } from "@/lib/digits";
 import type { CatalogItem } from "@/lib/catalog";
 import { QuickBuySheet } from "./quick-buy-sheet";
 import { Icon } from "@/components/ui/icon";
@@ -329,7 +329,8 @@ export function CatalogBrowser(props: {
   );
 
   const handleQtyInputChange = (item: CatalogItem, text: string) => {
-    const digitsOnly = text.replace(/\D/g, "");
+    const enText = toEnDigits(text);
+    const digitsOnly = enText.replace(/\D/g, "");
     setRawInputValues((prev) => ({ ...prev, [item.id]: digitsOnly }));
     if (digitsOnly.length > 0) {
       const parsed = parseInt(digitsOnly, 10);
@@ -349,7 +350,7 @@ export function CatalogBrowser(props: {
   const handleQtyInputBlur = (item: CatalogItem) => {
     const raw = rawInputValues[item.id];
     if (raw !== undefined) {
-      const parsed = parseInt(raw, 10);
+      const parsed = parseInt(toEnDigits(raw), 10);
       const inCart = cart.find((c) => c.item.id === item.id);
       if (isNaN(parsed) || parsed <= 0) {
         if (inCart) {
@@ -654,15 +655,17 @@ export function CatalogBrowser(props: {
                     <tr key={item.id} className="hover:bg-blue-50/30 transition-colors">
                       <td className="py-2.5 px-3">
                         <div className="font-bold text-slate-900 truncate max-w-xs">{item.name}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5">
-                          <span>{item.brand}</span>
+                        <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5">
+                          <span className="font-semibold text-slate-700">{item.brand}</span>
                           {item.partBrand && <span>· سازنده: {item.partBrand}</span>}
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 font-mono text-[11px] text-slate-600 nums">
-                        {item.sku}
+                      <td className="py-2.5 px-3">
+                        <span className="font-mono text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded inline-block nums">
+                          {item.sku}
+                        </span>
                       </td>
-                      <td className="py-2.5 px-3 text-center nums text-slate-600">
+                      <td className="py-2.5 px-3 text-center nums text-slate-700 font-bold text-xs">
                         {toFaDigits(item.packSize)} {item.unit}
                       </td>
                       <td className="py-2.5 px-3 text-center">
@@ -685,10 +688,10 @@ export function CatalogBrowser(props: {
                           <input
                             type="text"
                             inputMode="numeric"
-                            value={rawInputValues[item.id] ?? qty}
+                            value={toFaDigits(rawInputValues[item.id] ?? qty)}
                             onChange={(e) => handleQtyInputChange(item, e.target.value)}
                             onBlur={() => handleQtyInputBlur(item)}
-                            className="w-12 h-7 text-center font-black text-xs text-slate-900 bg-white border border-slate-200 rounded outline-none focus:border-blue-500 focus:bg-blue-50/50 transition nums"
+                            className="w-14 h-8 text-center font-black text-sm text-slate-900 bg-white border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:bg-blue-50/50 transition nums"
                             title="تغییر مستقیم تعداد"
                           />
                           <button
@@ -703,11 +706,17 @@ export function CatalogBrowser(props: {
                           </button>
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 text-left font-mono font-bold text-slate-700 nums">
-                        {formatToman(effectiveUnitPrice)}
+                      <td className="py-2.5 px-3 text-left">
+                        <span className="font-extrabold text-sm text-slate-800 nums">
+                          {formatToman(effectiveUnitPrice)}
+                        </span>
+                        <span className="text-[10px] text-slate-500 ms-1 font-normal font-sans">تومان</span>
                       </td>
-                      <td className="py-2.5 px-3 text-left font-mono font-black text-blue-700 nums text-sm">
-                        {formatToman(lineTotal)}
+                      <td className="py-2.5 px-3 text-left">
+                        <span className="font-black text-base text-blue-700 nums">
+                          {formatToman(lineTotal)}
+                        </span>
+                        <span className="text-[10px] text-blue-600/80 ms-1 font-normal font-sans">تومان</span>
                       </td>
                       <td className="py-2.5 px-2 text-center">
                         <button
@@ -731,7 +740,7 @@ export function CatalogBrowser(props: {
             <div className="flex items-center gap-3 sm:gap-4 text-xs flex-wrap">
               <div>
                 <span className="text-slate-500 font-medium">مجموع اقلام: </span>
-                <span className="nums font-mono font-black text-sm sm:text-base text-slate-900">
+                <span className="nums font-black text-base sm:text-lg text-slate-900">
                   {formatToman(cartSummary.subtotal)}
                 </span>
                 <span className="text-[11px] text-slate-500 ms-1 font-sans">تومان</span>
@@ -740,7 +749,7 @@ export function CatalogBrowser(props: {
               {cartSummary.shippingCost > 0 ? (
                 <div>
                   <span className="text-slate-500 font-medium">کرایه باربری: </span>
-                  <span className="nums font-mono font-bold text-xs sm:text-sm text-slate-800">
+                  <span className="nums font-extrabold text-sm text-slate-800">
                     {formatToman(cartSummary.shippingCost)}
                   </span>
                   <span className="text-[11px] text-slate-500 ms-1 font-sans">تومان</span>
@@ -753,10 +762,10 @@ export function CatalogBrowser(props: {
 
               <div className="border-s border-slate-200 ps-3 sm:ps-4">
                 <span className="text-slate-900 font-bold">مبلغ نهایی: </span>
-                <span className="nums font-mono font-black text-base sm:text-lg text-blue-700">
+                <span className="nums font-black text-lg sm:text-xl text-blue-700">
                   {formatToman(cartSummary.total)}
                 </span>
-                <span className="text-xs text-blue-900 font-normal ms-1 font-sans">تومان</span>
+                <span className="text-xs text-blue-900 font-bold ms-1 font-sans">تومان</span>
               </div>
 
               {(props.tierDiscount > 0 || props.customerDiscount > 0) && (
@@ -1609,11 +1618,11 @@ export function CatalogBrowser(props: {
                             <input
                               type="text"
                               inputMode="numeric"
-                              value={rawInputValues[item.id] ?? currentQty}
+                              value={toFaDigits(rawInputValues[item.id] ?? currentQty)}
                               onChange={(e) => handleQtyInputChange(item, e.target.value)}
                               onBlur={() => handleQtyInputBlur(item)}
                               disabled={item.stockQty <= 0}
-                              className="w-14 h-9 text-center bg-white font-black text-sm text-slate-900 border-x border-slate-300 outline-none focus:bg-blue-50 focus:text-blue-700 transition-colors nums"
+                              className="w-14 h-9 text-center bg-white font-black text-base text-slate-900 border-x border-slate-300 outline-none focus:bg-blue-50 focus:text-blue-700 transition-colors nums"
                             />
                           </div>
                           <button
@@ -1848,12 +1857,12 @@ export function CatalogBrowser(props: {
                         {item.price !== null ? (
                           <div className="nums">
                             {item.priceBefore && item.priceBefore > item.price && (
-                              <span className="block text-[10px] text-slate-600 line-through">
+                              <span className="block text-[11px] text-slate-500 line-through">
                                 {formatToman(item.priceBefore)}
                               </span>
                             )}
-                            <span className="font-black text-base text-blue-700">{formatToman(item.price)}</span>
-                            <span className="text-[11px] text-slate-600 font-normal ms-1">تومان</span>
+                            <span className="font-black text-lg text-blue-700">{formatToman(item.price)}</span>
+                            <span className="text-xs text-slate-500 font-bold ms-1 font-sans">تومان</span>
                           </div>
                         ) : (
                           <span className="text-xs text-slate-600 font-medium">پس از تأیید حساب</span>
@@ -1876,11 +1885,11 @@ export function CatalogBrowser(props: {
                           <input
                             type="text"
                             inputMode="numeric"
-                            value={rawInputValues[item.id] ?? currentQty}
+                            value={toFaDigits(rawInputValues[item.id] ?? currentQty)}
                             onChange={(e) => handleQtyInputChange(item, e.target.value)}
                             onBlur={() => handleQtyInputBlur(item)}
                             disabled={item.stockQty <= 0}
-                            className="w-12 h-full text-center font-black text-xs text-slate-900 border-x border-slate-200 outline-none focus:bg-blue-50 focus:text-blue-700 transition-colors nums"
+                            className="w-14 h-full text-center font-black text-sm text-slate-900 border-x border-slate-200 outline-none focus:bg-blue-50 focus:text-blue-700 transition-colors nums"
                           />
                           <button
                             type="button"

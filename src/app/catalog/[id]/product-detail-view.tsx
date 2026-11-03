@@ -514,7 +514,7 @@ export function ProductDetailView({
                         const v = Number(e.target.value);
                         if (v >= 1) setQty(v);
                       }}
-                      className="w-16 text-center font-mono font-black text-slate-900 bg-transparent focus:outline-none nums text-base"
+                      className="w-16 text-center font-black text-slate-900 bg-transparent focus:outline-none nums text-base"
                     />
                     <button
                       type="button"
@@ -532,7 +532,7 @@ export function ProductDetailView({
                   <span className="text-slate-500">
                     مبلغ کل ({toFaDigits(qty)} {product.unit}):
                   </span>
-                  <div className="nums font-mono font-black text-xl text-slate-900">
+                  <div className="nums font-black text-2xl text-slate-900">
                     {formatToman(totalPrice)} <span className="text-xs font-normal text-slate-500 font-sans">تومان</span>
                   </div>
                 </div>

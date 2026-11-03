@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { formatToman, toFaDigits } from "@/lib/digits";
+import { formatToman, toFaDigits, toEnDigits } from "@/lib/digits";
 import type { CatalogItem, ShippingOption } from "./catalog-browser";
 
 /*
@@ -198,9 +198,9 @@ export function QuickBuySheet(props: {
               <input
                 dir="ltr"
                 inputMode="numeric"
-                value={qty}
-                onChange={(e) => setQty(Number(e.target.value.replace(/\D/g, "")))}
-                className="input flex-1 h-11 text-center text-xl font-bold nums border-slate-300 rounded-lg"
+                value={toFaDigits(qty)}
+                onChange={(e) => setQty(Number(toEnDigits(e.target.value).replace(/\D/g, "")))}
+                className="input flex-1 h-11 text-center text-xl font-black nums border-slate-300 rounded-lg"
               />
               <button
                 type="button"
