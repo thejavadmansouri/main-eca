@@ -149,11 +149,11 @@ export function ProductDetailView({
   // افزایش و کاهش گام بر اساس packSize
   const step = Math.max(1, product.packSize);
   const handleIncrease = () => {
-    if (product.stockQty > 0 && qty + step > product.stockQty) return;
-    setQty((prev) => prev + step);
+    if (product.stockQty > 0 && qty + 1 > product.stockQty) return;
+    setQty((prev) => prev + 1);
   };
   const handleDecrease = () => {
-    setQty((prev) => Math.max(product.minQty, prev - step));
+    setQty((prev) => Math.max(1, prev - 1));
   };
 
   // افزودن به سبد و انتقال به کاتالوگ با باز شدن کشوی سبد خرید
@@ -508,18 +508,18 @@ export function ProductDetailView({
                     <input
                       type="number"
                       value={qty}
-                      min={product.minQty}
-                      step={step}
+                      min={1}
+                      step={1}
                       onChange={(e) => {
                         const v = Number(e.target.value);
-                        if (v >= product.minQty) setQty(v);
+                        if (v >= 1) setQty(v);
                       }}
                       className="w-16 text-center font-mono font-black text-slate-900 bg-transparent focus:outline-none nums text-base"
                     />
                     <button
                       type="button"
                       onClick={handleIncrease}
-                      disabled={product.stockQty > 0 && qty + step > product.stockQty}
+                      disabled={product.stockQty > 0 && qty + 1 > product.stockQty}
                       className="size-9 rounded-xl bg-white shadow-xs font-black text-slate-700 hover:bg-slate-200 active:scale-95 transition flex items-center justify-center text-lg disabled:opacity-30"
                     >
                       +

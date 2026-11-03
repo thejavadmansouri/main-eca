@@ -213,16 +213,16 @@ export function CatalogBrowser(props: {
 
   // افزودن به سبد خرید چندقلمی
   const addToCart = (item: CatalogItem, qtyToAdd?: number) => {
-    const step = Math.max(1, item.packSize);
-    const addQty = qtyToAdd ?? Math.max(item.minQty, step);
+    const addQty = qtyToAdd && qtyToAdd > 0 ? qtyToAdd : 1;
+    const maxStock = item.stockQty > 0 ? item.stockQty : 99999;
 
     setCart((prev) => {
       const existing = prev.find((c) => c.item.id === item.id);
       if (existing) {
-        const nextQty = Math.min(item.stockQty, existing.qty + addQty);
+        const nextQty = Math.min(maxStock, existing.qty + addQty);
         return prev.map((c) => (c.item.id === item.id ? { ...c, qty: nextQty } : c));
       }
-      return [...prev, { item, qty: Math.min(item.stockQty, addQty) }];
+      return [...prev, { item, qty: Math.min(maxStock, addQty) }];
     });
 
     setAddedToast(`«${item.name}» (${toFaDigits(addQty)} ${item.unit}) به سبد سفارش اضافه شد`);
@@ -234,9 +234,10 @@ export function CatalogBrowser(props: {
       prev
         .map((c) => {
           if (c.item.id !== productId) return c;
-          const step = Math.max(1, c.item.packSize);
-          const snapped = Math.ceil(Math.max(c.item.minQty, newQty) / step) * step;
-          return { ...c, qty: Math.min(c.item.stockQty, snapped) };
+          if (newQty <= 0) return { ...c, qty: 0 };
+          const max = c.item.stockQty > 0 ? c.item.stockQty : 99999;
+          const target = Math.max(1, Math.min(max, newQty));
+          return { ...c, qty: target };
         })
         .filter((c) => c.qty > 0),
     );
@@ -270,16 +271,15 @@ export function CatalogBrowser(props: {
     (item: CatalogItem) => {
       const inCart = cart.find((c) => c.item.id === item.id);
       if (inCart) return inCart.qty;
-      return itemQuantities[item.id] ?? Math.max(item.minQty, item.packSize, 1);
+      return itemQuantities[item.id] ?? 1;
     },
     [cart, itemQuantities],
   );
 
   const setItemQty = useCallback(
     (item: CatalogItem, desired: number) => {
-      const min = Math.max(1, item.minQty);
-      const max = item.stockQty > 0 ? item.stockQty : 1;
-      const valid = Math.max(min, Math.min(max, desired));
+      const max = item.stockQty > 0 ? item.stockQty : 99999;
+      const valid = Math.max(1, Math.min(max, desired));
 
       const inCart = cart.find((c) => c.item.id === item.id);
       if (inCart) {
@@ -298,12 +298,27 @@ export function CatalogBrowser(props: {
 
   const adjustItemQty = useCallback(
     (item: CatalogItem, delta: number) => {
-      const current = getItemQty(item);
-      const step = Math.max(1, item.packSize);
-      const next = current + delta * step;
-      setItemQty(item, next);
+      const inCart = cart.find((c) => c.item.id === item.id);
+      if (inCart) {
+        const nextQty = inCart.qty + delta;
+        if (nextQty <= 0) {
+          removeCartItem(item.id);
+        } else {
+          updateCartQty(item.id, nextQty);
+        }
+      } else {
+        if (delta > 0) {
+          // افزودن مستقیم با ۱ کلیک از دکمه + در جدول کالاها
+          addToCart(item, 1);
+        } else {
+          setItemQuantities((prev) => {
+            const cur = prev[item.id] ?? 1;
+            return { ...prev, [item.id]: Math.max(1, cur + delta) };
+          });
+        }
+      }
     },
-    [getItemQty, setItemQty],
+    [cart, updateCartQty, addToCart],
   );
 
   const handleQtyInputChange = (item: CatalogItem, text: string) => {
@@ -313,7 +328,7 @@ export function CatalogBrowser(props: {
       const parsed = parseInt(digitsOnly, 10);
       if (!isNaN(parsed) && parsed > 0) {
         const inCart = cart.find((c) => c.item.id === item.id);
-        const max = item.stockQty > 0 ? item.stockQty : 1;
+        const max = item.stockQty > 0 ? item.stockQty : 99999;
         const clamped = Math.min(max, parsed);
         if (inCart) {
           updateCartQty(item.id, clamped);
@@ -328,12 +343,21 @@ export function CatalogBrowser(props: {
     const raw = rawInputValues[item.id];
     if (raw !== undefined) {
       const parsed = parseInt(raw, 10);
-      const min = Math.max(1, item.minQty);
-      if (isNaN(parsed) || parsed < min) {
-        setItemQty(item, min);
+      const inCart = cart.find((c) => c.item.id === item.id);
+      if (isNaN(parsed) || parsed <= 0) {
+        if (inCart) {
+          removeCartItem(item.id);
+        } else {
+          setItemQuantities((prev) => ({ ...prev, [item.id]: 1 }));
+        }
       } else {
         setItemQty(item, parsed);
       }
+      setRawInputValues((prev) => {
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
+      });
     }
   };
 
@@ -541,25 +565,38 @@ export function CatalogBrowser(props: {
                         {toFaDigits(item.packSize)} {item.unit}
                       </td>
                       <td className="py-2.5 px-3 text-center">
-                        <div className="inline-flex items-center gap-1 bg-slate-100/90 border border-slate-200 rounded-lg p-0.5">
+                        <div className="inline-flex items-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5 shadow-2xs">
                           <button
                             type="button"
-                            onClick={() => updateCartQty(item.id, qty - step)}
-                            disabled={qty <= Math.max(1, item.minQty)}
-                            className="size-6 grid place-items-center rounded bg-white text-slate-700 hover:bg-slate-200 font-bold disabled:opacity-40 disabled:hover:bg-white"
-                            title="کاهش تعداد"
+                            onClick={() => {
+                              if (qty > 1) {
+                                updateCartQty(item.id, qty - 1);
+                              } else {
+                                removeCartItem(item.id);
+                              }
+                            }}
+                            className="size-7 grid place-items-center rounded bg-white text-slate-700 hover:bg-rose-50 hover:text-rose-600 active:scale-95 font-black text-sm border border-slate-200 transition-all cursor-pointer"
+                            title={qty > 1 ? "کاهش یک عدد" : "حذف از سبد"}
+                            aria-label="کاهش"
                           >
                             −
                           </button>
-                          <span className="w-10 text-center font-bold text-xs nums text-slate-900">
-                            {toFaDigits(qty)}
-                          </span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={rawInputValues[item.id] ?? qty}
+                            onChange={(e) => handleQtyInputChange(item, e.target.value)}
+                            onBlur={() => handleQtyInputBlur(item)}
+                            className="w-12 h-7 text-center font-black text-xs text-slate-900 bg-white border border-slate-200 rounded outline-none focus:border-blue-500 focus:bg-blue-50/50 transition nums"
+                            title="تغییر مستقیم تعداد"
+                          />
                           <button
                             type="button"
-                            onClick={() => updateCartQty(item.id, qty + step)}
-                            disabled={qty >= item.stockQty}
-                            className="size-6 grid place-items-center rounded bg-blue-600 text-white hover:bg-blue-700 font-bold disabled:opacity-40"
-                            title="افزایش تعداد"
+                            onClick={() => updateCartQty(item.id, qty + 1)}
+                            disabled={item.stockQty > 0 && qty >= item.stockQty}
+                            className="size-7 grid place-items-center rounded bg-blue-600 text-white hover:bg-blue-700 active:scale-95 font-black text-sm disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-2xs"
+                            title="افزایش یک عدد"
+                            aria-label="افزایش"
                           >
                             +
                           </button>
@@ -1321,9 +1358,10 @@ export function CatalogBrowser(props: {
                           <button
                             type="button"
                             onClick={() => adjustItemQty(item, -1)}
-                            disabled={currentQty <= item.minQty || item.stockQty <= 0}
+                            disabled={!inCart && (currentQty <= 1 || item.stockQty <= 0)}
                             className="size-9 grid place-items-center text-slate-700 hover:bg-slate-200 active:scale-90 font-black text-lg disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
                             aria-label="کاهش تعداد"
+                            title={inCart && currentQty <= 1 ? "حذف از سبد" : "کاهش تعداد"}
                           >
                             −
                           </button>
@@ -1341,9 +1379,10 @@ export function CatalogBrowser(props: {
                           <button
                             type="button"
                             onClick={() => adjustItemQty(item, 1)}
-                            disabled={currentQty >= item.stockQty || item.stockQty <= 0}
+                            disabled={item.stockQty > 0 && currentQty >= item.stockQty}
                             className="size-9 grid place-items-center text-slate-700 hover:bg-slate-200 active:scale-90 font-black text-lg disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
                             aria-label="افزایش تعداد"
+                            title={inCart ? "افزایش تعداد" : "افزودن به سبد"}
                           >
                             +
                           </button>
@@ -1587,9 +1626,10 @@ export function CatalogBrowser(props: {
                           <button
                             type="button"
                             onClick={() => adjustItemQty(item, -1)}
-                            disabled={currentQty <= item.minQty || item.stockQty <= 0}
+                            disabled={!inCart && (currentQty <= 1 || item.stockQty <= 0)}
                             className="w-7 h-full grid place-items-center text-slate-700 hover:bg-slate-100 active:scale-90 font-black text-sm disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
                             aria-label="کاهش"
+                            title={inCart && currentQty <= 1 ? "حذف از سبد" : "کاهش تعداد"}
                           >
                             −
                           </button>
@@ -1605,9 +1645,10 @@ export function CatalogBrowser(props: {
                           <button
                             type="button"
                             onClick={() => adjustItemQty(item, 1)}
-                            disabled={currentQty >= item.stockQty || item.stockQty <= 0}
+                            disabled={item.stockQty > 0 && currentQty >= item.stockQty}
                             className="w-7 h-full grid place-items-center text-slate-700 hover:bg-slate-100 active:scale-90 font-black text-sm disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
                             aria-label="افزایش"
+                            title={inCart ? "افزایش تعداد" : "افزودن به سبد"}
                           >
                             +
                           </button>
@@ -1759,15 +1800,26 @@ export function CatalogBrowser(props: {
                     <div className="flex flex-col items-end gap-2">
                       <div className="flex items-center gap-1 border border-slate-200 rounded-lg bg-slate-50 p-0.5">
                         <button
-                          onClick={() => updateCartQty(c.item.id, c.qty - c.item.packSize)}
-                          className="size-7 grid place-items-center text-xs font-bold hover:bg-slate-200 rounded"
+                          type="button"
+                          onClick={() => {
+                            if (c.qty > 1) {
+                              updateCartQty(c.item.id, c.qty - 1);
+                            } else {
+                              removeCartItem(c.item.id);
+                            }
+                          }}
+                          className="size-7 grid place-items-center text-xs font-bold hover:bg-rose-50 hover:text-rose-600 rounded transition cursor-pointer"
+                          title={c.qty > 1 ? "کاهش یک عدد" : "حذف از سبد"}
                         >
                           −
                         </button>
                         <span className="nums text-xs font-bold px-2 text-slate-800">{toFaDigits(c.qty)}</span>
                         <button
-                          onClick={() => updateCartQty(c.item.id, c.qty + c.item.packSize)}
-                          className="size-7 grid place-items-center text-xs font-bold hover:bg-slate-200 rounded"
+                          type="button"
+                          onClick={() => updateCartQty(c.item.id, c.qty + 1)}
+                          disabled={c.item.stockQty > 0 && c.qty >= c.item.stockQty}
+                          className="size-7 grid place-items-center text-xs font-bold hover:bg-slate-200 rounded transition cursor-pointer disabled:opacity-40"
+                          title="افزایش یک عدد"
                         >
                           +
                         </button>

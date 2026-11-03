@@ -35,10 +35,9 @@ export function QuickBuySheet(props: {
   const step = Math.max(1, item.packSize);
 
   const setQty = (value: number) => {
-    const safe = Math.max(item.minQty, Math.floor(value) || item.minQty);
-    // به مضرب بسته‌بندی گرد کن
-    const snapped = Math.ceil(safe / step) * step;
-    setQtyState(Math.min(snapped, item.stockQty));
+    const max = item.stockQty > 0 ? item.stockQty : 99999;
+    const safe = Math.max(1, Math.min(max, Math.floor(value) || 1));
+    setQtyState(safe);
   };
 
   const volumePercent = useMemo(() => {
@@ -188,8 +187,9 @@ export function QuickBuySheet(props: {
 
             <div className="mt-2 flex items-stretch gap-2">
               <button
-                onClick={() => setQty(qty - step)}
-                disabled={qty <= item.minQty}
+                type="button"
+                onClick={() => setQty(qty - 1)}
+                disabled={qty <= 1}
                 className="btn btn-ghost w-12 h-11 text-xl rounded-lg border border-slate-300 disabled:opacity-40"
                 aria-label="کم کردن"
               >
@@ -203,8 +203,9 @@ export function QuickBuySheet(props: {
                 className="input flex-1 h-11 text-center text-xl font-bold nums border-slate-300 rounded-lg"
               />
               <button
-                onClick={() => setQty(qty + step)}
-                disabled={qty + step > item.stockQty}
+                type="button"
+                onClick={() => setQty(qty + 1)}
+                disabled={item.stockQty > 0 && qty >= item.stockQty}
                 className="btn btn-ghost w-12 h-11 text-xl rounded-lg border border-slate-300 disabled:opacity-40"
                 aria-label="زیاد کردن"
               >
