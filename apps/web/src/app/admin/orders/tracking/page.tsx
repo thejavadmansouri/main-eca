@@ -20,12 +20,20 @@ import {
   TrendingUp,
   AlertCircle,
   Eye,
+  Camera,
+  MessageSquare,
+  Coins,
+  Send,
+  Phone,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { getWoodOrders, getInstallationOrders } from "@/lib/api";
-import { faDate, toFa } from "@/lib/format";
+import { faDate, money, toFa } from "@/lib/format";
+import { ProjectJourneyDetailDialog } from "./_components/project-journey-detail-dialog";
+import { SendToCustomerDialog } from "./_components/send-to-customer-dialog";
 
 const STAGE_CONFIG: Record<string, { label: string; color: string; step: number }> = {
   CUTTING: { label: "ایستگاه برش", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200", step: 1 },
@@ -41,6 +49,8 @@ const STAGE_CONFIG: Record<string, { label: string; color: string; step: number 
 export default function OrderTrackingJourneyPage() {
   const [search, setSearch] = React.useState("");
   const [activeFilter, setActiveFilter] = React.useState<"ALL" | "IN_PROGRESS" | "READY" | "COMPLETED">("ALL");
+  const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
+  const [sendOrder, setSendOrder] = React.useState<any | null>(null);
 
   const { data: woodOrders = [], isLoading: isLoadingWood } = useQuery({
     queryKey: ["all-wood-orders"],
@@ -195,58 +205,111 @@ export default function OrderTrackingJourneyPage() {
               step: 1,
             };
             const percent = Math.min(100, Math.max(0, order.progressPercent || 0));
+            const photoCount = order.stageUpdates?.reduce((sum: number, u: any) => sum + (u.photos?.length || 0), 0) || 0;
+            const notesCount = order.stageUpdates?.length || 0;
 
             return (
-              <Card key={order.id} className="p-4 shadow-sm transition hover:shadow-md">
+              <Card
+                key={order.id}
+                onClick={() => setSelectedOrderId(order.id)}
+                className="group p-4 shadow-2xs transition-all hover:shadow-md hover:border-primary/50 cursor-pointer rounded-2xl border-border/80"
+              >
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-primary">{order.code}</span>
-                      <h3 className="font-bold text-foreground text-sm">
+                      <span className="font-mono text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20">
+                        {order.code}
+                      </span>
+                      <h3 className="font-black text-foreground text-sm group-hover:text-primary transition-colors">
                         {order.projectTitle || "سفارش تولید"}
                       </h3>
-                      <span className={`rounded-md border px-2 py-0.5 text-xs font-semibold ${stageMeta.color}`}>
+                      <Badge variant="outline" className={`text-xs font-bold ${stageMeta.color}`}>
                         {stageMeta.label}
-                      </span>
+                      </Badge>
+
+                      {photoCount > 0 && (
+                        <Badge variant="outline" className="text-[11px] font-bold bg-emerald-50 text-emerald-700 border-emerald-300 gap-1">
+                          <Camera className="size-3" />
+                          {toFa(photoCount)} عکس
+                        </Badge>
+                      )}
+
+                      {notesCount > 0 && (
+                        <Badge variant="outline" className="text-[11px] font-bold bg-blue-50 text-blue-700 border-blue-300 gap-1">
+                          <MessageSquare className="size-3" />
+                          {toFa(notesCount)} نوت کارگر
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                       <span>کارفرما: <strong className="text-foreground">{order.customerName || "ثبت نشده"}</strong></span>
+                      {order.customerPhone && (
+                        <span className="font-mono text-muted-foreground">({order.customerPhone})</span>
+                      )}
                       {order.assignedInstaller && (
-                        <span className="flex items-center gap-1">
-                          <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
+                        <span className="flex items-center gap-1 font-semibold text-emerald-700">
+                          <UserCheck className="size-3.5" />
                           نصاب: {order.assignedInstaller}
                         </span>
                       )}
                       <span className="flex items-center gap-1">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {faDate(order.createdAt)}
+                        <Calendar className="size-3.5" />
+                        ثبت: {faDate(order.createdAt)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedOrderId(order.id);
+                      }}
+                      className="gap-1.5 text-xs font-bold rounded-xl shadow-xs h-8"
+                    >
+                      <Eye className="size-3.5" />
+                      مشاهده پرونده و عکس‌ها
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSendOrder(order);
+                      }}
+                      className="gap-1.5 text-xs font-bold rounded-xl h-8 border-primary/30 text-primary hover:bg-primary/10"
+                    >
+                      <Share2 className="size-3.5" />
+                      ارسال به مشتری
+                    </Button>
+
                     {order.trackingToken && (
                       <Button
                         size="sm"
-                        variant="outline"
-                        onClick={() => window.open(`/track/${order.trackingToken}`, "_blank")}
-                        className="gap-1.5 text-xs"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(`/track/${order.trackingToken}`, "_blank");
+                        }}
+                        className="gap-1 text-xs h-8 text-muted-foreground hover:text-foreground"
+                        title="مشاهده صفحه رهگیری زنده"
                       >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        صفحه رهگیری عمومی
+                        <ExternalLink className="size-3.5" />
                       </Button>
                     )}
                   </div>
                 </div>
 
                 {/* پیشرفت چندمرحله‌ای بصری */}
-                <div className="mt-3.5 rounded-lg bg-muted/40 p-3">
+                <div className="mt-3.5 rounded-xl bg-muted/40 p-3 border border-border/50">
                   <div className="mb-2 flex items-center justify-between text-xs">
-                    <span className="font-medium">پیشرفت کلی پروژه:</span>
-                    <span className="font-mono font-bold text-primary">{toFa(percent)}٪</span>
+                    <span className="font-semibold text-foreground">پیشرفت فیزیکی کارگاه:</span>
+                    <span className="font-mono font-black text-primary text-sm">{toFa(percent)}٪</span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 transition-all duration-500"
                       style={{ width: `${percent}%` }}
@@ -258,6 +321,21 @@ export default function OrderTrackingJourneyPage() {
           })}
         </div>
       )}
+
+      {/* مودال جامع سیر پرونده و یادداشت‌های کارگران */}
+      <ProjectJourneyDetailDialog
+        open={Boolean(selectedOrderId)}
+        onOpenChange={(op) => !op && setSelectedOrderId(null)}
+        orderId={selectedOrderId}
+        onOpenSendToCustomer={(ord) => setSendOrder(ord)}
+      />
+
+      {/* مودال ارسال پیامک و لینک رهگیری به کارفرما */}
+      <SendToCustomerDialog
+        open={Boolean(sendOrder)}
+        onOpenChange={(op) => !op && setSendOrder(null)}
+        order={sendOrder}
+      />
     </div>
   );
 }

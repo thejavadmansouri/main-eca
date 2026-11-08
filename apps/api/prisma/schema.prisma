@@ -3078,6 +3078,7 @@ model ProductionOrder {
   // جریان سفارش دوگانه B2B/B2C، کارفرمای نهایی، پروژه و نصاب
   customerType       String?               @default("B2C") // B2B (فروش به همکار/عمده) یا B2C (سفارش مستقیم)
   customerName       String?               // نام سفارش‌دهنده یا همکار
+  customerPhone      String?               // شماره تماس کارفرما/مشتری جهت ارسال پیامک رهگیری
   endClientName      String?               // کارفرمای نهایی پروژه (مخصوص B2B)
   projectTitle       String?               // عنوان و آدرس پروژه
   assignedInstaller  String?               // نصاب مسئول پروژه

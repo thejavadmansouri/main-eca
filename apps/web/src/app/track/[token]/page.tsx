@@ -22,12 +22,30 @@ import {
   Camera,
   Eye,
   Image as ImageIcon,
+  Share2,
+  Copy,
+  Check,
+  QrCode,
+  Coins,
+  Receipt,
+  Star,
+  ThumbsUp,
+  Heart,
+  MessageCircle,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { getPublicTracking } from "@/lib/api";
-import { faDate, toFa } from "@/lib/format";
+import { faDate, money, toFa } from "@/lib/format";
 import { Cabinet3DExplodedViewer } from "@/components/wood/cabinet-3d-exploded-viewer";
 
 const STAGES = [
@@ -45,6 +63,18 @@ export default function PublicProjectTrackingPage() {
   const params = useParams();
   const token = params.token as string;
   const [activePreviewImage, setActivePreviewImage] = React.useState<string | null>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
+  const [isCopied, setIsCopied] = React.useState(false);
+
+  // نظرسنجی و امتیاز رضایت مشتری
+  const [rating, setRating] = React.useState<number>(5);
+  const [hoverRating, setHoverRating] = React.useState<number | null>(null);
+  const [selectedTags, setSelectedTags] = React.useState<string[]>([
+    "کیفیت عالی متریال",
+    "برخورد حرفه‌ای پرسنل",
+  ]);
+  const [feedbackComment, setFeedbackComment] = React.useState("");
+  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = React.useState(false);
 
   const { data: order, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["public-tracking", token],
@@ -101,7 +131,7 @@ export default function PublicProjectTrackingPage() {
     <div className="min-h-screen bg-slate-50/70 pb-12 pt-6 text-foreground antialiased dark:bg-slate-950">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         {/* هدر برندینگ کاردو */}
-        <header className="mb-6 flex items-center justify-between border-b pb-4">
+        <header className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 font-black text-white shadow-md">
               <Building className="h-6 w-6" />
@@ -113,16 +143,27 @@ export default function PublicProjectTrackingPage() {
               <p className="text-xs text-muted-foreground">رهگیری شفاف روند ساخت، تولید کارگاهی و نصب در محل</p>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">بروزرسانی وضعیت</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsShareModalOpen(true)}
+              className="gap-1.5 text-xs font-semibold shadow-sm hover:border-primary"
+            >
+              <Share2 className="h-3.5 w-3.5 text-primary" />
+              <span>اشتراک‌گذاری و ارسال</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">بروزرسانی</span>
+            </Button>
+          </div>
         </header>
 
         {/* کارت اصلی اطلاعات پروژه */}
@@ -368,12 +409,303 @@ export default function PublicProjectTrackingPage() {
           </Card>
         )}
 
+        {/* شفافیت مالی و جزئیات قرارداد پروژه */}
+        {order.contract && (
+          <Card className="mt-6 border p-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3 mb-4">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <Receipt className="h-4 w-4 text-primary" />
+                شفافیت مالی و قرارداد پروژه ({order.contract.contractNumber})
+              </h3>
+              <Badge
+                variant={order.contract.isFullySettled ? "default" : "secondary"}
+                className={order.contract.isFullySettled ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}
+              >
+                {order.contract.isFullySettled ? "تسویه‌شده کامل" : "دارای باقیمانده مالی"}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border bg-muted/30 p-3">
+                <span className="text-[11px] text-muted-foreground">مبلغ کل قرارداد</span>
+                <p className="mt-1 text-sm font-black text-foreground">
+                  {money(order.contract.totalAmount)} <span className="text-[11px] font-normal text-muted-foreground">ریال</span>
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3">
+                <span className="text-[11px] text-emerald-700 dark:text-emerald-400">پیش‌پرداخت دریافت شده</span>
+                <p className="mt-1 text-sm font-black text-emerald-600 dark:text-emerald-400">
+                  {money(order.contract.downPayment)} <span className="text-[11px] font-normal">ریال</span>
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+                <span className="text-[11px] text-amber-700 dark:text-amber-400">مانده حساب نهایی پس از نصب</span>
+                <p className="mt-1 text-sm font-black text-amber-600 dark:text-amber-400">
+                  {money(order.contract.balanceDue)} <span className="text-[11px] font-normal">ریال</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 flex items-center gap-2 rounded-lg bg-blue-500/5 p-2.5 text-xs text-blue-700 dark:text-blue-400">
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              <span>پروژه دارای ۲۴ ماه ضمانت طلایی یراق‌آلات و مقاومت چسب PVC نوار لبه می‌باشد.</span>
+            </div>
+          </Card>
+        )}
+
+        {/* بازخورد و رضایت‌سنجی کارفرما */}
+        <Card className="mt-6 border p-5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3 mb-4">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <Heart className="h-4 w-4 text-rose-500" />
+              نظرسنجی و رضایت‌سنجی از کیفیت پروژه
+            </h3>
+            <span className="text-xs text-muted-foreground">صدای شما برای بهبود ما ارزشمند است</span>
+          </div>
+
+          {isFeedbackSubmitted ? (
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-6 text-center">
+              <ThumbsUp className="mx-auto h-8 w-8 text-emerald-600 mb-2" />
+              <h4 className="text-sm font-bold text-foreground">با تشکر از ثبت نظر ارزشمند شما!</h4>
+              <p className="mt-1 text-xs text-muted-foreground">
+                بازخورد شما با موفقیت برای مدیریت کارخانه و واحد کنترل کیفیت ارسال گردید.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">امتیاز شما به کیفیت و روند اجرای پروژه:</p>
+                <div className="flex items-center gap-1.5" dir="ltr">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(null)}
+                      onClick={() => setRating(star)}
+                      className="p-1 transition-transform hover:scale-125 focus:outline-none"
+                    >
+                      <Star
+                        className={`h-7 w-7 transition-colors ${
+                          (hoverRating !== null ? star <= hoverRating : star <= rating)
+                            ? "fill-amber-400 text-amber-400"
+                            : "text-muted-foreground/30"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  <span className="text-xs font-bold text-foreground mr-2" dir="rtl">
+                    {rating === 5
+                      ? "عالی و کاملاً رضایت‌بخش (۵ از ۵)"
+                      : rating === 4
+                      ? "بسیار خوب (۴ از ۵)"
+                      : rating === 3
+                      ? "متوسط (۳ از ۵)"
+                      : "نیازمند بهبود"}
+                  </span>
+                </div>
+              </div>
+
+              {/* تگ‌های سریع رضایت */}
+              <div className="space-y-1.5">
+                <span className="text-xs text-muted-foreground">نقاط قوت برجسته:</span>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "کیفیت عالی متریال",
+                    "دقت در برش و نوارکاری",
+                    "خوش‌قولی و تحویل سروقت",
+                    "برخورد حرفه‌ای پرسنل",
+                    "بسته‌بندی ایمن و تمیز",
+                    "نصب دقیق و بی‌نقص",
+                  ].map((tag) => {
+                    const isSelected = selectedTags.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          setSelectedTags((prev) =>
+                            isSelected ? prev.filter((t) => t !== tag) : [...prev, tag]
+                          );
+                        }}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-primary shadow-sm"
+                            : "border-border text-muted-foreground hover:border-foreground/30"
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* یادداشت اختیاری */}
+              <div className="space-y-1.5">
+                <span className="text-xs text-muted-foreground">پیشنهاد یا نوت تکمیلی برای مدیریت:</span>
+                <textarea
+                  rows={2}
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  placeholder="در صورت تمایل، هرگونه نکته یا بازخورد خود را بنویسید..."
+                  className="w-full rounded-xl border bg-background p-3 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <Button
+                size="sm"
+                className="w-full sm:w-auto text-xs"
+                onClick={() => setIsFeedbackSubmitted(true)}
+              >
+                ثبت و ارسال بازخورد به مدیریت
+              </Button>
+            </div>
+          )}
+        </Card>
+
         {/* فوتر اطلاعات و پشتیبانی */}
         <footer className="mt-8 text-center text-xs text-muted-foreground">
           <p>سامانه رهگیری آنلاین صنایع چوب و دکوراسیون کاردو ERP</p>
           <p className="mt-1">اطلاعات این صفحه به‌صورت لحظه‌ای با خطوط تولید کارخانه هماهنگ می‌شود.</p>
         </footer>
       </div>
+
+      {/* مودال اشتراک‌گذاری و ارسال لینک */}
+      <Dialog open={isShareModalOpen} onOpenChange={setIsShareModalOpen}>
+        <DialogContent className="max-w-md w-full rounded-3xl p-5 select-none" dir="rtl">
+          <DialogHeader className="text-start">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-base font-black flex items-center gap-2">
+                <Share2 className="h-5 w-5 text-primary" />
+                اشتراک‌گذاری و ارسال لینک رهگیری
+              </DialogTitle>
+              <Badge variant="outline" className="font-mono text-xs font-bold text-primary">
+                {order.code}
+              </Badge>
+            </div>
+            <DialogDescription className="text-xs">
+              پروژه: <strong className="text-foreground">{order.projectTitle || "سفارش صنایع چوب"}</strong> — کارفرما:{" "}
+              <strong className="text-foreground">{order.customerName || "—"}</strong>
+            </DialogDescription>
+          </DialogHeader>
+
+          {(() => {
+            const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+            const shareText = `کارفرمای گرامی، رهگیری لحظه‌ای و تصاویر تولید سفارش ${order.code} (${order.projectTitle || "پروژه صنایع چوب کاردو"}):\n${currentUrl}`;
+            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(currentUrl)}`;
+
+            function handleCopy() {
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(currentUrl);
+                setIsCopied(true);
+                setTimeout(() => setIsCopied(false), 3000);
+              }
+            }
+
+            return (
+              <div className="space-y-4 py-2 text-start">
+                {/* کپی لینک رهگیری */}
+                <div className="space-y-1.5">
+                  <span className="text-xs font-bold text-foreground">لینک مستقیم رهگیری:</span>
+                  <div className="flex gap-2">
+                    <input
+                      readOnly
+                      value={currentUrl}
+                      className="h-9 w-full rounded-xl border bg-muted/30 px-3 text-xs font-mono text-muted-foreground"
+                      dir="ltr"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs font-medium shrink-0"
+                      onClick={handleCopy}
+                    >
+                      {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                      <span>{isCopied ? "کپی شد" : "کپی"}</span>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* ارسال به پیام‌رسان‌ها */}
+                <div className="space-y-2">
+                  <span className="text-xs font-bold text-foreground">ارسال سریع در پیام‌رسان‌ها:</span>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-10 text-xs font-semibold gap-1.5 border-emerald-500/30 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                      onClick={() =>
+                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, "_blank")
+                      }
+                    >
+                      واتساپ
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-10 text-xs font-semibold gap-1.5 border-blue-500/30 text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"
+                      onClick={() =>
+                        window.open(`https://bale.ai/share?text=${encodeURIComponent(shareText)}`, "_blank")
+                      }
+                    >
+                      بله
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-10 text-xs font-semibold gap-1.5 border-amber-500/30 text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/30"
+                      onClick={() =>
+                        window.open(
+                          `https://eitaa.com/share/url?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(shareText)}`,
+                          "_blank"
+                        )
+                      }
+                    >
+                      ایتا
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-10 text-xs font-semibold gap-1.5"
+                      onClick={() => {
+                        window.location.href = `sms:?body=${encodeURIComponent(shareText)}`;
+                      }}
+                    >
+                      پیامک
+                    </Button>
+                  </div>
+                </div>
+
+                {/* QR کد برای اسکن با دوربین */}
+                <div className="flex items-center gap-4 rounded-2xl border bg-muted/20 p-3">
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border bg-white p-1">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={qrImageUrl} alt="QR Code رهگیری" className="h-full w-full object-contain" />
+                  </div>
+                  <div className="space-y-1 text-xs">
+                    <p className="font-bold text-foreground flex items-center gap-1.5">
+                      <QrCode className="h-4 w-4 text-primary" />
+                      اسکن هوشمند با دوربین موبایل
+                    </p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      کارفرما یا مشتری می‌تواند با اسکن این بارکد با دوربین گوشی خود، وضعیت لحظه‌ای پروژه را بدون نیاز به لاگین مشاهده نماید.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          <DialogFooter className="pt-2">
+            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setIsShareModalOpen(false)}>
+              بستن پنجره
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* لایت‌باکس بزرگنمایی عکس تمام صفحه */}
       <Dialog open={Boolean(activePreviewImage)} onOpenChange={() => setActivePreviewImage(null)}>

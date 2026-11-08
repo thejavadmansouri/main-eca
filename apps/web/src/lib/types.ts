@@ -4173,6 +4173,7 @@ export interface WoodProductionOrderSummary {
   code: string;
   projectTitle?: string | null;
   customerName?: string | null;
+  customerPhone?: string | null;
   endClientName?: string | null;
   currentStage: string;
   progressPercent: number;
@@ -4184,6 +4185,7 @@ export interface WoodProductionOrderSummary {
   createdAt: string;
   product?: { name: string; sku: string };
   installationOrders?: InstallationOrderRow[];
+  contract?: any;
   stageUpdates?: ProductionStageUpdateRow[];
 }
 

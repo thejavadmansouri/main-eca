@@ -82,6 +82,14 @@ export class WoodIndustryController {
     return this.woodService.addStageUpdate(orderId, dto);
   }
 
+  @Post('orders/:id/send-tracking-sms')
+  async sendTrackingLinkSms(
+    @Param('id') id: string,
+    @Body() dto: { mobile?: string },
+  ) {
+    return this.woodService.sendTrackingLinkSms(id, dto?.mobile);
+  }
+
   @Public()
   @Get('public/track/:token')
   async getPublicTracking(@Param('token') token: string) {

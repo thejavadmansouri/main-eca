@@ -4445,6 +4445,20 @@ export function getPublicTracking(token: string): Promise<any> {
   return apiFetch(`/wood-industry/public/track/${encodeURIComponent(token)}`);
 }
 
+export function sendTrackingLinkSms(orderId: string, mobile?: string): Promise<{
+  success: boolean;
+  mobile: string;
+  trackingUrl: string;
+  token: string;
+  message: string;
+  sentAt: string;
+}> {
+  return apiFetch(`/wood-industry/orders/${encodeURIComponent(orderId)}/send-tracking-sms`, {
+    method: 'POST',
+    body: { mobile },
+  });
+}
+
 // ───────────────────────── رانندگان و ناوگان حمل‌ونقل ─────────────────────────
 export function getDrivers(search?: string, activeOnly = false): Promise<T.DriverRow[]> {
   const params = new URLSearchParams();

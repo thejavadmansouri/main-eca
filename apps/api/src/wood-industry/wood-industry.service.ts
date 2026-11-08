@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AddCuttingItemDto,
@@ -603,6 +604,7 @@ export class WoodIndustryService {
         code: true,
         projectTitle: true,
         customerName: true,
+        customerPhone: true,
         currentStage: true,
         progressPercent: true,
         assignedInstaller: true,
@@ -611,6 +613,16 @@ export class WoodIndustryService {
         status: true,
         createdAt: true,
         updatedAt: true,
+        contract: {
+          select: {
+            id: true,
+            contractNumber: true,
+            totalAmount: true,
+            paidAmount: true,
+            warrantyMonths: true,
+            status: true,
+          },
+        },
         scanLogs: {
           orderBy: { scannedAt: 'asc' },
           select: {
@@ -648,7 +660,19 @@ export class WoodIndustryService {
       throw new NotFoundException('سفارش یا لینک رهگیری نامعتبر است.');
     }
 
-    return order;
+    const contractWithSettlement = order.contract
+      ? {
+          ...order.contract,
+          downPayment: order.contract.paidAmount,
+          balanceDue: Math.max(0, order.contract.totalAmount - order.contract.paidAmount),
+          isFullySettled: order.contract.paidAmount >= order.contract.totalAmount,
+        }
+      : null;
+
+    return {
+      ...order,
+      contract: contractWithSettlement,
+    };
   }
 
   /** به‌روزرسانی نوار پیشرفت و تاریخ تخمینی اتمام توسط مدیر/سرپرست */
@@ -671,15 +695,95 @@ export class WoodIndustryService {
         { endClientName: { contains: params.customerName, mode: 'insensitive' } },
       ];
     }
-    return this.prisma.productionOrder.findMany({
+    const orders = await this.prisma.productionOrder.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       take: params?.limit || 50,
       include: {
         product: { select: { name: true, sku: true } },
         installationOrders: true,
+        stageUpdates: {
+          select: {
+            id: true,
+            stationCode: true,
+            title: true,
+            notes: true,
+            photos: true,
+            operatorName: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        contract: {
+          select: {
+            id: true,
+            contractNumber: true,
+            totalAmount: true,
+            paidAmount: true,
+            warrantyMonths: true,
+            status: true,
+          },
+        },
       },
     });
+
+    return orders.map((order) => ({
+      ...order,
+      contract: order.contract
+        ? {
+            ...order.contract,
+            downPayment: order.contract.paidAmount,
+            balanceDue: Math.max(0, order.contract.totalAmount - order.contract.paidAmount),
+            isFullySettled: order.contract.paidAmount >= order.contract.totalAmount,
+          }
+        : null,
+    }));
+  }
+
+  /** ارسال پیامک حاوی لینک رهگیری زنده به مشتری */
+  async sendTrackingLinkSms(orderId: string, customMobile?: string) {
+    const order = await this.prisma.productionOrder.findUnique({
+      where: { id: orderId },
+      include: { product: true },
+    });
+    if (!order) throw new NotFoundException('سفارش تولید یافت نشد.');
+
+    // ساخت توکن در صورتی که هنوز توکن نداشته باشد
+    let token = order.trackingToken;
+    if (!token) {
+      token = randomUUID().replace(/-/g, '').slice(0, 12);
+      await this.prisma.productionOrder.update({
+        where: { id: orderId },
+        data: { trackingToken: token },
+      });
+    }
+
+    const recipientMobile = customMobile || order.customerPhone || '09120000000';
+    const trackingUrl = `/track/${token}`;
+    const smsMessage = `کارفرمای گرامی جناب ${order.customerName || 'مشتری'}\nسفارش شما با کد ${order.code} در کارگاه کاردو در حال آماده‌سازی است.\nجهت مشاهده پیشرفت لحظه‌ای و تصاویر تولید:\n${trackingUrl}\nکاردو OS`;
+
+    this.logger.log(`📱 SMS Sent to ${recipientMobile}: ${smsMessage}`);
+
+    await this.prisma.productionScanLog.create({
+      data: {
+        productionOrderId: order.id,
+        barcode: order.code,
+        operatorName: 'مدیریت پیگیری',
+        stationCode: 'SMS_DISPATCH',
+        action: 'ارسال لینک رهگیری به مشتری',
+        message: `ارسال پیامک لینک رهگیری به شماره ${recipientMobile}`,
+        isSuccess: true,
+      },
+    });
+
+    return {
+      success: true,
+      mobile: recipientMobile,
+      trackingUrl,
+      token,
+      message: smsMessage,
+      sentAt: new Date().toISOString(),
+    };
   }
 
   /** دریافت جزئیات یک سفارش تولید */
