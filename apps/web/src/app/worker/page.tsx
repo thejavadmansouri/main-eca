@@ -23,6 +23,7 @@ import {
   Sparkles,
   Truck,
   User,
+  UserCircle,
   Wrench,
 } from "lucide-react";
 
@@ -74,31 +75,41 @@ export default function WorkerHomePage() {
     <div className="flex flex-1 flex-col min-h-screen bg-muted/20 font-sans pb-8">
       {/* ───────────────────────── هدر مشخصات اپراتور ───────────────────────── */}
       <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur-md shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary font-black text-sm">
+        <Link href="/admin/profile" className="flex items-center gap-3 group text-start min-w-0">
+          <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary font-black text-sm group-hover:bg-primary group-hover:text-primary-foreground transition-all">
             {user?.fullName?.charAt(0) || user?.username?.charAt(0) || "ک"}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-black text-foreground">
+            <p className="truncate text-sm font-black text-foreground group-hover:text-primary transition-colors">
               {user?.fullName ?? user?.username ?? "اپراتور انبار و کارگاه"}
             </p>
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>پنل موبایل پرسنل کاردو</span>
+              <span>پنل پرسنل کاردو (مشاهده حکم و حقوق)</span>
             </div>
           </div>
-        </div>
+        </Link>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-10 rounded-2xl text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-          onClick={handleLogout}
-          aria-label="خروج از حساب"
-          title="خروج از حساب"
-        >
-          <LogOut className="size-5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Link
+            href="/admin/profile"
+            className="flex size-10 items-center justify-center rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+            title="پروفایل، حکم و حقوق من"
+            aria-label="پروفایل و حقوق"
+          >
+            <UserCircle className="size-5" />
+          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-10 rounded-2xl text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+            onClick={handleLogout}
+            aria-label="خروج از حساب"
+            title="خروج از حساب"
+          >
+            <LogOut className="size-5" />
+          </Button>
+        </div>
       </header>
 
       {/* ───────────────────────── بدنه اصلی و کاشی‌های لمسی ───────────────────────── */}

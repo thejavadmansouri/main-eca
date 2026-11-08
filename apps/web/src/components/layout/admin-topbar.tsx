@@ -18,6 +18,7 @@ import {
   UserPlus,
   Scissors,
   Truck,
+  HardHat,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { KardoCommandPalette } from "./kardo-command-palette";
@@ -340,6 +341,12 @@ export function AdminTopbar({
             <Link href="/admin/profile" className="flex items-center gap-2 cursor-pointer font-medium">
               <UserCircle className="size-4 text-primary" />
               <span>پروفایل و وظایف من</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/worker" className="flex items-center gap-2 cursor-pointer font-medium">
+              <HardHat className="size-4 text-emerald-600" />
+              <span>پنل موبایل کارگاه و نصاب</span>
             </Link>
           </DropdownMenuItem>
           <ConnectionInfoDialog />
