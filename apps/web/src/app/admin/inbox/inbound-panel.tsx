@@ -210,52 +210,52 @@ export function InboundPanel({ embedded = false }: { embedded?: boolean }) {
                   const wh = warehouses.find((w) => w.id === r.warehouseId);
                   const isPending = r.status === "PENDING_VERIFICATION";
                   return (
-                    <tr key={r.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="py-2.5 px-3">
-                        <span className="font-mono font-bold text-teal-700 bg-teal-500/10 px-1.5 py-0.5 rounded">
+                    <tr key={r.id} className="hover:bg-primary/[0.03] transition-colors group">
+                      <td className="py-3 px-3.5">
+                        <span className="font-mono font-bold text-teal-700 bg-teal-500/10 px-2 py-1 rounded-md border border-teal-500/20 text-xs">
                           {r.receiptNumber}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 font-bold text-foreground">
+                      <td className="py-3 px-3.5 font-bold text-foreground text-xs group-hover:text-primary transition-colors">
                         {r.supplierName}
                       </td>
-                      <td className="py-2.5 px-3">
+                      <td className="py-3 px-3.5">
                         <div className="flex flex-col gap-0.5">
-                          <span className="font-mono text-[11px] text-foreground">
+                          <span className="font-mono text-xs text-foreground font-semibold">
                             بارنامه: {r.waybillNumber || "—"}
                           </span>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-[11px] text-muted-foreground">
                             راننده: {r.driverName || "—"} {r.truckPlate ? `(${r.truckPlate})` : ""}
                           </span>
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 text-muted-foreground">
+                      <td className="py-3 px-3 text-muted-foreground font-medium text-xs">
                         {wh?.name || "انبار مرکزی"}
                       </td>
-                      <td className="py-2.5 px-3 text-center font-mono">
+                      <td className="py-3 px-3 text-center font-mono text-xs">
                         {faDate(r.createdAt)}
                       </td>
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-3 px-3 text-center">
                         {r.status === "VERIFIED" ? (
-                          <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/30 text-[10px]">
+                          <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/30 text-[10px] rounded-full px-2 font-bold">
                             تأیید و انبارش شد
                           </Badge>
                         ) : r.status === "REJECTED" ? (
-                          <Badge className="bg-rose-500/15 text-rose-700 border-rose-500/30 text-[10px]">
+                          <Badge className="bg-rose-500/15 text-rose-700 border-rose-500/30 text-[10px] rounded-full px-2 font-bold">
                             رد شده
                           </Badge>
                         ) : (
-                          <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/30 text-[10px]">
+                          <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/30 text-[10px] rounded-full px-2 font-bold animate-pulse">
                             در انتظار تأیید گیت
                           </Badge>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-muted-foreground text-[11px]">
+                      <td className="py-3 px-3 text-muted-foreground text-xs font-semibold">
                         {r.verifiedBy || "—"}
                       </td>
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-3 px-3.5 text-center">
                         {isPending ? (
-                          <div className="flex items-center justify-center gap-1">
+                          <div className="flex items-center justify-center gap-1.5">
                             <Button
                               size="sm"
                               onClick={() =>
@@ -266,9 +266,9 @@ export function InboundPanel({ embedded = false }: { embedded?: boolean }) {
                                 })
                               }
                               disabled={verifyMutation.isPending}
-                              className="h-6 text-[10px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                              className="h-7 text-xs px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white gap-1 rounded-lg shadow-2xs font-semibold"
                             >
-                              <CheckCircle2 className="size-2.5" />
+                              <CheckCircle2 className="size-3" />
                               تأیید ورود
                             </Button>
                             <Button
@@ -282,14 +282,14 @@ export function InboundPanel({ embedded = false }: { embedded?: boolean }) {
                                 })
                               }
                               disabled={verifyMutation.isPending}
-                              className="h-6 text-[10px] px-2 border-rose-500/30 text-rose-700 hover:bg-rose-500/10"
+                              className="h-7 text-xs px-2 border-rose-500/30 text-rose-700 hover:bg-rose-500/10 rounded-lg shadow-2xs font-semibold"
                             >
                               رد
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
-                            <ShieldCheck className="size-3 text-emerald-600" />
+                          <span className="text-xs text-muted-foreground flex items-center justify-center gap-1 font-semibold">
+                            <ShieldCheck className="size-3.5 text-emerald-600" />
                             بررسی شد
                           </span>
                         )}

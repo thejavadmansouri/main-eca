@@ -156,160 +156,160 @@ export default function InboxPage() {
       />
 
       {/* ۱. کارت‌های شاخص عملکرد (KPI Stats Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
         {/* وظایف فعال کارگران */}
-        <Card
+        <div
           onClick={() => setActiveTab("tasks")}
           className={cn(
-            "p-3.5 flex flex-col justify-between cursor-pointer transition-all duration-200 border",
+            "kardo-card-interactive p-4 flex flex-col justify-between cursor-pointer select-none rounded-2xl",
             activeTab === "tasks"
-              ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-sm"
-              : "hover:border-primary/40 hover:shadow-2xs",
+              ? "border-primary bg-gradient-to-br from-card via-card to-primary/10 ring-2 ring-primary/20 shadow-sm"
+              : "bg-card border-border/80 hover:border-primary/40",
           )}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">وظایف فعال انبار</span>
-            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-              <PackageCheck className="size-4" />
+            <span className="text-xs font-bold text-muted-foreground">وظایف فعال انبار</span>
+            <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-2xs">
+              <PackageCheck className="size-4.5" />
             </div>
           </div>
-          <div className="mt-2.5 flex items-baseline justify-between">
-            <div className="text-2xl font-black tracking-tight">{toFa(counts.tasksActive)}</div>
+          <div className="mt-3 flex items-baseline justify-between">
+            <div className="text-2xl font-black tracking-tight text-foreground">{toFa(counts.tasksActive)}</div>
             {counts.tasksUrgent > 0 && (
-              <span className="text-[11px] font-bold text-rose-600 flex items-center gap-0.5">
-                <Flame className="size-3" />
+              <span className="text-[11px] font-bold text-rose-600 flex items-center gap-1 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+                <Flame className="size-3 text-rose-600 animate-pulse" />
                 {toFa(counts.tasksUrgent)} فوری
               </span>
             )}
           </div>
-          <p className="mt-1 text-[10px] text-muted-foreground">برداشت از قفسه و چیدن کالا</p>
-        </Card>
+          <p className="mt-1.5 text-[10px] text-muted-foreground pt-1 border-t border-border/40">برداشت از قفسه و چیدن کالا</p>
+        </div>
 
         {/* عملیات نیازمند بازبینی مدیر */}
-        <Card
+        <div
           onClick={() => setActiveTab("operations")}
           className={cn(
-            "p-3.5 flex flex-col justify-between cursor-pointer transition-all duration-200 border",
+            "kardo-card-interactive p-4 flex flex-col justify-between cursor-pointer select-none rounded-2xl",
             activeTab === "operations"
-              ? "border-amber-500 bg-amber-500/5 ring-1 ring-amber-500/40 shadow-sm"
-              : "hover:border-amber-500/40 hover:shadow-2xs",
+              ? "border-amber-500 bg-gradient-to-br from-card via-card to-amber-500/10 ring-2 ring-amber-500/20 shadow-sm"
+              : "bg-card border-border/80 hover:border-amber-500/40",
           )}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">بازبینی عملیات</span>
-            <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600">
-              <ShieldAlert className="size-4" />
+            <span className="text-xs font-bold text-muted-foreground">بازبینی عملیات</span>
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 shadow-2xs">
+              <ShieldAlert className="size-4.5" />
             </div>
           </div>
-          <div className="mt-2.5">
-            <div className="text-2xl font-black text-amber-700 dark:text-amber-300 tracking-tight">
+          <div className="mt-3">
+            <div className="text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
               {toFa(counts.ops)}
             </div>
           </div>
-          <p className="mt-1 text-[10px] text-muted-foreground">تأیید کسری یا مازاد ثبتی کارگر</p>
-        </Card>
+          <p className="mt-1.5 text-[10px] text-muted-foreground pt-1 border-t border-border/40">تأیید کسری یا مازاد ثبتی کارگر</p>
+        </div>
 
         {/* گیت بارنامه‌های ورودی */}
-        <Card
+        <div
           onClick={() => setActiveTab("inbound")}
           className={cn(
-            "p-3.5 flex flex-col justify-between cursor-pointer transition-all duration-200 border",
+            "kardo-card-interactive p-4 flex flex-col justify-between cursor-pointer select-none rounded-2xl",
             activeTab === "inbound"
-              ? "border-teal-500 bg-teal-500/5 ring-1 ring-teal-500/40 shadow-sm"
-              : "hover:border-teal-500/40 hover:shadow-2xs",
+              ? "border-teal-500 bg-gradient-to-br from-card via-card to-teal-500/10 ring-2 ring-teal-500/20 shadow-sm"
+              : "bg-card border-border/80 hover:border-teal-500/40",
           )}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">گیت ورود بار (GRN)</span>
-            <div className="p-1.5 rounded-lg bg-teal-500/10 text-teal-600">
-              <Truck className="size-4" />
+            <span className="text-xs font-bold text-muted-foreground">گیت ورود بار (GRN)</span>
+            <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600 shadow-2xs">
+              <Truck className="size-4.5" />
             </div>
           </div>
-          <div className="mt-2.5">
-            <div className="text-2xl font-black text-teal-700 dark:text-teal-300 tracking-tight">
+          <div className="mt-3">
+            <div className="text-2xl font-black text-teal-600 dark:text-teal-400 tracking-tight">
               {toFa(counts.inboundPending)}
             </div>
           </div>
-          <p className="mt-1 text-[10px] text-muted-foreground">محموله‌های منتظر تأیید و تخلیه</p>
-        </Card>
+          <p className="mt-1.5 text-[10px] text-muted-foreground pt-1 border-t border-border/40">محموله‌های منتظر تأیید و تخلیه</p>
+        </div>
 
         {/* درخواست‌های کالا */}
-        <Card
+        <div
           onClick={() => setActiveTab("requests")}
           className={cn(
-            "p-3.5 flex flex-col justify-between cursor-pointer transition-all duration-200 border",
+            "kardo-card-interactive p-4 flex flex-col justify-between cursor-pointer select-none rounded-2xl",
             activeTab === "requests"
-              ? "border-blue-500 bg-blue-500/5 ring-1 ring-blue-500/40 shadow-sm"
-              : "hover:border-blue-500/40 hover:shadow-2xs",
+              ? "border-blue-500 bg-gradient-to-br from-card via-card to-blue-500/10 ring-2 ring-blue-500/20 shadow-sm"
+              : "bg-card border-border/80 hover:border-blue-500/40",
           )}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">درخواست افزودن کالا</span>
-            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600">
-              <Boxes className="size-4" />
+            <span className="text-xs font-bold text-muted-foreground">درخواست کالا</span>
+            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 shadow-2xs">
+              <Boxes className="size-4.5" />
             </div>
           </div>
-          <div className="mt-2.5">
-            <div className="text-2xl font-black text-blue-700 dark:text-blue-300 tracking-tight">
+          <div className="mt-3">
+            <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight">
               {toFa(counts.requests)}
             </div>
           </div>
-          <p className="mt-1 text-[10px] text-muted-foreground">کالاهای ناموجود در کاتالوگ</p>
-        </Card>
+          <p className="mt-1.5 text-[10px] text-muted-foreground pt-1 border-t border-border/40">کالاهای ناموجود در کاتالوگ</p>
+        </div>
 
         {/* صف چاپ لیبل‌ها */}
-        <Card
+        <div
           onClick={() => setActiveTab("labels")}
           className={cn(
-            "p-3.5 flex flex-col justify-between cursor-pointer transition-all duration-200 border",
+            "kardo-card-interactive p-4 flex flex-col justify-between cursor-pointer select-none rounded-2xl",
             activeTab === "labels"
-              ? "border-indigo-500 bg-indigo-500/5 ring-1 ring-indigo-500/40 shadow-sm"
-              : "hover:border-indigo-500/40 hover:shadow-2xs",
+              ? "border-indigo-500 bg-gradient-to-br from-card via-card to-indigo-500/10 ring-2 ring-indigo-500/20 shadow-sm"
+              : "bg-card border-border/80 hover:border-indigo-500/40",
           )}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">چاپ لیبل و بارکد</span>
-            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600">
-              <Tag className="size-4" />
+            <span className="text-xs font-bold text-muted-foreground">چاپ لیبل و بارکد</span>
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 shadow-2xs">
+              <Tag className="size-4.5" />
             </div>
           </div>
-          <div className="mt-2.5">
-            <div className="text-2xl font-black text-indigo-700 dark:text-indigo-300 tracking-tight">
+          <div className="mt-3">
+            <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight">
               {toFa(counts.labels)}
             </div>
           </div>
-          <p className="mt-1 text-[10px] text-muted-foreground">لیبل‌های قفسه و کالا در صف چاپ</p>
-        </Card>
+          <p className="mt-1.5 text-[10px] text-muted-foreground pt-1 border-t border-border/40">لیبل‌های قفسه و کالا در صف چاپ</p>
+        </div>
       </div>
 
       {/* ۲. تب‌های ناوبری کارتابل وظایف */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="h-10 p-1 bg-muted/70 border border-border/60 rounded-lg flex flex-wrap gap-1">
-          <TabsTrigger value="tasks" className="gap-1.5 text-xs font-bold data-[state=active]:shadow-xs">
+        <TabsList className="h-11 p-1.5 bg-muted/70 backdrop-blur-xs border border-border/70 rounded-2xl flex flex-wrap gap-1.5 shadow-2xs">
+          <TabsTrigger value="tasks" className="gap-2 text-xs font-bold rounded-xl data-[state=active]:shadow-xs transition-all">
             <PackageCheck className="size-3.5 text-primary" />
             وظایف عملیاتی انبار
             <TabCount n={counts.tasksActive} urgent={counts.tasksUrgent > 0} />
           </TabsTrigger>
 
-          <TabsTrigger value="operations" className="gap-1.5 text-xs font-bold data-[state=active]:shadow-xs">
+          <TabsTrigger value="operations" className="gap-2 text-xs font-bold rounded-xl data-[state=active]:shadow-xs transition-all">
             <ShieldAlert className="size-3.5 text-amber-600" />
             بازبینی عملیات کارگر
             <TabCount n={counts.ops} />
           </TabsTrigger>
 
-          <TabsTrigger value="inbound" className="gap-1.5 text-xs font-bold data-[state=active]:shadow-xs">
+          <TabsTrigger value="inbound" className="gap-2 text-xs font-bold rounded-xl data-[state=active]:shadow-xs transition-all">
             <Truck className="size-3.5 text-teal-600" />
             گیت ورود و بازرسی بار (GRN)
             <TabCount n={counts.inboundPending} />
           </TabsTrigger>
 
-          <TabsTrigger value="requests" className="gap-1.5 text-xs font-bold data-[state=active]:shadow-xs">
+          <TabsTrigger value="requests" className="gap-2 text-xs font-bold rounded-xl data-[state=active]:shadow-xs transition-all">
             <Boxes className="size-3.5 text-blue-600" />
             درخواست کالا
             <TabCount n={counts.requests} />
           </TabsTrigger>
 
-          <TabsTrigger value="labels" className="gap-1.5 text-xs font-bold data-[state=active]:shadow-xs">
+          <TabsTrigger value="labels" className="gap-2 text-xs font-bold rounded-xl data-[state=active]:shadow-xs transition-all">
             <Printer className="size-3.5 text-indigo-600" />
             چاپ لیبل‌ها
             <TabCount n={counts.labels} />

@@ -437,22 +437,22 @@ export function WorkTasksPanel({ embedded = false }: { embedded?: boolean }) {
                   : null;
 
             return (
-              <Card
+              <div
                 key={task.id}
                 className={cn(
-                  "p-3.5 flex flex-col justify-between gap-3 border transition-all duration-200 hover:shadow-md",
+                  "kardo-card-interactive p-4 flex flex-col justify-between gap-3.5 border transition-all duration-200 rounded-2xl select-none",
                   isUrgent && task.status !== "COMPLETED" && task.status !== "CANCELLED"
-                    ? "border-rose-500/50 bg-rose-500/5 dark:bg-rose-950/10"
-                    : "bg-card hover:border-primary/40",
+                    ? "border-rose-500/50 bg-gradient-to-br from-card via-card to-rose-500/5 ring-1 ring-rose-500/30"
+                    : "bg-card border-border/80 hover:border-primary/40",
                 )}
               >
                 {/* سربرگ کارت: نوع، اولویت و زمان */}
-                <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2">
+                <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-2.5">
                   <div className="flex items-center gap-1.5">
                     {/* بج نوع کار */}
                     <span
                       className={cn(
-                        "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border",
+                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border shadow-2xs",
                         isPick
                           ? "bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-300"
                           : "bg-blue-500/10 text-blue-700 border-blue-500/30 dark:text-blue-300",
@@ -464,8 +464,8 @@ export function WorkTasksPanel({ embedded = false }: { embedded?: boolean }) {
 
                     {/* بج اولویت */}
                     {isUrgent && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-500 text-white animate-pulse">
-                        <Flame className="size-2.5" />
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-600 text-white shadow-xs animate-pulse">
+                        <Flame className="size-3" />
                         فوری
                       </span>
                     )}
@@ -482,32 +482,34 @@ export function WorkTasksPanel({ embedded = false }: { embedded?: boolean }) {
                 </div>
 
                 {/* بدنه: سند مرجع، یادداشت و انبار */}
-                <div className="flex flex-col gap-1.5 text-xs">
+                <div className="flex flex-col gap-2 text-xs">
                   {refDoc && (
-                    <div className="font-bold text-foreground flex items-center gap-1 text-[11px]">
-                      <span className="text-primary">{refDoc}</span>
+                    <div className="font-bold text-foreground flex items-center gap-1.5 text-xs">
+                      <span className="text-primary font-black bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">{refDoc}</span>
                     </div>
                   )}
 
                   {task.note && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-2 bg-muted/40 p-1.5 rounded-md border border-border/40">
+                    <p className="text-[11px] text-muted-foreground line-clamp-2 bg-muted/50 p-2 rounded-xl border border-border/50 leading-relaxed">
                       {task.note}
                     </p>
                   )}
 
                   {/* کارگر تخصیص‌یافته */}
                   <div className="flex items-center justify-between pt-1">
-                    <div className="flex items-center gap-1.5 text-[11px]">
-                      <HardHat className="size-3.5 text-muted-foreground" />
-                      <span className="text-muted-foreground">کارگر:</span>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="p-1 rounded-lg bg-muted text-muted-foreground">
+                        <HardHat className="size-3.5" />
+                      </div>
+                      <span className="text-muted-foreground font-medium">کارگر:</span>
                       {task.assignedTo?.fullName ? (
-                        <strong className="text-foreground">{task.assignedTo.fullName}</strong>
+                        <strong className="text-foreground font-bold">{task.assignedTo.fullName}</strong>
                       ) : task.assignees && task.assignees.length > 0 ? (
-                        <strong className="text-foreground">
+                        <strong className="text-foreground font-bold">
                           {task.assignees.map((a) => a.fullName).join("، ")}
                         </strong>
                       ) : (
-                        <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                        <span className="text-amber-600 dark:text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded text-[10px]">
                           استخر عمومی (بدون تخصیص)
                         </span>
                       )}
@@ -524,7 +526,7 @@ export function WorkTasksPanel({ embedded = false }: { embedded?: boolean }) {
                               ? "destructive"
                               : "outline"
                       }
-                      className="text-[10px] h-4.5"
+                      className="text-[10px] h-5 rounded-full px-2 font-bold"
                     >
                       {task.status === "COMPLETED"
                         ? "تکمیل شد"
@@ -538,22 +540,22 @@ export function WorkTasksPanel({ embedded = false }: { embedded?: boolean }) {
                 </div>
 
                 {/* نوار پیشرفت */}
-                <div className="flex flex-col gap-1 bg-muted/30 p-2 rounded-lg border border-border/40">
-                  <div className="flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-muted-foreground text-[10px]">پیشرفت اقلام:</span>
-                    <strong>
+                <div className="flex flex-col gap-1.5 bg-muted/40 p-2.5 rounded-xl border border-border/50">
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="text-muted-foreground text-[11px] font-sans">پیشرفت اقلام:</span>
+                    <strong className="font-bold text-foreground">
                       {toFa(task.doneItems)} از {toFa(task.totalItems)} قلم ({toFa(progressPct)}٪)
                     </strong>
                   </div>
-                  <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                     <div
                       className={cn(
-                        "h-1.5 rounded-full transition-all duration-300",
+                        "h-2 rounded-full transition-all duration-300",
                         progressPct === 100
-                          ? "bg-emerald-600"
+                          ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
                           : isUrgent
-                            ? "bg-rose-600"
-                            : "bg-primary",
+                            ? "bg-gradient-to-r from-rose-500 to-rose-600"
+                            : "bg-gradient-to-r from-primary to-emerald-500",
                       )}
                       style={{ width: `${progressPct}%` }}
                     />
@@ -561,15 +563,15 @@ export function WorkTasksPanel({ embedded = false }: { embedded?: boolean }) {
                 </div>
 
                 {/* پاورقی: دکمه‌های عملیاتی */}
-                <div className="flex items-center justify-between pt-1 border-t border-border/50 gap-1">
-                  <div className="flex items-center gap-1">
+                <div className="flex items-center justify-between pt-2 border-t border-border/60 gap-1">
+                  <div className="flex items-center gap-1.5">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setDetailTaskId(task.id)}
-                      className="h-7 text-[11px] px-2.5 gap-1"
+                      className="h-7.5 text-xs px-2.5 gap-1.5 rounded-lg border-border/80 hover:border-primary/50 shadow-2xs font-semibold"
                     >
-                      <Layers className="size-3" />
+                      <Layers className="size-3.5" />
                       اقلام و چک‌لیست
                     </Button>
 
@@ -577,7 +579,7 @@ export function WorkTasksPanel({ embedded = false }: { embedded?: boolean }) {
                       variant="ghost"
                       size="icon"
                       onClick={() => setPrintTask(task)}
-                      className="size-7 text-muted-foreground hover:text-foreground"
+                      className="size-7.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
                       title="چاپ دستور کار انبار"
                     >
                       <Printer className="size-3.5" />
@@ -590,7 +592,7 @@ export function WorkTasksPanel({ embedded = false }: { embedded?: boolean }) {
                         setReassignTaskId(task.id);
                         setSelectedWorkerId(task.assignedToId || "");
                       }}
-                      className="size-7 text-muted-foreground hover:text-foreground"
+                      className="size-7.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
                       title="تغییر کارگر تخصیص‌یافته"
                     >
                       <UserPlus className="size-3.5" />
@@ -606,10 +608,10 @@ export function WorkTasksPanel({ embedded = false }: { embedded?: boolean }) {
                         })
                       }
                       className={cn(
-                        "size-7",
+                        "size-7.5 rounded-lg",
                         isUrgent
-                          ? "text-rose-600 hover:text-rose-700"
-                          : "text-muted-foreground hover:text-rose-600",
+                          ? "text-rose-600 hover:text-rose-700 bg-rose-500/10"
+                          : "text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10",
                       )}
                       title={isUrgent ? "تغییر به اولویت عادی" : "تغییر به اولویت فوری (URGENT)"}
                     >
@@ -643,7 +645,7 @@ export function WorkTasksPanel({ embedded = false }: { embedded?: boolean }) {
                     )}
                   </div>
                 </div>
-              </Card>
+              </div>
             );
           })}
         </div>

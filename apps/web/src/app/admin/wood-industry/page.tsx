@@ -519,92 +519,103 @@ export default function WoodIndustryPage() {
 
       {/* ۱. کارت‌های شاخص عملکرد (KPI Cards) با هاور مدرن و ریتم بصری دقیق */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="flex flex-col justify-between p-4 bg-card hover:border-amber-500/40 hover:shadow-md transition-all duration-200">
+        <div className="kardo-card-interactive flex flex-col justify-between p-4.5 bg-gradient-to-br from-card via-card to-amber-500/5 border-border/80">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">قطعات ثبت‌شده در برگه برش</span>
-            <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600 ring-1 ring-amber-500/20">
-              <Scissors className="size-4" />
+            <span className="text-xs font-bold text-muted-foreground">قطعات ثبت‌شده در برگه برش</span>
+            <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-600 ring-1 ring-amber-500/20 shadow-xs">
+              <Scissors className="size-4.5" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black tracking-tight">{toFa(totalCuttingCount)} <span className="text-xs font-normal text-muted-foreground">قطعه</span></div>
-            <p className="mt-1 text-[11px] text-muted-foreground flex items-center gap-1">
-              <span>سفارش:</span>
-              <strong className="font-mono text-foreground">{selectedOrder?.code || "—"}</strong>
-            </p>
+            <div className="text-2xl font-black tracking-tight text-foreground">
+              {toFa(totalCuttingCount)} <span className="text-xs font-normal text-muted-foreground">قطعه</span>
+            </div>
+            <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground pt-1.5 border-t border-border/40">
+              <span>سفارش جاری:</span>
+              <span className="font-mono font-bold text-primary px-1.5 py-0.5 rounded bg-primary/10">
+                {selectedOrder?.code || "—"}
+              </span>
+            </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="flex flex-col justify-between p-4 bg-card hover:border-blue-500/40 hover:shadow-md transition-all duration-200">
+        <div className="kardo-card-interactive flex flex-col justify-between p-4.5 bg-gradient-to-br from-card via-card to-blue-500/5 border-border/80">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">پیشرفت اره برش (SAW)</span>
-            <div className="rounded-xl bg-blue-500/10 p-2 text-blue-600 ring-1 ring-blue-500/20">
-              <LayoutGrid className="size-4" />
+            <span className="text-xs font-bold text-muted-foreground">پیشرفت اره برش (SAW)</span>
+            <div className="rounded-xl bg-blue-500/10 p-2.5 text-blue-600 ring-1 ring-blue-500/20 shadow-xs">
+              <LayoutGrid className="size-4.5" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-blue-600 tracking-tight">{toFa(completedCuttingCount)} / {toFa(totalCuttingCount)}</div>
-            <div className="mt-1 flex items-center gap-2">
-              <div className="w-24 bg-muted rounded-full h-1.5 overflow-hidden">
+            <div className="text-2xl font-black text-blue-600 tracking-tight">
+              {toFa(completedCuttingCount)} <span className="text-sm font-normal text-muted-foreground">از {toFa(totalCuttingCount)}</span>
+            </div>
+            <div className="mt-2 flex items-center gap-2.5 pt-1.5 border-t border-border/40">
+              <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-blue-600 h-1.5 rounded-full transition-all"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${totalCuttingCount > 0 ? (completedCuttingCount / totalCuttingCount) * 100 : 0}%` }}
                 />
               </div>
-              <span className="text-[11px] font-mono text-muted-foreground">
+              <span className="text-[11px] font-mono font-bold text-blue-600">
                 {totalCuttingCount > 0 ? toFa(Math.round((completedCuttingCount / totalCuttingCount) * 100)) : "۰"}٪
               </span>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="flex flex-col justify-between p-4 bg-card hover:border-emerald-500/40 hover:shadow-md transition-all duration-200">
+        <div className="kardo-card-interactive flex flex-col justify-between p-4.5 bg-gradient-to-br from-card via-card to-emerald-500/5 border-border/80">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">ایستگاه لبه‌چسبان PVC</span>
-            <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600 ring-1 ring-emerald-500/20">
-              <Layers className="size-4" />
+            <span className="text-xs font-bold text-muted-foreground">ایستگاه لبه‌چسبان PVC</span>
+            <div className="rounded-xl bg-emerald-500/10 p-2.5 text-emerald-600 ring-1 ring-emerald-500/20 shadow-xs">
+              <Layers className="size-4.5" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-emerald-600 tracking-tight">{toFa(totalEdgeCount)} / {toFa(totalCuttingCount)}</div>
-            <div className="mt-1 flex items-center gap-2">
-              <div className="w-24 bg-muted rounded-full h-1.5 overflow-hidden">
+            <div className="text-2xl font-black text-emerald-600 tracking-tight">
+              {toFa(totalEdgeCount)} <span className="text-sm font-normal text-muted-foreground">از {toFa(totalCuttingCount)}</span>
+            </div>
+            <div className="mt-2 flex items-center gap-2.5 pt-1.5 border-t border-border/40">
+              <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-emerald-600 h-1.5 rounded-full transition-all"
+                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${totalCuttingCount > 0 ? (totalEdgeCount / totalCuttingCount) * 100 : 0}%` }}
                 />
               </div>
-              <span className="text-[11px] font-mono text-muted-foreground">
+              <span className="text-[11px] font-mono font-bold text-emerald-600">
                 {totalCuttingCount > 0 ? toFa(Math.round((totalEdgeCount / totalCuttingCount) * 100)) : "۰"}٪
               </span>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="flex flex-col justify-between p-4 bg-card hover:border-indigo-500/40 hover:shadow-md transition-all duration-200">
+        <div className="kardo-card-interactive flex flex-col justify-between p-4.5 bg-gradient-to-br from-card via-card to-indigo-500/5 border-border/80">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">پروژه‌های لجستیک و نصب</span>
-            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600 ring-1 ring-indigo-500/20">
-              <Truck className="size-4" />
+            <span className="text-xs font-bold text-muted-foreground">پروژه‌های لجستیک و نصب</span>
+            <div className="rounded-xl bg-indigo-500/10 p-2.5 text-indigo-600 ring-1 ring-indigo-500/20 shadow-xs">
+              <Truck className="size-4.5" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-indigo-600 tracking-tight">{toFa(installations.length)} <span className="text-xs font-normal text-muted-foreground">پروژه</span></div>
-            <p className="mt-1 text-[11px] text-muted-foreground">آماده بارگیری و اعزام نصاب</p>
+            <div className="text-2xl font-black text-indigo-600 tracking-tight">
+              {toFa(installations.length)} <span className="text-xs font-normal text-muted-foreground">پروژه</span>
+            </div>
+            <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground pt-1.5 border-t border-border/40">
+              <span>وضعیت اعزام:</span>
+              <span className="font-semibold text-foreground">آماده بارگیری و اعزام نصاب</span>
+            </div>
           </div>
-        </Card>
+        </div>
       </div>
 
-      {/* ۲. تب‌بار روان با کلیدهای کپسولی (Segmented Pill Switcher) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-        <div className="flex items-center gap-1.5 rounded-lg bg-muted/70 p-1 border border-border/60">
+      {/* ۲. تب‌بار کپسولی مدرن (Modern Segmented Pill Bar) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 pb-3">
+        <div className="flex items-center gap-1 rounded-2xl bg-muted/60 p-1.5 border border-border/60 shadow-2xs">
           <button
             onClick={() => setActiveTab("matrix")}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
-              activeTab === "matrix"
-                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
-                : "text-muted-foreground hover:text-foreground"
+              "kardo-pill-tab",
+              activeTab === "matrix" ? "bg-card text-foreground shadow-xs border-border" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Factory className="size-3.5 text-emerald-600" />
@@ -615,10 +626,8 @@ export default function WoodIndustryPage() {
           <button
             onClick={() => setActiveTab("cutting")}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
-              activeTab === "cutting"
-                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
-                : "text-muted-foreground hover:text-foreground"
+              "kardo-pill-tab",
+              activeTab === "cutting" ? "bg-card text-foreground shadow-xs border-border" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Scissors className="size-3.5 text-amber-600" />
@@ -629,10 +638,8 @@ export default function WoodIndustryPage() {
           <button
             onClick={() => setActiveTab("profiles")}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
-              activeTab === "profiles"
-                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
-                : "text-muted-foreground hover:text-foreground"
+              "kardo-pill-tab",
+              activeTab === "profiles" ? "bg-card text-foreground shadow-xs border-border" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Barcode className="size-3.5 text-primary" />
@@ -643,10 +650,8 @@ export default function WoodIndustryPage() {
           <button
             onClick={() => setActiveTab("inbound")}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
-              activeTab === "inbound"
-                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
-                : "text-muted-foreground hover:text-foreground"
+              "kardo-pill-tab",
+              activeTab === "inbound" ? "bg-card text-foreground shadow-xs border-border" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Boxes className="size-3.5 text-teal-600" />
@@ -657,10 +662,8 @@ export default function WoodIndustryPage() {
           <button
             onClick={() => setActiveTab("installations")}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
-              activeTab === "installations"
-                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
-                : "text-muted-foreground hover:text-foreground"
+              "kardo-pill-tab",
+              activeTab === "installations" ? "bg-card text-foreground shadow-xs border-border" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Truck className="size-3.5 text-indigo-600" />
@@ -671,10 +674,8 @@ export default function WoodIndustryPage() {
           <button
             onClick={() => setActiveTab("contracts")}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
-              activeTab === "contracts"
-                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
-                : "text-muted-foreground hover:text-foreground"
+              "kardo-pill-tab",
+              activeTab === "contracts" ? "bg-card text-foreground shadow-xs border-border" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <FileCheck2 className="size-3.5 text-emerald-600" />
@@ -692,18 +693,18 @@ export default function WoodIndustryPage() {
                 placeholder="جستجو در قطعات، بارکد..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 w-44 pe-8 text-xs bg-background"
+                className="h-8 w-44 pe-8 text-xs bg-background rounded-lg border-border/80"
               />
             </div>
           )}
 
           {(activeTab === "cutting" || activeTab === "profiles") && (
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">سفارش:</span>
+              <span className="text-xs font-semibold text-muted-foreground">سفارش:</span>
               <select
                 value={selectedOrderId}
                 onChange={(e) => setSelectedOrderId(e.target.value)}
-                className="h-8 rounded-md border border-input bg-background px-2.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary shadow-xs"
+                className="h-8 rounded-lg border border-input bg-card px-3 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
               >
                 {productionOrders.map((ord) => (
                   <option key={ord.id} value={ord.id}>
@@ -947,9 +948,9 @@ export default function WoodIndustryPage() {
               <Button
                 size="sm"
                 onClick={() => setIsAddOrderOpen(true)}
-                className="gap-1.5 text-xs h-7 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="gap-1.5 text-xs h-7.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs rounded-lg"
               >
-                <Plus className="size-3" />
+                <Plus className="size-3.5" />
                 ثبت سفارش جدید
               </Button>
             </div>
@@ -957,23 +958,26 @@ export default function WoodIndustryPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border select-none">
+              <thead className="bg-muted/75 text-muted-foreground font-bold border-b border-border/80 select-none">
                 <tr>
-                  <th className="py-2.5 px-3">کد و مدل سفارش</th>
-                  <th className="py-2.5 px-3">مشتری و کارفرمای نهایی (B2B/B2C)</th>
-                  <th className="py-2.5 px-3 text-center">تیراژ و قطعات</th>
-                  <th className="py-2.5 px-3 text-center">مرحله جاری کارگاه</th>
-                  <th className="py-2.5 px-3 text-center">ایستگاه‌های خط (اره / لبه / CNC / مونتاژ)</th>
-                  <th className="py-2.5 px-3">نصاب و پروژه</th>
-                  <th className="py-2.5 px-3 text-center">پیشرفت</th>
-                  <th className="py-2.5 px-3 text-center">عملیات هوشمند کارگاه</th>
+                  <th className="py-3 px-3.5">کد و مدل سفارش</th>
+                  <th className="py-3 px-3.5">مشتری و کارفرمای نهایی (B2B/B2C)</th>
+                  <th className="py-3 px-3 text-center">تیراژ و قطعات</th>
+                  <th className="py-3 px-3 text-center">مرحله جاری کارگاه</th>
+                  <th className="py-3 px-3 text-center">ایستگاه‌های خط (اره / لبه / CNC / مونتاژ)</th>
+                  <th className="py-3 px-3.5">نصاب و پروژه</th>
+                  <th className="py-3 px-3 text-center">پیشرفت</th>
+                  <th className="py-3 px-3 text-center">عملیات هوشمند کارگاه</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border font-medium">
+              <tbody className="divide-y divide-border/50 font-medium">
                 {matrix.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
-                      هیچ سفارش تولید فعالی در خط وجود ندارد. برای ثبت سفارش، روی «ثبت سفارش جدید» کلیک کنید.
+                    <td colSpan={8} className="py-14 text-center text-muted-foreground">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Factory className="size-8 text-muted-foreground/40 stroke-1" />
+                        <p className="text-xs">هیچ سفارش تولید فعالی در خط وجود ندارد. برای ثبت سفارش، روی «ثبت سفارش جدید» کلیک کنید.</p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -982,18 +986,18 @@ export default function WoodIndustryPage() {
                     const isB2B = row.customerType === "B2B";
 
                     return (
-                      <tr key={row.id} className="hover:bg-muted/30 transition-colors">
-                        <td className="py-2.5 px-3">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="font-mono font-bold text-primary">{row.code}</span>
-                            <span className="text-[11px] font-semibold text-foreground">{row.productName}</span>
-                            <div className="mt-0.5">
+                      <tr key={row.id} className="hover:bg-primary/[0.03] transition-colors group">
+                        <td className="py-3 px-3.5">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-mono font-black text-primary text-xs tracking-wider">{row.code}</span>
+                            <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">{row.productName}</span>
+                            <div>
                               {isB2B ? (
-                                <Badge variant="outline" className="text-[9px] h-4 px-1 border-indigo-500/40 text-indigo-700 bg-indigo-500/10">
+                                <Badge variant="outline" className="text-[10px] h-4.5 px-2 border-indigo-500/40 text-indigo-700 bg-indigo-500/10 font-bold rounded-full">
                                   همکار عمده (B2B)
                                 </Badge>
                               ) : (
-                                <Badge variant="outline" className="text-[9px] h-4 px-1 border-emerald-500/40 text-emerald-700 bg-emerald-500/10">
+                                <Badge variant="outline" className="text-[10px] h-4.5 px-2 border-emerald-500/40 text-emerald-700 bg-emerald-500/10 font-bold rounded-full">
                                   مشتری نهایی (B2C)
                                 </Badge>
                               )}
@@ -1001,85 +1005,86 @@ export default function WoodIndustryPage() {
                           </div>
                         </td>
 
-                        <td className="py-2.5 px-3">
-                          <div className="flex flex-col gap-0.5">
-                            <div className="font-bold text-foreground">
+                        <td className="py-3 px-3.5">
+                          <div className="flex flex-col gap-1">
+                            <div className="font-bold text-foreground text-xs">
                               {row.customerName || "—"}
                             </div>
                             {row.endClientName && (
-                              <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+                              <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                                 <span className="text-muted-foreground/70">کارفرمای نهایی:</span>
-                                <strong className="text-foreground">{row.endClientName}</strong>
+                                <strong className="text-foreground font-semibold">{row.endClientName}</strong>
                               </div>
                             )}
                             {row.projectTitle && (
-                              <div className="text-[10px] text-indigo-600 font-semibold truncate max-w-[200px]">
+                              <div className="text-[10px] text-indigo-600 font-bold truncate max-w-[200px] bg-indigo-50/50 dark:bg-indigo-950/30 px-1.5 py-0.5 rounded border border-indigo-500/20">
                                 {row.projectTitle}
                               </div>
                             )}
                           </div>
                         </td>
 
-                        <td className="py-2.5 px-3 text-center">
-                          <div className="font-mono font-bold text-foreground">{toFa(row.targetQuantity)} عدد</div>
-                          <div className="text-[11px] font-mono text-amber-600 font-semibold">{toFa(row.totalParts)} قطعه برگه</div>
+                        <td className="py-3 px-3 text-center">
+                          <div className="font-mono font-bold text-foreground text-xs">{toFa(row.targetQuantity)} عدد</div>
+                          <div className="text-[11px] font-mono text-amber-600 font-bold">{toFa(row.totalParts)} قطعه برگه</div>
                         </td>
 
-                        <td className="py-2.5 px-3 text-center">
-                          <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border", stageConf.badgeClass)}>
+                        <td className="py-3 px-3 text-center">
+                          <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border shadow-2xs", stageConf.badgeClass)}>
+                            <span className="size-1.5 rounded-full bg-current animate-pulse" />
                             {stageConf.label}
                           </span>
                         </td>
 
-                        <td className="py-2.5 px-3 text-center">
+                        <td className="py-3 px-3 text-center">
                           <div className="flex items-center justify-center gap-1 font-mono text-[10px]">
-                            <span className={cn("px-1.5 py-0.5 rounded font-bold", row.cutCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 text-emerald-700" : "bg-muted text-muted-foreground")} title="اره برش">
+                            <span className={cn("px-1.5 py-0.5 rounded-md font-bold border transition-colors", row.cutCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-700" : "bg-muted/70 border-border text-muted-foreground")} title="اره برش">
                               اره: {toFa(row.cutCount)}
                             </span>
-                            <span className={cn("px-1.5 py-0.5 rounded font-bold", row.edgeCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 text-emerald-700" : "bg-muted text-muted-foreground")} title="لبه‌چسبان">
+                            <span className={cn("px-1.5 py-0.5 rounded-md font-bold border transition-colors", row.edgeCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-700" : "bg-muted/70 border-border text-muted-foreground")} title="لبه‌چسبان">
                               لبه: {toFa(row.edgeCount)}
                             </span>
-                            <span className={cn("px-1.5 py-0.5 rounded font-bold", row.cncCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 text-emerald-700" : "bg-muted text-muted-foreground")} title="ماشین‌کاری CNC">
+                            <span className={cn("px-1.5 py-0.5 rounded-md font-bold border transition-colors", row.cncCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-700" : "bg-muted/70 border-border text-muted-foreground")} title="ماشین‌کاری CNC">
                               CNC: {toFa(row.cncCount)}
                             </span>
-                            <span className={cn("px-1.5 py-0.5 rounded font-bold", row.assembledCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 text-emerald-700" : "bg-muted text-muted-foreground")} title="مونتاژ نهایی">
+                            <span className={cn("px-1.5 py-0.5 rounded-md font-bold border transition-colors", row.assembledCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-700" : "bg-muted/70 border-border text-muted-foreground")} title="مونتاژ نهایی">
                               مونتاژ: {toFa(row.assembledCount)}
                             </span>
                           </div>
                         </td>
 
-                        <td className="py-2.5 px-3">
+                        <td className="py-3 px-3.5">
                           <div className="flex flex-col gap-0.5">
-                            <span className="font-bold text-foreground text-[11px]">
+                            <span className="font-bold text-foreground text-xs">
                               {row.assignedInstaller || "بدون نصاب"}
                             </span>
                             {row.installerPhone && (
-                              <span className="font-mono text-[10px] text-muted-foreground">
+                              <span className="font-mono text-[10px] text-muted-foreground/80">
                                 {row.installerPhone}
                               </span>
                             )}
                           </div>
                         </td>
 
-                        <td className="py-2.5 px-3 text-center">
+                        <td className="py-3 px-3 text-center">
                           <div className="flex items-center justify-center gap-1.5">
-                            <div className="w-16 bg-muted rounded-full h-1.5 overflow-hidden">
+                            <div className="w-16 bg-muted rounded-full h-2 overflow-hidden">
                               <div
-                                className="bg-primary h-1.5 rounded-full transition-all"
+                                className="bg-gradient-to-r from-primary to-emerald-500 h-2 rounded-full transition-all"
                                 style={{ width: `${row.progressPercent}%` }}
                               />
                             </div>
-                            <span className="font-mono text-[10px] font-bold">{toFa(row.progressPercent)}٪</span>
+                            <span className="font-mono text-[10px] font-bold text-foreground">{toFa(row.progressPercent)}٪</span>
                           </div>
                         </td>
 
-                        <td className="py-2.5 px-3 text-center">
+                        <td className="py-3 px-3 text-center">
                           <div className="flex items-center justify-center gap-1.5">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => setContractOrderId(row.id)}
-                              className="h-7 text-[10px] px-2 gap-1 border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10"
+                              className="h-7 text-[10px] px-2.5 gap-1 border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 rounded-lg shadow-2xs font-semibold"
                               title="مشاهده و مدیریت قرارداد مالی، اقساط ۳ مرحله‌ای و وصولی‌ها"
                             >
                               <FileCheck2 className="size-3 text-emerald-600" />
@@ -1089,7 +1094,7 @@ export default function WoodIndustryPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => setFeasibilityOrderId(row.id)}
-                              className="h-7 text-[10px] px-2 gap-1 border-blue-500/30 text-blue-700 hover:bg-blue-500/10"
+                              className="h-7 text-[10px] px-2.5 gap-1 border-blue-500/30 text-blue-700 hover:bg-blue-500/10 rounded-lg shadow-2xs font-semibold"
                               title="استعلام موجودی ورق، روکش و نوارهای PVC در انبار"
                             >
                               <Boxes className="size-3 text-blue-600" />
@@ -1101,7 +1106,7 @@ export default function WoodIndustryPage() {
                                 setAdvanceOrderId(row.id);
                                 setAdvanceStage(row.currentStage || "EDGE_BANDING");
                               }}
-                              className="h-7 text-[10px] px-2 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                              className="h-7 text-[10px] px-2.5 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-2xs font-semibold"
                               title="ثبت تأییدیه مرحله کارگاهی و انتقال به مرحله بعد"
                             >
                               <CheckCircle2 className="size-3" />
@@ -1393,71 +1398,72 @@ export default function WoodIndustryPage() {
                     const stageConf = STAGE_CONFIG[stage] || STAGE_CONFIG.CUTTING;
 
                     return (
-                      <tr key={c.id} className="hover:bg-muted/30 transition-colors">
-                        <td className="py-2.5 px-3">
-                          <span className="font-mono font-bold text-emerald-700 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                      <tr key={c.id} className="hover:bg-primary/[0.03] transition-colors group">
+                        <td className="py-3 px-3.5">
+                          <span className="font-mono font-bold text-emerald-700 bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20 text-xs">
                             {c.contractNumber}
                           </span>
                         </td>
-                        <td className="py-2.5 px-3">
+                        <td className="py-3 px-3.5">
                           <div className="flex flex-col gap-0.5">
-                            <span className="font-mono font-bold text-primary">{c.productionOrder?.code || "—"}</span>
-                            <span className="text-[11px] text-foreground font-semibold">
+                            <span className="font-mono font-bold text-primary text-xs">{c.productionOrder?.code || "—"}</span>
+                            <span className="text-xs text-foreground font-bold group-hover:text-primary transition-colors">
                               {c.productionOrder?.projectTitle || c.productionOrder?.product?.name || "پروژه سفارشی"}
                             </span>
                           </div>
                         </td>
-                        <td className="py-2.5 px-3">
+                        <td className="py-3 px-3.5">
                           <div className="flex flex-col gap-0.5">
-                            <strong className="text-foreground">{c.productionOrder?.customerName || "—"}</strong>
+                            <strong className="text-foreground text-xs">{c.productionOrder?.customerName || "—"}</strong>
                             {c.productionOrder?.endClientName && (
-                              <span className="text-[10px] text-muted-foreground">
-                                کارفرمای نهایی: {c.productionOrder.endClientName}
+                              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                                <span>کارفرما:</span>
+                                <strong className="text-foreground">{c.productionOrder.endClientName}</strong>
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="py-2.5 px-3 text-center font-mono font-bold text-foreground">
+                        <td className="py-3 px-3 text-center font-mono font-bold text-foreground text-xs">
                           {money(c.totalAmount)}
                         </td>
-                        <td className="py-2.5 px-3 text-center font-mono font-bold text-emerald-700">
+                        <td className="py-3 px-3 text-center font-mono font-bold text-emerald-600 text-xs">
                           {money(c.paidAmount)}
                         </td>
-                        <td className="py-2.5 px-3 text-center font-mono font-bold text-amber-700">
+                        <td className="py-3 px-3 text-center font-mono font-bold text-amber-600 text-xs">
                           {money(remaining)}
                         </td>
-                        <td className="py-2.5 px-3 text-center">
+                        <td className="py-3 px-3 text-center">
                           <div className="flex items-center justify-center gap-1.5 font-mono">
-                            <div className="w-12 bg-muted rounded-full h-1.5 overflow-hidden">
+                            <div className="w-14 bg-muted rounded-full h-2 overflow-hidden">
                               <div
-                                className="bg-emerald-600 h-1.5 rounded-full"
+                                className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
-                            <span className="text-[10px] font-bold">{toFa(pct)}٪</span>
+                            <span className="text-[10px] font-bold text-foreground">{toFa(pct)}٪</span>
                           </div>
                         </td>
-                        <td className="py-2.5 px-3 text-center">
-                          <span className={cn("inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold border", stageConf.badgeClass)}>
+                        <td className="py-3 px-3 text-center">
+                          <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border", stageConf.badgeClass)}>
                             {stageConf.label}
                           </span>
                         </td>
-                        <td className="py-2.5 px-3 text-center">
+                        <td className="py-3 px-3 text-center">
                           {c.status === "COMPLETED" ? (
-                            <Badge className="bg-emerald-600 text-white text-[9px]">تسویه کامل</Badge>
+                            <Badge className="bg-emerald-600 text-white text-[10px] rounded-full px-2">تسویه کامل</Badge>
                           ) : pct >= 70 ? (
-                            <Badge variant="outline" className="border-blue-500/40 text-blue-700 bg-blue-500/10 text-[9px]">در انتظار تسویه نهایی</Badge>
+                            <Badge variant="outline" className="border-blue-500/40 text-blue-700 bg-blue-500/10 text-[10px] rounded-full px-2">در انتظار تسویه نهایی</Badge>
                           ) : (
-                            <Badge variant="outline" className="border-amber-500/40 text-amber-700 bg-amber-500/10 text-[9px]">اقساط جاری</Badge>
+                            <Badge variant="outline" className="border-amber-500/40 text-amber-700 bg-amber-500/10 text-[10px] rounded-full px-2">اقساط جاری</Badge>
                           )}
                         </td>
-                        <td className="py-2.5 px-3 text-center">
+                        <td className="py-3 px-3 text-center">
                           <Button
                             size="sm"
                             onClick={() => setContractOrderId(c.productionOrderId)}
-                            className="h-7 text-[10px] px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                            className="h-7.5 text-xs px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 rounded-lg shadow-2xs font-semibold"
                           >
-                            <FileCheck2 className="size-3" />
+                            <FileCheck2 className="size-3.5" />
                             مدیریت و ثبت واریزی
                           </Button>
                         </td>

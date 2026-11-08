@@ -234,7 +234,7 @@ export default function ShopFloorScanPage() {
       />
 
       {/* ۱. انتخاب ایستگاه کاری با کلیدهای بزرگ مخصوص لمسی / کیوسک */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
         {STATIONS.map((st) => {
           const Icon = st.icon;
           const isSelected = stationCode === st.code;
@@ -247,21 +247,24 @@ export default function ShopFloorScanPage() {
                 barcodeInputRef.current?.focus();
               }}
               className={cn(
-                "relative flex flex-col items-center justify-center gap-2 p-3.5 rounded-xl border-2 transition-all duration-200 text-center cursor-pointer",
+                "relative flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all duration-200 text-center cursor-pointer select-none",
                 isSelected
-                  ? `${st.bg} border-primary shadow-md scale-[1.02] ring-2 ring-primary/20`
-                  : "bg-card border-border/80 hover:border-muted-foreground/30 text-muted-foreground"
+                  ? `${st.bg} border-primary shadow-md scale-[1.02] ring-2 ring-primary/20 bg-card`
+                  : "bg-card border-border/80 hover:border-primary/40 hover:-translate-y-0.5 text-muted-foreground shadow-2xs"
               )}
             >
               {isSelected && (
-                <span className="absolute top-2 left-2 size-2 rounded-full bg-primary animate-ping" />
+                <div className="absolute top-2.5 left-2.5 flex items-center justify-center">
+                  <span className="size-2 rounded-full bg-primary animate-ping" />
+                  <span className="absolute size-2 rounded-full bg-primary" />
+                </div>
               )}
-              <div className={cn("p-2 rounded-lg transition-transform", isSelected ? st.color : "text-muted-foreground")}>
+              <div className={cn("p-2.5 rounded-xl transition-all shadow-2xs", isSelected ? `${st.color} bg-background ring-1 ring-border/50` : "bg-muted/70 text-muted-foreground")}>
                 <Icon className="size-6" />
               </div>
               <div>
-                <div className={cn("text-xs font-black", isSelected ? "text-foreground" : "")}>{st.name}</div>
-                <div className="font-mono text-[10px] text-muted-foreground mt-0.5">کد ایستگاه: [{st.code}]</div>
+                <div className={cn("text-xs font-black", isSelected ? "text-foreground" : "text-muted-foreground")}>{st.name}</div>
+                <div className="font-mono text-[10px] text-muted-foreground/80 mt-0.5 font-bold">کد: [{st.code}]</div>
               </div>
             </button>
           );
@@ -272,48 +275,53 @@ export default function ShopFloorScanPage() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
         {/* ستون راست: فیلد ورودی بارکدخوان و نمایش نتیجه آنی */}
         <div className="lg:col-span-7 flex flex-col gap-4">
-          <Card className="p-6 border-2 border-primary/20 bg-card shadow-sm">
-            <div className="flex items-center justify-between border-b border-border/80 pb-3">
-              <div className="flex items-center gap-2">
-                <ScanLine className="size-5 text-primary" />
-                <span className="font-bold text-sm text-foreground">ورودی بارکدخوان صنعتی (شلیک لیزر یا تایپ)</span>
+          <Card className="p-6 border-2 border-primary/25 bg-gradient-to-br from-card via-card to-primary/5 shadow-md">
+            <div className="flex items-center justify-between border-b border-border/80 pb-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-2xs">
+                  <ScanLine className="size-5" />
+                </div>
+                <div>
+                  <span className="font-black text-sm text-foreground">کنسول شلیک بارکدخوان صنعتی</span>
+                  <div className="text-[11px] text-muted-foreground">بارکدخوان دستی لیزری، بلوتوثی یا پورت USB</div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-muted/60 px-2.5 py-1 rounded-xl border border-border/60">
                 <User className="size-3.5 text-muted-foreground" />
                 <input
                   type="text"
                   value={operatorName}
                   onChange={(e) => setOperatorName(e.target.value)}
                   placeholder="نام اپراتور..."
-                  className="h-7 w-32 text-xs px-2.5 border rounded-md bg-background text-foreground focus:ring-1 focus:ring-primary font-semibold"
+                  className="h-6 w-28 text-xs bg-transparent text-foreground focus:outline-none font-bold"
                 />
               </div>
             </div>
 
-            <form onSubmit={handleBarcodeSubmit} className="mt-4 flex flex-col gap-3">
-              <div className="relative">
+            <form onSubmit={handleBarcodeSubmit} className="mt-4 flex flex-col gap-3.5">
+              <div className="relative group">
                 <Input
                   ref={barcodeInputRef}
                   value={barcodeInput}
                   onChange={(e) => setBarcodeInput(e.target.value)}
                   placeholder="بارکد قطعه یا سفارش را شلیک کنید (مثلاً CUT-00001)..."
-                  className="h-14 text-base font-mono font-bold tracking-wider text-center border-2 border-primary focus:ring-4 focus:ring-primary/20 bg-background"
+                  className="h-16 text-lg font-mono font-black tracking-widest text-center border-2 border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/20 bg-background rounded-xl shadow-inner transition-all"
                   autoFocus
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
-                  ایستگاه کاری منتخب: <strong className="text-foreground">{currentStation.name}</strong>
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                  <span className="inline-block size-2.5 rounded-full bg-emerald-500 animate-pulse shadow-xs" />
+                  ایستگاه فعال: <strong className="text-foreground font-black px-2 py-0.5 rounded bg-muted/80">{currentStation.name}</strong>
                 </div>
                 <Button
                   type="submit"
                   size="sm"
                   disabled={!barcodeInput.trim() || scanMutation.isPending}
-                  className="gap-2 px-6 h-9"
+                  className="gap-2 px-6 h-9.5 text-xs font-bold rounded-xl shadow-xs"
                 >
-                  {scanMutation.isPending ? "در حال ثبت..." : "تأیید اسکن"}
+                  {scanMutation.isPending ? "در حال ثبت..." : "تأیید اسکن دستی"}
                 </Button>
               </div>
             </form>
@@ -358,63 +366,68 @@ export default function ShopFloorScanPage() {
 
           {/* فیدبک بصری فوری نتیجه اسکن */}
           {lastResult && (
-            <Card
+            <div
               className={cn(
-                "p-4 border-2 transition-all duration-200 animate-in fade-in-50",
+                "p-4.5 rounded-2xl border-2 transition-all duration-300 animate-in fade-in-50 shadow-sm",
                 lastResult.success
                   ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-100"
                   : "bg-red-500/10 border-red-500/30 text-red-950 dark:text-red-100"
               )}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3.5">
                 {lastResult.success ? (
-                  <CheckCircle2 className="size-6 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 shrink-0">
+                    <CheckCircle2 className="size-6" />
+                  </div>
                 ) : (
-                  <AlertCircle className="size-6 text-red-600 shrink-0 mt-0.5" />
+                  <div className="p-2 rounded-xl bg-red-500/20 text-red-600 shrink-0">
+                    <AlertCircle className="size-6" />
+                  </div>
                 )}
                 <div className="flex flex-col gap-1 w-full">
                   <div className="font-black text-sm">{lastResult.title}</div>
-                  <div className="text-xs">{lastResult.message}</div>
+                  <div className="text-xs leading-relaxed">{lastResult.message}</div>
                   {lastResult.partName && (
-                    <div className="mt-2 flex flex-wrap gap-4 pt-2 border-t border-emerald-500/20 text-xs">
-                      <div>قطعه: <strong>{lastResult.partName}</strong></div>
-                      {lastResult.dimensions && <div>ابعاد: <strong className="font-mono">{lastResult.dimensions}</strong></div>}
-                      {lastResult.orderCode && <div>سفارش: <strong className="font-mono">{lastResult.orderCode}</strong></div>}
+                    <div className="mt-2.5 flex flex-wrap items-center gap-3 pt-2.5 border-t border-emerald-500/20 text-xs">
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 font-bold">قطعه: {lastResult.partName}</span>
+                      {lastResult.dimensions && <span className="font-mono px-2 py-0.5 rounded-md bg-muted">ابعاد: {lastResult.dimensions}</span>}
+                      {lastResult.orderCode && <span className="font-mono px-2 py-0.5 rounded-md bg-muted">سفارش: {lastResult.orderCode}</span>}
                     </div>
                   )}
                 </div>
               </div>
-            </Card>
+            </div>
           )}
         </div>
 
         {/* ستون چپ: فید زنده لاگ‌های اسکن کارگاه */}
         <div className="lg:col-span-5">
-          <Card className="p-0 overflow-hidden border border-border shadow-xs h-full flex flex-col">
-            <div className="flex items-center justify-between border-b border-border bg-muted/40 p-3">
+          <div className="kardo-card p-0 overflow-hidden border border-border/80 shadow-xs h-full flex flex-col">
+            <div className="flex items-center justify-between border-b border-border/80 bg-muted/50 p-3.5">
               <div className="flex items-center gap-2">
                 <Clock className="size-4 text-primary" />
-                <span className="text-xs font-bold text-foreground">فید لحظه‌ای اسکن‌های خط کارخانه (Real-Time Feed)</span>
+                <span className="text-xs font-black text-foreground">فید لحظه‌ای اسکن‌های خط کارخانه (Real-Time Feed)</span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono">
+              <Badge variant="outline" className="text-[10px] font-mono font-bold bg-background">
                 {toFa(scanLogs.length)} رویداد
               </Badge>
             </div>
 
-            <div className="overflow-y-auto max-h-[480px] divide-y divide-border">
+            <div className="overflow-y-auto max-h-[500px] divide-y divide-border/60 scroll-thin">
               {scanLogs.length === 0 ? (
-                <div className="py-12 text-center text-xs text-muted-foreground">
-                  هنوز اسکن جدیدی در خط ثبت نشده است.
+                <div className="py-14 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
+                  <ScanLine className="size-8 text-muted-foreground/40 stroke-1" />
+                  <span>هنوز اسکن جدیدی در خط ثبت نشده است.</span>
                 </div>
               ) : (
                 scanLogs.map((log) => (
-                  <div key={log.id} className="p-3 text-xs flex flex-col gap-1 hover:bg-muted/30 transition-colors">
+                  <div key={log.id} className="p-3 text-xs flex flex-col gap-1.5 hover:bg-muted/40 transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded text-[11px]">
+                        <span className="font-mono font-black text-primary bg-primary/10 px-2 py-0.5 rounded text-[11px] border border-primary/20">
                           {log.barcode}
                         </span>
-                        <Badge variant="secondary" className="text-[10px] font-mono">
+                        <Badge variant="secondary" className="text-[10px] font-mono font-bold">
                           {log.stationCode}
                         </Badge>
                       </div>
@@ -422,20 +435,20 @@ export default function ShopFloorScanPage() {
                         {faDate(log.scannedAt)}
                       </span>
                     </div>
-                    <div className="text-muted-foreground text-[11px] mt-0.5">
+                    <div className="text-foreground text-[11px] font-medium leading-relaxed">
                       {log.action}
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
-                      <span>اپراتور: <strong className="text-foreground">{log.operatorName}</strong></span>
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/30">
+                      <span>اپراتور: <strong className="text-foreground font-semibold">{log.operatorName}</strong></span>
                       {log.productionOrder?.code && (
-                        <span>سفارش: <strong className="font-mono text-foreground">{log.productionOrder.code}</strong></span>
+                        <span>سفارش: <strong className="font-mono text-foreground font-bold">{log.productionOrder.code}</strong></span>
                       )}
                     </div>
                   </div>
                 ))
               )}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>

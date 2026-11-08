@@ -470,4 +470,123 @@ html[data-pos-density="ultra"] .pos-lines tbody td .gap-2 {
   .dark tr[data-row-active="true"] > td {
     background-color: color-mix(in oklab, var(--primary) 26%, transparent);
   }
+
+  /* ==========================================================================
+     Kardo ERP Modern Design System Classes
+     ========================================================================== */
+  .kardo-glass {
+    background-color: color-mix(in oklab, var(--card) 90%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  }
+
+  .kardo-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .kardo-card-interactive {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .kardo-card-interactive:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+    box-shadow: 0 8px 20px -4px rgb(0 0 0 / 0.08), 0 3px 6px -2px rgb(0 0 0 / 0.04);
+  }
+
+  .kardo-pill-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.95rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    border: 1px solid transparent;
+  }
+  .kardo-pill-tab[data-active="true"] {
+    background-color: var(--card);
+    color: var(--foreground);
+    border-color: var(--border);
+    box-shadow: 0 1px 4px 0 rgb(0 0 0 / 0.06);
+  }
+  .kardo-pill-tab[data-active="false"] {
+    color: var(--muted-foreground);
+  }
+  .kardo-pill-tab[data-active="false"]:hover {
+    color: var(--foreground);
+    background-color: color-mix(in oklab, var(--muted) 60%, transparent);
+  }
+
+  .kardo-table-wrapper {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background-color: var(--card);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.03);
+  }
+
+  .kardo-table th {
+    background-color: color-mix(in oklab, var(--muted) 45%, var(--card));
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kardo-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+    font-size: 0.8125rem;
+  }
+
+  .kardo-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .kardo-table tbody tr {
+    transition: background-color 0.15s ease;
+  }
+
+  .kardo-table tbody tr:hover {
+    background-color: color-mix(in oklab, var(--primary) 4%, transparent);
+  }
+
+  /* Status indicator dots */
+  .kardo-dot-pulse {
+    position: relative;
+    display: inline-flex;
+    height: 0.5rem;
+    width: 0.5rem;
+    border-radius: 9999px;
+  }
+  .kardo-dot-pulse::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 9999px;
+    background-color: inherit;
+    opacity: 0.4;
+    animation: kardo-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}
+
+@keyframes kardo-ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
