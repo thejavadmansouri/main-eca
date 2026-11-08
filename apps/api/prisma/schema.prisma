@@ -89,6 +89,8 @@ model Warehouse {
   workTasks       WorkTask[]
   shortages       ProductShortage[]
   onlineOrders    OnlineOrder[]
+  sourceProductionOrders ProductionOrder[] @relation("SourceWarehouseProductionOrders")
+  targetProductionOrders ProductionOrder[] @relation("TargetWarehouseProductionOrders")
 }
 
 /// ─── ساختار سازمانی چندشرکته و شعب (Multi-Company ERP Core) ───
@@ -111,6 +113,7 @@ model Company {
   updatedAt       DateTime      @updatedAt
   branches        Branch[]
   fiscalYears     FiscalYear[]
+  productionOrders ProductionOrder[]
 }
 
 model Branch {
@@ -124,6 +127,7 @@ model Branch {
   isActive    Boolean    @default(true)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  productionOrders ProductionOrder[]
 }
 
 model FiscalYear {
@@ -363,6 +367,10 @@ model Product {
   reviews             ProductReview[]
   stockNotifies       StockNotify[]
   printJobItems       PrintJobItem[]
+  boms                BillOfMaterials[]         @relation("ProductBoms")
+  bomItemsAsMaterial  BomItem[]                 @relation("MaterialBomItems")
+  productionOrders    ProductionOrder[]         @relation("ProductProductionOrders")
+  materialIssues      ProductionMaterialIssue[]  @relation("MaterialProductionIssues")
 
   @@index([searchTokens], type: Gin)
   @@index([labelPrintedAt])
@@ -2922,4 +2930,195 @@ model ImagePublishLog {
 
   @@index([productId, createdAt])
   @@index([createdAt])
+}
+
+// =====================================================
+// ماژول تولید، فرمول ساخت (BOM) و سفارشات کارگاهی (Manufacturing)
+// =====================================================
+
+enum ProductionOrderStatus {
+  DRAFT
+  PLANNED
+  IN_PROGRESS
+  QUALITY_CHECK
+  COMPLETED
+  CANCELLED
+}
+
+enum WorkstationStatus {
+  IDLE
+  ACTIVE
+  MAINTENANCE
+}
+
+model BillOfMaterials {
+  id                    String            @id @default(uuid())
+  code                  String            @unique
+  name                  String
+  productId             String
+  quantity              Float             @default(1)
+  unit                  String            @default("عدد")
+  isActive              Boolean           @default(true)
+  version               Int               @default(1)
+  routingNote           String?
+  estimatedLaborCost    Float             @default(0)
+  estimatedOverheadCost Float             @default(0)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  product               Product           @relation("ProductBoms", fields: [productId], references: [id])
+  items                 BomItem[]
+  operations            BomOperation[]
+  productionOrders      ProductionOrder[]
+
+  @@index([productId])
+  @@index([isActive])
+}
+
+model BomItem {
+  id              String          @id @default(uuid())
+  bomId           String
+  materialId      String
+  quantity        Float           // مقدار مصرف به ازای مقدار مبنای BOM
+  unit            String          @default("عدد")
+  scrapPercentage Float           @default(0) // درصد ضایعات استاندارد
+  note            String?
+
+  bom             BillOfMaterials @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  material        Product         @relation("MaterialBomItems", fields: [materialId], references: [id])
+
+  @@index([bomId])
+  @@index([materialId])
+}
+
+model Workstation {
+  id                    String            @id @default(uuid())
+  code                  String            @unique
+  name                  String
+  hourlyRate            Float             @default(0)
+  capacityMinutesPerDay Float             @default(480) // ۸ ساعت = ۴۸۰ دقیقه
+  status                WorkstationStatus @default(IDLE)
+  location              String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  bomOperations         BomOperation[]
+  orderOperations       ProductionOrderOperation[]
+
+  @@index([status])
+}
+
+model BomOperation {
+  id              String          @id @default(uuid())
+  bomId           String
+  workstationId   String
+  step            Int             // ترتیب ۱، ۲، ۳
+  title           String
+  durationMinutes Float           @default(0)
+  instructions    String?
+
+  bom             BillOfMaterials @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  workstation     Workstation     @relation(fields: [workstationId], references: [id])
+
+  @@index([bomId])
+  @@index([workstationId])
+}
+
+model ProductionOrder {
+  id                 String                @id @default(uuid())
+  orderNumber        Int                   @default(autoincrement())
+  code               String                @unique
+  bomId              String
+  productId          String
+  targetQuantity     Float                 // تعداد درخواستی
+  completedQuantity  Float                 @default(0)
+  scrapQuantity      Float                 @default(0)
+  status             ProductionOrderStatus @default(DRAFT)
+  priority           Int                   @default(1) // 1=عادی، 2=فوری، 3=اضطراری
+  startDate          DateTime?
+  dueDate            DateTime?
+  actualEndDate      DateTime?
+  warehouseId        String?               // انبار منبع مواد اولیه
+  targetWarehouseId  String?               // انبار مقصد کالای نهایی
+  companyId          String?
+  branchId           String?
+  notes              String?
+
+  // هزینه‌ها و بهای تمام‌شده تولید (COGM)
+  totalMaterialCost  Float                 @default(0)
+  totalLaborCost     Float                 @default(0)
+  totalOverheadCost  Float                 @default(0)
+  totalCost          Float                 @default(0)
+  unitCost           Float                 @default(0)
+
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  bom                BillOfMaterials       @relation(fields: [bomId], references: [id])
+  product            Product               @relation("ProductProductionOrders", fields: [productId], references: [id])
+  warehouse          Warehouse?            @relation("SourceWarehouseProductionOrders", fields: [warehouseId], references: [id])
+  targetWarehouse    Warehouse?            @relation("TargetWarehouseProductionOrders", fields: [targetWarehouseId], references: [id])
+  company            Company?              @relation(fields: [companyId], references: [id])
+  branch             Branch?               @relation(fields: [branchId], references: [id])
+
+  operations         ProductionOrderOperation[]
+  materials          ProductionMaterialIssue[]
+  qualityChecks      QualityCheck[]
+
+  @@index([status])
+  @@index([productId])
+  @@index([bomId])
+  @@index([companyId])
+  @@index([createdAt])
+}
+
+model ProductionMaterialIssue {
+  id                String          @id @default(uuid())
+  productionOrderId String
+  materialId        String
+  plannedQuantity   Float
+  issuedQuantity    Float           @default(0)
+  unitCost          Float           @default(0)
+  totalCost         Float           @default(0)
+  issuedAt          DateTime        @default(now())
+  isReturned        Boolean         @default(false)
+
+  productionOrder   ProductionOrder @relation(fields: [productionOrderId], references: [id], onDelete: Cascade)
+  material          Product         @relation("MaterialProductionIssues", fields: [materialId], references: [id])
+
+  @@index([productionOrderId])
+  @@index([materialId])
+}
+
+model ProductionOrderOperation {
+  id                String          @id @default(uuid())
+  productionOrderId String
+  workstationId     String
+  step              Int
+  title             String
+  status            String          @default("PENDING") // PENDING, IN_PROGRESS, DONE
+  startedAt         DateTime?
+  finishedAt        DateTime?
+  operatorName      String?
+  actualMinutes     Float?
+
+  productionOrder   ProductionOrder @relation(fields: [productionOrderId], references: [id], onDelete: Cascade)
+  workstation       Workstation     @relation(fields: [workstationId], references: [id])
+
+  @@index([productionOrderId])
+  @@index([workstationId])
+}
+
+model QualityCheck {
+  id                String          @id @default(uuid())
+  productionOrderId String
+  inspectorName     String
+  passed            Boolean
+  checklist         Json?
+  defects           String?
+  inspectedAt       DateTime        @default(now())
+
+  productionOrder   ProductionOrder @relation(fields: [productionOrderId], references: [id], onDelete: Cascade)
+
+  @@index([productionOrderId])
 }

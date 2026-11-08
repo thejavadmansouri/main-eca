@@ -2696,6 +2696,177 @@ export function getChartOfAccounts(): Promise<T.ChartOfAccountsResponse> {
 }
 
 // =====================================================
+// مدیریت تولید، فرمول ساخت و سفارشات کارگاهی (Manufacturing)
+// =====================================================
+
+export function getWorkstations(): Promise<T.WorkstationRow[]> {
+  return apiFetch<T.WorkstationRow[]>('/manufacturing/workstations');
+}
+
+export function createWorkstation(body: {
+  code: string;
+  name: string;
+  hourlyRate?: number;
+  capacityMinutesPerDay?: number;
+  location?: string;
+}): Promise<T.WorkstationRow> {
+  return apiFetch<T.WorkstationRow>('/manufacturing/workstations', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export function getBoms(
+  p: { productId?: string; isActive?: boolean } = {},
+): Promise<T.BillOfMaterialsRow[]> {
+  return apiFetch<T.BillOfMaterialsRow[]>(`/manufacturing/boms?${reportQs(p)}`);
+}
+
+export function getBomById(id: string): Promise<T.BillOfMaterialsRow> {
+  return apiFetch<T.BillOfMaterialsRow>(`/manufacturing/boms/${encodeURIComponent(id)}`);
+}
+
+export function createBom(body: {
+  code: string;
+  name: string;
+  productId: string;
+  quantity?: number;
+  unit?: string;
+  routingNote?: string;
+  estimatedLaborCost?: number;
+  estimatedOverheadCost?: number;
+  items: {
+    materialId: string;
+    quantity: number;
+    unit?: string;
+    scrapPercentage?: number;
+    note?: string;
+  }[];
+  operations?: {
+    workstationId: string;
+    step: number;
+    title: string;
+    durationMinutes?: number;
+    instructions?: string;
+  }[];
+}): Promise<T.BillOfMaterialsRow> {
+  return apiFetch<T.BillOfMaterialsRow>('/manufacturing/boms', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export function getProductionOrders(
+  p: { status?: T.ProductionOrderStatus; productId?: string } = {},
+): Promise<T.ProductionOrderRow[]> {
+  return apiFetch<T.ProductionOrderRow[]>(`/manufacturing/orders?${reportQs(p)}`);
+}
+
+export function getProductionOrderById(id: string): Promise<T.ProductionOrderRow> {
+  return apiFetch<T.ProductionOrderRow>(`/manufacturing/orders/${encodeURIComponent(id)}`);
+}
+
+export function createProductionOrder(body: {
+  code?: string;
+  bomId: string;
+  productId: string;
+  targetQuantity: number;
+  priority?: number;
+  startDate?: string;
+  dueDate?: string;
+  warehouseId?: string;
+  targetWarehouseId?: string;
+  notes?: string;
+}): Promise<T.ProductionOrderRow> {
+  return apiFetch<T.ProductionOrderRow>('/manufacturing/orders', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export function startProductionOrder(id: string): Promise<T.ProductionOrderRow> {
+  return apiFetch<T.ProductionOrderRow>(
+    `/manufacturing/orders/${encodeURIComponent(id)}/start`,
+    { method: 'POST' },
+  );
+}
+
+export function issueProductionMaterials(
+  id: string,
+  body: {
+    issues: {
+      materialId: string;
+      quantity: number;
+      locationId?: string;
+      unitCost?: number;
+    }[];
+  },
+): Promise<T.ProductionOrderRow> {
+  return apiFetch<T.ProductionOrderRow>(
+    `/manufacturing/orders/${encodeURIComponent(id)}/issue-materials`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+export function updateProductionOperation(
+  id: string,
+  opId: string,
+  body: {
+    status: 'PENDING' | 'IN_PROGRESS' | 'DONE';
+    actualMinutes?: number;
+    operatorName?: string;
+  },
+): Promise<T.ProductionOrderOperationRow> {
+  return apiFetch<T.ProductionOrderOperationRow>(
+    `/manufacturing/orders/${encodeURIComponent(id)}/operations/${encodeURIComponent(opId)}`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+export function recordProductionQualityCheck(
+  id: string,
+  body: {
+    inspectorName: string;
+    passed: boolean;
+    checklist?: Record<string, boolean>;
+    defects?: string;
+  },
+): Promise<T.QualityCheckRow> {
+  return apiFetch<T.QualityCheckRow>(
+    `/manufacturing/orders/${encodeURIComponent(id)}/quality-check`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+export function completeProductionOrder(
+  id: string,
+  body: {
+    completedQuantity: number;
+    scrapQuantity?: number;
+    targetLocationId?: string;
+    laborCost?: number;
+    overheadCost?: number;
+  },
+): Promise<T.ProductionOrderRow> {
+  return apiFetch<T.ProductionOrderRow>(
+    `/manufacturing/orders/${encodeURIComponent(id)}/complete`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+// =====================================================
 // پرداخت به مشتری بستانکار (تسویه بستانکاری)
 // =====================================================
 

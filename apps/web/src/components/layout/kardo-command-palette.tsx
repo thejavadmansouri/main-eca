@@ -19,6 +19,7 @@ import {
   Building2,
   Printer,
   ShieldCheck,
+  Factory,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -111,7 +112,17 @@ export function KardoCommandPalette({ open, onOpenChange }: KardoCommandPaletteP
             >
               <div className="flex items-center gap-2">
                 <Wallet className="size-4 text-blue-600" />
-                <span>خزانه‌داری و مدیریت چک‌های صیادی</span>
+                <span>دفاتر مالی، تراز آزمایشی و کدینگ حساب‌ها</span>
+              </div>
+            </CommandItem>
+
+            <CommandItem
+              onSelect={() => handleSelect("/admin/manufacturing")}
+              className="flex items-center justify-between cursor-pointer py-2.5"
+            >
+              <div className="flex items-center gap-2">
+                <Factory className="size-4 text-amber-600" />
+                <span>مدیریت تولید، سفارشات ساخت و فرمول ساخت (BOM)</span>
               </div>
             </CommandItem>
           </CommandGroup>

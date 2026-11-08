@@ -3200,6 +3200,178 @@ export interface ChartOfAccountsResponse {
 }
 
 // =====================================================
+// مدیریت تولید، فرمول ساخت و سفارشات کارگاهی (Manufacturing)
+// =====================================================
+
+export type ProductionOrderStatus =
+  | "DRAFT"
+  | "PLANNED"
+  | "IN_PROGRESS"
+  | "QUALITY_CHECK"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export type WorkstationStatus = "IDLE" | "ACTIVE" | "MAINTENANCE";
+
+export interface WorkstationRow {
+  id: string;
+  code: string;
+  name: string;
+  hourlyRate: number;
+  capacityMinutesPerDay: number;
+  status: WorkstationStatus;
+  location: string | null;
+  createdAt: string;
+}
+
+export interface BomItemRow {
+  id: string;
+  bomId: string;
+  materialId: string;
+  quantity: number;
+  unit: string;
+  scrapPercentage: number;
+  note: string | null;
+  material?: {
+    id: string;
+    name: string;
+    sku: string;
+    unit: string;
+  };
+}
+
+export interface BomOperationRow {
+  id: string;
+  bomId: string;
+  workstationId: string;
+  step: number;
+  title: string;
+  durationMinutes: number;
+  instructions: string | null;
+  workstation?: WorkstationRow;
+}
+
+export interface BillOfMaterialsRow {
+  id: string;
+  code: string;
+  name: string;
+  productId: string;
+  quantity: number;
+  unit: string;
+  isActive: boolean;
+  version: number;
+  routingNote: string | null;
+  estimatedLaborCost: number;
+  estimatedOverheadCost: number;
+  createdAt: string;
+  updatedAt: string;
+  product?: {
+    id: string;
+    name: string;
+    sku: string;
+    unit: string;
+  };
+  items?: BomItemRow[];
+  operations?: BomOperationRow[];
+  _count?: {
+    items: number;
+    operations: number;
+    productionOrders: number;
+  };
+}
+
+export interface ProductionMaterialIssueRow {
+  id: string;
+  productionOrderId: string;
+  materialId: string;
+  plannedQuantity: number;
+  issuedQuantity: number;
+  unitCost: number;
+  totalCost: number;
+  issuedAt: string;
+  isReturned: boolean;
+  material?: {
+    id: string;
+    name: string;
+    sku: string;
+    unit: string;
+  };
+}
+
+export interface ProductionOrderOperationRow {
+  id: string;
+  productionOrderId: string;
+  workstationId: string;
+  step: number;
+  title: string;
+  status: "PENDING" | "IN_PROGRESS" | "DONE";
+  startedAt: string | null;
+  finishedAt: string | null;
+  operatorName: string | null;
+  actualMinutes: number | null;
+  workstation?: WorkstationRow;
+}
+
+export interface QualityCheckRow {
+  id: string;
+  productionOrderId: string;
+  inspectorName: string;
+  passed: boolean;
+  checklist: Record<string, boolean> | null;
+  defects: string | null;
+  inspectedAt: string;
+}
+
+export interface ProductionOrderRow {
+  id: string;
+  orderNumber: number;
+  code: string;
+  bomId: string;
+  productId: string;
+  targetQuantity: number;
+  completedQuantity: number;
+  scrapQuantity: number;
+  status: ProductionOrderStatus;
+  priority: number;
+  startDate: string | null;
+  dueDate: string | null;
+  actualEndDate: string | null;
+  warehouseId: string | null;
+  targetWarehouseId: string | null;
+  companyId: string | null;
+  branchId: string | null;
+  notes: string | null;
+  totalMaterialCost: number;
+  totalLaborCost: number;
+  totalOverheadCost: number;
+  totalCost: number;
+  unitCost: number;
+  createdAt: string;
+  updatedAt: string;
+  product?: {
+    id: string;
+    name: string;
+    sku: string;
+    unit: string;
+  };
+  bom?: {
+    id: string;
+    code: string;
+    name: string;
+    estimatedLaborCost?: number;
+    estimatedOverheadCost?: number;
+  };
+  materials?: ProductionMaterialIssueRow[];
+  operations?: ProductionOrderOperationRow[];
+  qualityChecks?: QualityCheckRow[];
+  _count?: {
+    operations: number;
+    materials: number;
+    qualityChecks: number;
+  };
+}
+
+// =====================================================
 // اصلاح نحوهٔ پرداخت (تسویهٔ از نو)
 // =====================================================
 

@@ -26,6 +26,7 @@ import {
   Tags,
   Building2,
   Receipt,
+  Factory,
 } from "lucide-react";
 
 export interface NavItem {
@@ -212,13 +213,20 @@ export const NAV_SECTIONS: NavSection[] = [
       },
       {
         /*
-         * دفتر روزنامه — سندِ خودکارِ پشتِ هر اکشن مالی، فقط مدیر.
-         * UI صندوق‌دار هرگز به این‌جا نمی‌رسد؛ این صفحه برای کسی است که
-         * می‌خواهد «چی به چی» را ببیند.
+         * حسابداری و دفاتر مالی — دفتر روزنامه، تراز آزمایشی، دفتر معین و کدینگ
          */
-        title: "دفتر روزنامه",
+        title: "حسابداری و دفاتر مالی",
         href: "/admin/vouchers",
         icon: ScrollText,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        /*
+         * مدیریت تولید و ساخت — سفارشات کارگاهی، فرمول ساخت (BOM)، ایستگاه‌ها و بهای تمام‌شده
+         */
+        title: "مدیریت تولید و ساخت",
+        href: "/admin/manufacturing",
+        icon: Factory,
         roles: ["ADMIN", "MANAGER"],
       },
       {

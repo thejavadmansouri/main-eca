@@ -53,6 +53,7 @@ import { SmsModule } from './sms/sms.module';
 import { ProductImagesModule } from './product-images/product-images.module';
 import { CompaniesModule } from './companies/companies.module';
 import { CustomFieldsModule } from './custom-fields/custom-fields.module';
+import { ManufacturingModule } from './manufacturing/manufacturing.module';
 
 /*
  * ماژول‌هایی که **فقط روی سرور انبار** لود می‌شوند.
@@ -103,6 +104,7 @@ const WAREHOUSE_ONLY = [
   ProductImagesModule,
   CompaniesModule,
   CustomFieldsModule,
+  ManufacturingModule,
 ];
 
 /**
