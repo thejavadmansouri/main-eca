@@ -35,6 +35,8 @@ import {
   SlidersHorizontal,
   Tags,
   TrendingUp,
+  Truck,
+  Route,
   Users,
   Wallet,
   Warehouse,
@@ -81,6 +83,12 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/admin/inbox",
         icon: ClipboardCheck,
         roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "پیام‌رسان و چت سازمانی",
+        href: "/admin/chat",
+        icon: MessageSquare,
+        roles: "ALL",
       },
       {
         title: "گزارش‌های تحلیلی و مالی",
@@ -145,6 +153,12 @@ export const NAV_SECTIONS: NavSection[] = [
         roles: ["ADMIN", "MANAGER"],
         site: true,
       },
+      {
+        title: "پیگیری سفارشات و سیر تحویل",
+        href: "/admin/orders/tracking",
+        icon: Route,
+        roles: ["ADMIN", "MANAGER", "SALES"],
+      },
     ],
   },
 
@@ -207,6 +221,12 @@ export const NAV_SECTIONS: NavSection[] = [
         title: "لیبل‌ها و چاپ بارکد",
         href: "/admin/labels",
         icon: Tags,
+        roles: ["ADMIN", "MANAGER", "STAFF"],
+      },
+      {
+        title: "رانندگان و ناوگان حمل‌ونقل",
+        href: "/admin/logistics/drivers",
+        icon: Truck,
         roles: ["ADMIN", "MANAGER", "STAFF"],
       },
     ],

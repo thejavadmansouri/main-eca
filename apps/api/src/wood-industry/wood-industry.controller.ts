@@ -10,6 +10,7 @@ import {
 import { Role } from '@prisma/client';
 
 import { Roles } from '../auth/roles.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import {
   AddCuttingItemDto,
   AddProfileGlassDto,
@@ -31,6 +32,16 @@ export class WoodIndustryController {
   constructor(private readonly woodService: WoodIndustryService) {}
 
   // ───────────────────────── ثبت و مدیریت سفارش صنایع چوب (B2B / B2C) ─────────────────────────
+  @Get('orders')
+  async getOrders(@Query('customerName') customerName?: string) {
+    return this.woodService.getOrders({ customerName });
+  }
+
+  @Get('orders/:id')
+  async getOrderById(@Param('id') id: string) {
+    return this.woodService.getOrderById(id);
+  }
+
   @Post('orders')
   async createWoodProductionOrder(@Body() dto: CreateWoodOrderDto) {
     return this.woodService.createWoodProductionOrder(dto);
@@ -42,6 +53,25 @@ export class WoodIndustryController {
     @Body() dto: AdvanceStageDto,
   ) {
     return this.woodService.advanceOrderStage(id, dto);
+  }
+
+  @Post('orders/:id/tracking-token')
+  async generateTrackingToken(@Param('id') id: string) {
+    return this.woodService.generateTrackingToken(id);
+  }
+
+  @Patch('orders/:id/progress')
+  async updateOrderProgress(
+    @Param('id') id: string,
+    @Body() dto: { progressPercent: number; estimatedCompletionDate?: string },
+  ) {
+    return this.woodService.updateOrderProgress(id, dto);
+  }
+
+  @Public()
+  @Get('public/track/:token')
+  async getPublicTracking(@Param('token') token: string) {
+    return this.woodService.getPublicTracking(token);
   }
 
   @Get('orders/:id/feasibility')
@@ -109,8 +139,8 @@ export class WoodIndustryController {
 
   // ───────────────────────── بارگیری، اعزام و نصب ─────────────────────────
   @Get('installations')
-  async getInstallationOrders() {
-    return this.woodService.getInstallationOrders();
+  async getInstallationOrders(@Query('customerId') customerId?: string) {
+    return this.woodService.getInstallationOrders(customerId);
   }
 
   @Post('installations')

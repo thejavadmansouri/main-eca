@@ -61,6 +61,8 @@ import { amount, faDate, faToEn, money, parseNum, toFa } from "@/lib/format";
 import { bpToPercent, percentToBp } from "@/lib/cheque-charge";
 import { useAuthStore } from "@/lib/auth-store";
 import { CustomerChequesTab } from "./_components/customer-cheques-tab";
+import { CustomerWoodTab } from "./_components/customer-wood-tab";
+import { CustomerInstallationsTab } from "./_components/customer-installations-tab";
 import { balanceTextClass } from "@/components/finance-badges";
 import { TakePayment } from "./_components/take-payment";
 import { PayoutForm } from "@/components/payout-form";
@@ -149,9 +151,9 @@ export default function CustomerPage() {
    * قاعده‌ی «یک حقیقت، یک نمایش»: این صفحه تنها جای نمایشِ کاملِ پرونده است
    * و از همه‌جا با همین شکل باز می‌شود.
    */
-  const [tab, setTab] = React.useState<"invoices" | "ledger" | "cheques">(
-    "invoices",
-  );
+  const [tab, setTab] = React.useState<
+    "invoices" | "ledger" | "cheques" | "wood" | "installations"
+  >("invoices");
   const [moreOpen, setMoreOpen] = React.useState(false);
   /** پیامک و ویرایش از منوی «امکانات بیشتر» باز می‌شوند — دیالوگ‌ها کنترل‌شده‌اند. */
   const [smsOpen, setSmsOpen] = React.useState(false);
@@ -621,13 +623,15 @@ export default function CustomerPage() {
         </div>
       </div>
 
-      {/* سه تبِ پرونده — فاکتورها پیش‌فرض؛ دفتر و چک‌ها یک کلیک فاصله دارند. */}
-      <div className="flex shrink-0 items-center gap-1 border-b bg-muted/30 px-3 py-1.5">
+      {/* تب‌های پرونده ۳۶۰ مشتری: فاکتورها، دفتر معین، چک‌ها، سفارشات ساخت چوب، و سوابق نصب و تحویل */}
+      <div className="flex shrink-0 items-center gap-1 border-b bg-muted/30 px-3 py-1.5 overflow-x-auto">
         {(
           [
-            ["invoices", "فاکتورها"],
+            ["invoices", "فاکتورها و خریدها"],
             ["ledger", "دفتر (کارت حساب)"],
             ["cheques", "چک‌ها"],
+            ["wood", "سفارشات ساخت و چوب"],
+            ["installations", "سوابق نصب و تحویل"],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -884,6 +888,12 @@ export default function CustomerPage() {
         )}
 
         {tab === "cheques" && <CustomerChequesTab customerId={id} />}
+        {tab === "wood" && (
+          <CustomerWoodTab customerName={c.fullName} customerId={id} />
+        )}
+        {tab === "installations" && (
+          <CustomerInstallationsTab customerName={c.fullName} customerId={id} />
+        )}
       </div>
 
       {/* مشاهده‌ی فاکتور — پنلِ رویِ صفحه؛ جمع و اقلام همان لحظه دیده می‌شوند. */}

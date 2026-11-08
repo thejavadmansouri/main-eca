@@ -995,7 +995,20 @@ export class ProductsService {
 
   async search(query: string) {
     const q = this.normalizeSearch(query || '');
-    if (!q) return [];
+    if (!q) {
+      // وقتی کوئری خالی است (مثلاً کاربر روی نوار جستجوی کالا کلیک کرده)، کالاهای موجود انبار به همراه قیمت بارگذاری می‌شوند
+      return this.prisma.product.findMany({
+        take: 100,
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          brand: true,
+          vehicleModel: true,
+          category: true,
+          barcodes: true,
+          prices: { orderBy: { createdAt: 'desc' }, take: 1 },
+        },
+      });
+    }
 
     const ids = await this.rankIds(q);
     if (ids.length === 0) return [];

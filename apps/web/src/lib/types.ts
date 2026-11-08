@@ -3957,6 +3957,7 @@ export interface InstallationOrderRow {
   installerLead?: string | null;
   scheduledDate: string;
   installedAt?: string | null;
+  actualCompletedDate?: string | null;
   status: string;
   completionNotes?: string | null;
   customerSignature?: boolean;
@@ -4127,6 +4128,62 @@ export interface ProjectContractRow {
   milestones?: ProjectMilestoneRow[];
   payments?: ProjectPaymentRow[];
 }
+
+export interface DriverRow {
+  id: string;
+  code: string;
+  fullName: string;
+  mobile: string;
+  nationalId?: string | null;
+  licenseNumber?: string | null;
+  plateNumber: string;
+  vehicleType: string;
+  isActive: boolean;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateDriverInput {
+  code?: string;
+  fullName: string;
+  mobile: string;
+  nationalId?: string;
+  licenseNumber?: string;
+  plateNumber: string;
+  vehicleType: string;
+  notes?: string;
+}
+
+export interface UpdateDriverInput {
+  fullName?: string;
+  mobile?: string;
+  nationalId?: string;
+  licenseNumber?: string;
+  plateNumber?: string;
+  vehicleType?: string;
+  isActive?: boolean;
+  notes?: string;
+}
+
+export interface WoodProductionOrderSummary {
+  id: string;
+  code: string;
+  projectTitle?: string | null;
+  customerName?: string | null;
+  endClientName?: string | null;
+  currentStage: string;
+  progressPercent: number;
+  trackingToken?: string | null;
+  estimatedCompletionDate?: string | null;
+  status: string;
+  assignedInstaller?: string | null;
+  installerPhone?: string | null;
+  createdAt: string;
+  product?: { name: string; sku: string };
+  installationOrders?: InstallationOrderRow[];
+}
+
 
 
 

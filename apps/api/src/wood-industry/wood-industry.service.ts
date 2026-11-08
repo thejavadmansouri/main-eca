@@ -498,8 +498,11 @@ export class WoodIndustryService {
   }
 
   // ───────────────────────── بارگیری، اعزام و نصب ─────────────────────────
-  async getInstallationOrders() {
+  async getInstallationOrders(customerId?: string) {
+    const where: any = {};
+    if (customerId) where.customerId = customerId;
     return this.prisma.installationOrder.findMany({
+      where,
       orderBy: { scheduledDate: 'desc' },
       include: { productionOrder: true },
     });
@@ -532,22 +535,26 @@ export class WoodIndustryService {
     });
     if (!inst) throw new NotFoundException('سفارش نصب مورد نظر یافت نشد.');
 
+    const isCompleted = dto.status === 'COMPLETED';
+
     const updated = await this.prisma.installationOrder.update({
       where: { id },
       data: {
         status: dto.status,
         ...(dto.completionNotes !== undefined && { completionNotes: dto.completionNotes }),
         ...(dto.customerSignature !== undefined && { customerSignature: dto.customerSignature }),
+        ...(isCompleted && { actualCompletedDate: new Date() }),
       },
       include: { productionOrder: true },
     });
 
     // در صورت تکمیل نصب، وضعیت مرحله سفارش تولید به INSTALLED تغییر می‌یابد
-    if (dto.status === 'COMPLETED' && inst.productionOrderId) {
+    if (isCompleted && inst.productionOrderId) {
       await this.prisma.productionOrder.update({
         where: { id: inst.productionOrderId },
         data: {
           currentStage: 'INSTALLED',
+          progressPercent: 100,
           status: 'COMPLETED',
           actualEndDate: new Date(),
         },
@@ -558,15 +565,125 @@ export class WoodIndustryService {
           productionOrderId: inst.productionOrderId,
           barcode: inst.orderNumber,
           operatorName: inst.installerLead || 'تیم نصب کاردو',
-          stationCode: 'INSTALLED',
-          action: 'تکمیل نصب و دریافت تاییدیه مشتری در محل',
-          isSuccess: true,
-          message: dto.completionNotes,
+          stationCode: 'INSTALL',
+          action: 'اتمام نصب و تحویل پروژه به کارفرما',
+          message: dto.completionNotes || 'تکمیل موفقیت‌آمیز نصب در محل پروژه',
         },
       });
     }
 
     return updated;
+  }
+
+  /** تولید و دریافت توکن رهگیری اختصاصی برای مشتری/کارفرما */
+  async generateTrackingToken(orderId: string) {
+    const order = await this.prisma.productionOrder.findUnique({
+      where: { id: orderId },
+    });
+    if (!order) throw new NotFoundException('سفارش تولید مورد نظر یافت نشد.');
+
+    let token = order.trackingToken;
+    if (!token) {
+      token = 'tr_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+      await this.prisma.productionOrder.update({
+        where: { id: orderId },
+        data: { trackingToken: token },
+      });
+    }
+
+    return { trackingToken: token, url: `/track/${token}` };
+  }
+
+  /** دریافت اطلاعات عمومی پیشرفت سفارش جهت نمایش به کارفرما */
+  async getPublicTracking(token: string) {
+    const order = await this.prisma.productionOrder.findUnique({
+      where: { trackingToken: token },
+      select: {
+        id: true,
+        code: true,
+        projectTitle: true,
+        customerName: true,
+        currentStage: true,
+        progressPercent: true,
+        assignedInstaller: true,
+        installerPhone: true,
+        estimatedCompletionDate: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        scanLogs: {
+          orderBy: { scannedAt: 'asc' },
+          select: {
+            stationCode: true,
+            action: true,
+            scannedAt: true,
+          },
+        },
+        installationOrders: {
+          select: {
+            orderNumber: true,
+            status: true,
+            scheduledDate: true,
+            actualCompletedDate: true,
+            installerLead: true,
+            driverName: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('سفارش یا لینک رهگیری نامعتبر است.');
+    }
+
+    return order;
+  }
+
+  /** به‌روزرسانی نوار پیشرفت و تاریخ تخمینی اتمام توسط مدیر/سرپرست */
+  async updateOrderProgress(orderId: string, dto: { progressPercent: number; estimatedCompletionDate?: string }) {
+    return this.prisma.productionOrder.update({
+      where: { id: orderId },
+      data: {
+        progressPercent: Math.min(100, Math.max(0, dto.progressPercent)),
+        ...(dto.estimatedCompletionDate && { estimatedCompletionDate: new Date(dto.estimatedCompletionDate) }),
+      },
+    });
+  }
+
+  /** لیست سفارشات تولید با امکان فیلتر بر اساس مشتری */
+  async getOrders(params?: { customerName?: string; limit?: number }) {
+    const where: any = {};
+    if (params?.customerName) {
+      where.OR = [
+        { customerName: { contains: params.customerName, mode: 'insensitive' } },
+        { endClientName: { contains: params.customerName, mode: 'insensitive' } },
+      ];
+    }
+    return this.prisma.productionOrder.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: params?.limit || 50,
+      include: {
+        product: { select: { name: true, sku: true } },
+        installationOrders: true,
+      },
+    });
+  }
+
+  /** دریافت جزئیات یک سفارش تولید */
+  async getOrderById(id: string) {
+    const order = await this.prisma.productionOrder.findUnique({
+      where: { id },
+      include: {
+        product: true,
+        cuttingListItems: true,
+        scanLogs: { orderBy: { scannedAt: 'desc' } },
+        installationOrders: true,
+        contract: { include: { milestones: true, payments: true } },
+      },
+    });
+    if (!order) throw new NotFoundException('سفارش تولید مورد نظر یافت نشد.');
+    return order;
   }
 
   // ───────────────────────── قرارداد پروژه‌ها و پرداخت‌های مرحله‌ای (Project Contracts & Milestones) ─────────────────────────

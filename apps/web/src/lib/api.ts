@@ -4064,8 +4064,10 @@ export function getComprehensiveProductionMatrix(): Promise<T.ProductionMatrixRo
   return apiFetch<T.ProductionMatrixRow[]>('/wood-industry/matrix-report');
 }
 
-export function getInstallationOrders(): Promise<T.InstallationOrderRow[]> {
-  return apiFetch<T.InstallationOrderRow[]>('/wood-industry/installations');
+export function getInstallationOrders(customerId?: string | Record<string, any>): Promise<T.InstallationOrderRow[]> {
+  const cid = typeof customerId === 'string' ? customerId : undefined;
+  const qs = cid ? `?customerId=${encodeURIComponent(cid)}` : '';
+  return apiFetch<T.InstallationOrderRow[]>(`/wood-industry/installations${qs}`);
 }
 
 export function createInstallationOrder(body: {
@@ -4354,6 +4356,117 @@ export function recordProjectPayment(body: {
     body,
   });
 }
+
+// ══════════════════════════════════════════════════════════════════════════
+// نوتیفیکیشن‌ها و پیام‌رسان داخلی پرسنل (Notifications & Internal Chat)
+// ══════════════════════════════════════════════════════════════════════════
+
+export function sendStaffNotification(body: {
+  recipientId: string;
+  title: string;
+  message: string;
+  type?: string;
+  linkUrl?: string;
+}): Promise<any> {
+  return apiFetch('/notifications', { method: 'POST', body });
+}
+
+export function getMyNotifications(): Promise<any[]> {
+  return apiFetch('/notifications/my');
+}
+
+export function getUnreadNotificationsCount(): Promise<{ count: number }> {
+  return apiFetch('/notifications/unread-count');
+}
+
+export function markNotificationAsRead(id: string): Promise<any> {
+  return apiFetch(`/notifications/${encodeURIComponent(id)}/read`, { method: 'PATCH' });
+}
+
+export function markAllNotificationsAsRead(): Promise<any> {
+  return apiFetch('/notifications/read-all', { method: 'PATCH' });
+}
+
+export function sendInternalMessage(body: {
+  recipientId?: string;
+  channelId?: string;
+  content: string;
+  attachments?: any;
+}): Promise<any> {
+  return apiFetch('/notifications/messages', { method: 'POST', body });
+}
+
+export function getChannelMessages(channelId = 'general'): Promise<any[]> {
+  return apiFetch(`/notifications/messages/channel/${encodeURIComponent(channelId)}`);
+}
+
+export function getDirectMessages(otherUserId: string): Promise<any[]> {
+  return apiFetch(`/notifications/messages/direct/${encodeURIComponent(otherUserId)}`);
+}
+
+// ───────────────────────── صنایع چوب: رهگیری و سفارشات مشتری ─────────────────────────
+export function getWoodOrders(params?: { customerName?: string }): Promise<T.WoodProductionOrderSummary[]> {
+  const qs = params?.customerName ? `?customerName=${encodeURIComponent(params.customerName)}` : '';
+  return apiFetch<T.WoodProductionOrderSummary[]>(`/wood-industry/orders${qs}`);
+}
+
+export function getWoodOrder(id: string): Promise<any> {
+  return apiFetch(`/wood-industry/orders/${encodeURIComponent(id)}`);
+}
+
+export function generateTrackingToken(orderId: string): Promise<{ trackingToken: string; url: string }> {
+  return apiFetch<{ trackingToken: string; url: string }>(`/wood-industry/orders/${encodeURIComponent(orderId)}/tracking-token`, {
+    method: 'POST',
+  });
+}
+
+export function updateOrderProgress(
+  orderId: string,
+  body: { progressPercent: number; estimatedCompletionDate?: string },
+): Promise<any> {
+  return apiFetch(`/wood-industry/orders/${encodeURIComponent(orderId)}/progress`, {
+    method: 'PATCH',
+    body,
+  });
+}
+
+export function getPublicTracking(token: string): Promise<any> {
+  return apiFetch(`/wood-industry/public/track/${encodeURIComponent(token)}`);
+}
+
+// ───────────────────────── رانندگان و ناوگان حمل‌ونقل ─────────────────────────
+export function getDrivers(search?: string, activeOnly = false): Promise<T.DriverRow[]> {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (activeOnly) params.set('activeOnly', 'true');
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  return apiFetch<T.DriverRow[]>(`/drivers${qs}`);
+}
+
+export function getDriver(id: string): Promise<T.DriverRow> {
+  return apiFetch<T.DriverRow>(`/drivers/${encodeURIComponent(id)}`);
+}
+
+export function createDriver(body: T.CreateDriverInput): Promise<T.DriverRow> {
+  return apiFetch<T.DriverRow>('/drivers', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function updateDriver(id: string, body: T.UpdateDriverInput): Promise<T.DriverRow> {
+  return apiFetch<T.DriverRow>(`/drivers/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body,
+  });
+}
+
+export function deleteDriver(id: string): Promise<any> {
+  return apiFetch(`/drivers/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
 
 
 

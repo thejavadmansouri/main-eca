@@ -67,7 +67,7 @@ export function ProductSearch({
     }
   }
 
-  const enabled = open && debounced.trim().length > 1;
+  const enabled = open;
   const results = useQuery({
     queryKey: ["pos-locate", debounced],
     queryFn: () => locateProducts(debounced),
