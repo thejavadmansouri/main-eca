@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, Moon, Sun, LogOut } from "lucide-react";
+import { Menu, Moon, Sun, LogOut, Search } from "lucide-react";
 import { useTheme } from "next-themes";
+import { KardoCommandPalette } from "./kardo-command-palette";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -78,6 +79,7 @@ export function AdminTopbar({
   const logout = useAuthStore((s) => s.logout);
   const canManageSite = user?.canManageSite === true;
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = React.useState(false);
 
   /*
    * دکمه‌های عملیات فروش فقط وقتی دیده می‌شوند که پشت صندوق هستیم — خودِ
@@ -141,6 +143,20 @@ export function AdminTopbar({
           />
         </div>
       )}
+
+      {/* نوار جستجوی سریع سازمانی (Command Palette Ctrl+K) */}
+      <button
+        type="button"
+        onClick={() => setCommandPaletteOpen(true)}
+        className="flex h-7 items-center gap-2 rounded-md border border-border/80 bg-muted/40 px-2.5 text-xs text-muted-foreground transition-colors hover:border-border hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        title="جستجوی سریع در کاردو (Ctrl+K)"
+      >
+        <Search className="size-3.5 text-muted-foreground/80" />
+        <span className="hidden sm:inline-block">جستجوی سریع در کاردو...</span>
+        <kbd className="hidden sm:inline-flex h-4 items-center gap-0.5 rounded border border-border bg-background px-1 text-[10px] font-medium text-muted-foreground">
+          <span className="text-[9px]">Ctrl</span> K
+        </kbd>
+      </button>
 
       <div className="flex-1" />
 
@@ -207,6 +223,11 @@ export function AdminTopbar({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <KardoCommandPalette
+        open={commandPaletteOpen}
+        onOpenChange={setCommandPaletteOpen}
+      />
     </header>
   );
 }
