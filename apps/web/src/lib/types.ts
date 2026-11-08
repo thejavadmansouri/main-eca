@@ -3519,6 +3519,8 @@ export interface EmployeeRow {
   department?: DepartmentRow | null;
   contracts?: EmployeeContractRow[];
   payrollSlips?: PayrollSlipRow[];
+  leaves?: EmployeeLeaveRow[];
+  salaryAdvances?: SalaryAdvanceRow[];
   user?: {
     id: string;
     username: string;
@@ -4203,6 +4205,69 @@ export interface CreateStageUpdateInput {
   photos?: string[];
   operatorName?: string;
   advanceStage?: boolean;
+}
+
+export interface EmployeeLeaveRow {
+  id: string;
+  employeeId: string;
+  leaveType: string; // DAILY, HOURLY, SICK, UNPAID, MARRIAGE, BEREAVEMENT, OTHER
+  startDate: string;
+  endDate: string;
+  hours: number;
+  days: number;
+  reason?: string | null;
+  medicalCertUrl?: string | null;
+  status: string; // PENDING, APPROVED, REJECTED
+  approvedById?: string | null;
+  approvedAt?: string | null;
+  managerNotes?: string | null;
+  createdAt: string;
+  employee?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    personnelCode: string;
+    jobTitle: string;
+    department?: { name: string } | null;
+  };
+  approvedBy?: { id: string; fullName: string; username: string } | null;
+}
+
+export interface LeaveBalance {
+  employeeId: string;
+  totalEntitledDays: number;
+  usedDays: number;
+  usedHourlyHours: number;
+  sickDays: number;
+  unpaidDays: number;
+  remainingDays: number;
+}
+
+export interface SalaryAdvanceRow {
+  id: string;
+  employeeId: string;
+  amount: number;
+  requestDate: string;
+  paidDate?: string | null;
+  periodYear: number;
+  periodMonth: number;
+  reason?: string | null;
+  paymentMethod: string;
+  trackingCode?: string | null;
+  status: string; // PENDING, APPROVED, DEDUCTED, REJECTED
+  approvedById?: string | null;
+  approvedAt?: string | null;
+  payrollSlipId?: string | null;
+  createdAt: string;
+  employee?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    personnelCode: string;
+    jobTitle: string;
+    department?: { name: string } | null;
+  };
+  approvedBy?: { id: string; fullName: string } | null;
 }
 
 

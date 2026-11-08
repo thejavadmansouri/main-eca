@@ -8,8 +8,10 @@ import {
   BadgeCheck,
   Building2,
   Calendar,
+  CalendarDays,
   CheckCircle2,
   ChevronRight,
+  Coins,
   CreditCard,
   Download,
   FileCheck2,
@@ -83,6 +85,8 @@ import { EmployeeDialog } from "./employee-dialog";
 import { DecreeDialog } from "./decree-dialog";
 import { DecreePrintDialog } from "./decree-print-dialog";
 import { PayslipPrintDialog } from "./payslip-print-dialog";
+import { LeavesTab } from "./leaves-tab";
+import { AdvancesTab } from "./advances-tab";
 
 const DECREE_TYPE_LABELS: Record<string, string> = {
   INITIAL: "استخدام اولیه",
@@ -98,7 +102,7 @@ export default function HrPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = React.useState<"employees" | "decrees" | "departments" | "payroll">("employees");
+  const [activeTab, setActiveTab] = React.useState<"employees" | "decrees" | "departments" | "payroll" | "leaves" | "advances">("employees");
   const [searchTerm, setSearchTerm] = React.useState("");
   const [departmentFilter, setDepartmentFilter] = React.useState<string>("ALL");
   const [decreeTypeFilter, setDecreeTypeFilter] = React.useState<string>("ALL");
@@ -615,6 +619,32 @@ export default function HrPage() {
                 {activePeriod.month}/۱۴۰۴
               </Badge>
             )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("leaves")}
+            className={cn(
+              "kardo-pill-tab",
+              activeTab === "leaves"
+                ? "bg-card text-foreground shadow-xs border-border"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <CalendarDays className="size-3.5 text-teal-600" />
+            مرخصی و کاردکس
+          </button>
+
+          <button
+            onClick={() => setActiveTab("advances")}
+            className={cn(
+              "kardo-pill-tab",
+              activeTab === "advances"
+                ? "bg-card text-foreground shadow-xs border-border"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Coins className="size-3.5 text-emerald-600" />
+            مساعده و وام پرسنل
           </button>
         </div>
 
@@ -1271,6 +1301,12 @@ export default function HrPage() {
           </Card>
         </div>
       )}
+
+      {/* ───────────────────────── TAB 5: مدیریت مرخصی‌ها و کاردکس ───────────────────────── */}
+      {activeTab === "leaves" && <LeavesTab employees={employees} />}
+
+      {/* ───────────────────────── TAB 6: مدیریت مساعده و وام پرسنل ───────────────────────── */}
+      {activeTab === "advances" && <AdvancesTab employees={employees} />}
 
       {/* ───────────────────────── DIALOGS ───────────────────────── */}
 

@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 
@@ -21,6 +22,10 @@ import {
   UpdateContractDto,
   UpdateDepartmentDto,
   UpdateEmployeeDto,
+  CreateLeaveDto,
+  UpdateLeaveStatusDto,
+  CreateSalaryAdvanceDto,
+  UpdateSalaryAdvanceStatusDto,
 } from './dto/hr.dto';
 import { HrService } from './hr.service';
 
@@ -146,5 +151,73 @@ export class HrController {
   @Get('payroll-periods/:id/paya-file')
   async getPayaPaymentFile(@Param('id') periodId: string) {
     return this.hrService.generatePayaPaymentFile(periodId);
+  }
+
+  // ───────────────────────── مدیریت مرخصی پرسنل ─────────────────────────
+  @Get('leaves')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.STAFF, Role.SALES)
+  async getLeaves(
+    @Query('employeeId') employeeId?: string,
+    @Query('status') status?: string,
+    @Query('leaveType') leaveType?: string,
+  ) {
+    return this.hrService.getLeaves({ employeeId, status, leaveType });
+  }
+
+  @Get('leaves/balance/:employeeId')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.STAFF, Role.SALES)
+  async getLeaveBalance(@Param('employeeId') employeeId: string) {
+    return this.hrService.getLeaveBalance(employeeId);
+  }
+
+  @Post('leaves')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.STAFF, Role.SALES)
+  async createLeave(@Body() dto: CreateLeaveDto) {
+    return this.hrService.createLeave(dto);
+  }
+
+  @Patch('leaves/:id/status')
+  async updateLeaveStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateLeaveStatusDto,
+    @Req() req: any,
+  ) {
+    return this.hrService.updateLeaveStatus(id, dto, req.user?.id);
+  }
+
+  @Delete('leaves/:id')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.STAFF, Role.SALES)
+  async deleteLeave(@Param('id') id: string) {
+    return this.hrService.deleteLeave(id);
+  }
+
+  // ───────────────────────── مدیریت مساعده و وام پرسنلی ─────────────────────────
+  @Get('advances')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.STAFF, Role.SALES)
+  async getSalaryAdvances(
+    @Query('employeeId') employeeId?: string,
+    @Query('periodYear') periodYear?: string,
+    @Query('periodMonth') periodMonth?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.hrService.getSalaryAdvances({
+      employeeId,
+      periodYear: periodYear ? Number(periodYear) : undefined,
+      periodMonth: periodMonth ? Number(periodMonth) : undefined,
+      status,
+    });
+  }
+
+  @Post('advances')
+  async createSalaryAdvance(@Body() dto: CreateSalaryAdvanceDto, @Req() req: any) {
+    return this.hrService.createSalaryAdvance(dto, req.user?.id);
+  }
+
+  @Patch('advances/:id/status')
+  async updateSalaryAdvanceStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateSalaryAdvanceStatusDto,
+  ) {
+    return this.hrService.updateSalaryAdvanceStatus(id, dto);
   }
 }

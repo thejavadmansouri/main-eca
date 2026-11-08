@@ -74,6 +74,18 @@ describe('HrService', () => {
       upsert: jest.fn().mockImplementation((args) => Promise.resolve({ id: 'slip-1', ...args.create })),
       findMany: jest.fn().mockResolvedValue([]),
     },
+    salaryAdvance: {
+      findMany: jest.fn().mockResolvedValue([]),
+      create: jest.fn().mockImplementation((args) => Promise.resolve({ id: 'adv-new', ...args.data })),
+      update: jest.fn().mockImplementation((args) => Promise.resolve({ id: args.where.id, ...args.data })),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
+    employeeLeave: {
+      findMany: jest.fn().mockResolvedValue([]),
+      create: jest.fn().mockImplementation((args) => Promise.resolve({ id: 'leave-new', ...args.data })),
+      update: jest.fn().mockImplementation((args) => Promise.resolve({ id: args.where.id, ...args.data })),
+      delete: jest.fn().mockResolvedValue({ id: 'leave-1' }),
+    },
   };
 
   beforeEach(async () => {

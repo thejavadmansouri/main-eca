@@ -6,17 +6,23 @@ import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   ArrowRight,
+  Bell,
   Boxes,
+  CalendarDays,
   CheckCircle2,
   ChevronLeft,
   ClipboardList,
+  Coins,
   Factory,
+  FileText,
   HardHat,
   Loader2,
   LogOut,
+  MessageSquare,
   Package,
   QrCode,
   Radio,
+  Receipt,
   RefreshCw,
   ScanLine,
   ShieldCheck,
@@ -24,6 +30,7 @@ import {
   Truck,
   User,
   UserCircle,
+  Wallet,
   Wrench,
 } from "lucide-react";
 
@@ -92,22 +99,38 @@ export default function WorkerHomePage() {
 
         <div className="flex items-center gap-1">
           <Link
+            href="/admin/chat"
+            className="flex size-9 items-center justify-center rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+            title="پیام‌رسان سازمانی"
+            aria-label="پیام‌رسان سازمانی"
+          >
+            <MessageSquare className="size-4.5" />
+          </Link>
+          <Link
+            href="/admin/inbox"
+            className="flex size-9 items-center justify-center rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+            title="اعلان‌ها و تسک‌ها"
+            aria-label="اعلان‌ها و تسک‌ها"
+          >
+            <Bell className="size-4.5" />
+          </Link>
+          <Link
             href="/admin/profile"
-            className="flex size-10 items-center justify-center rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+            className="flex size-9 items-center justify-center rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
             title="پروفایل، حکم و حقوق من"
             aria-label="پروفایل و حقوق"
           >
-            <UserCircle className="size-5" />
+            <UserCircle className="size-4.5" />
           </Link>
           <Button
             variant="ghost"
             size="icon"
-            className="size-10 rounded-2xl text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+            className="size-9 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
             onClick={handleLogout}
             aria-label="خروج از حساب"
             title="خروج از حساب"
           >
-            <LogOut className="size-5" />
+            <LogOut className="size-4.5" />
           </Button>
         </div>
       </header>
@@ -150,7 +173,80 @@ export default function WorkerHomePage() {
           )}
         </div>
 
+        {/* ───────────────────────── امور رفاهی و کارگزینی پرسنل ───────────────────────── */}
         <div className="space-y-1">
+          <h2 className="text-xs font-bold text-muted-foreground px-1">
+            امور پرسنلی، حقوق و ارتباطات سازمانی:
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5">
+          {/* ۱. مرخصی و کاردکس */}
+          <Link
+            href="/worker/leaves"
+            className="group relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-emerald-500/[0.04] p-3 shadow-2xs transition-all active:scale-[0.98] hover:border-emerald-500/50 hover:shadow-xs"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
+                <CalendarDays className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-foreground truncate">مرخصی و کاردکس</h3>
+                <p className="text-[10px] text-muted-foreground truncate">ساعتی، روزانه، استعلاجی</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* ۲. مساعده و وام */}
+          <Link
+            href="/worker/advances"
+            className="group relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-amber-500/[0.04] p-3 shadow-2xs transition-all active:scale-[0.98] hover:border-amber-500/50 hover:shadow-xs"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700 border border-amber-500/20 group-hover:bg-amber-600 group-hover:text-white transition-all shrink-0">
+                <Wallet className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-foreground truncate">تقاضای مساعده</h3>
+                <p className="text-[10px] text-muted-foreground truncate">کسر مستقیم از فیش</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* ۳. حکم و فیش حقوقی */}
+          <Link
+            href="/admin/profile?tab=contract"
+            className="group relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-primary/[0.04] p-3 shadow-2xs transition-all active:scale-[0.98] hover:border-primary/50 hover:shadow-xs"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 group-hover:bg-primary group-hover:text-primary-foreground transition-all shrink-0">
+                <Receipt className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-foreground truncate">حکم و فیش حقوق</h3>
+                <p className="text-[10px] text-muted-foreground truncate">مشاهده اقلام مزد و مزایا</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* ۴. چت و پیام‌رسان سازمانی */}
+          <Link
+            href="/admin/chat"
+            className="group relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-sky-500/[0.04] p-3 shadow-2xs transition-all active:scale-[0.98] hover:border-sky-500/50 hover:shadow-xs"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-sky-500/10 text-sky-700 border border-sky-500/20 group-hover:bg-sky-600 group-hover:text-white transition-all shrink-0">
+                <MessageSquare className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-foreground truncate">پیام‌رسان کارگاه</h3>
+                <p className="text-[10px] text-muted-foreground truncate">چت مستقیم با دفتر و مدیر</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        <div className="space-y-1 mt-2">
           <h2 className="text-xs font-bold text-muted-foreground px-1">
             عملیات اجرایی کارگاه و انبار:
           </h2>

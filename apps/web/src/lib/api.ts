@@ -4478,6 +4478,97 @@ export function deleteDriver(id: string): Promise<any> {
   });
 }
 
+// ───────────────────────── مدیریت مرخصی پرسنل ─────────────────────────
+export function getLeaves(params?: {
+  employeeId?: string;
+  status?: string;
+  leaveType?: string;
+}): Promise<T.EmployeeLeaveRow[]> {
+  const q = new URLSearchParams();
+  if (params?.employeeId) q.set('employeeId', params.employeeId);
+  if (params?.status) q.set('status', params.status);
+  if (params?.leaveType) q.set('leaveType', params.leaveType);
+  const qs = q.toString();
+  return apiFetch<T.EmployeeLeaveRow[]>(`/hr/leaves${qs ? `?${qs}` : ''}`);
+}
+
+export function getLeaveBalance(employeeId: string): Promise<T.LeaveBalance> {
+  return apiFetch<T.LeaveBalance>(`/hr/leaves/balance/${encodeURIComponent(employeeId)}`);
+}
+
+export function createLeave(body: {
+  employeeId: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  hours?: number;
+  days?: number;
+  reason?: string;
+  medicalCertUrl?: string;
+}): Promise<T.EmployeeLeaveRow> {
+  return apiFetch<T.EmployeeLeaveRow>('/hr/leaves', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function updateLeaveStatus(
+  id: string,
+  body: { status: string; managerNotes?: string },
+): Promise<T.EmployeeLeaveRow> {
+  return apiFetch<T.EmployeeLeaveRow>(`/hr/leaves/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body,
+  });
+}
+
+export function deleteLeave(id: string): Promise<any> {
+  return apiFetch(`/hr/leaves/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+// ───────────────────────── مدیریت مساعده و وام پرسنل ─────────────────────────
+export function getSalaryAdvances(params?: {
+  employeeId?: string;
+  periodYear?: number;
+  periodMonth?: number;
+  status?: string;
+}): Promise<T.SalaryAdvanceRow[]> {
+  const q = new URLSearchParams();
+  if (params?.employeeId) q.set('employeeId', params.employeeId);
+  if (params?.periodYear) q.set('periodYear', String(params.periodYear));
+  if (params?.periodMonth) q.set('periodMonth', String(params.periodMonth));
+  if (params?.status) q.set('status', params.status);
+  const qs = q.toString();
+  return apiFetch<T.SalaryAdvanceRow[]>(`/hr/advances${qs ? `?${qs}` : ''}`);
+}
+
+export function createSalaryAdvance(body: {
+  employeeId: string;
+  amount: number;
+  periodYear: number;
+  periodMonth: number;
+  reason?: string;
+  paymentMethod?: string;
+  trackingCode?: string;
+}): Promise<T.SalaryAdvanceRow> {
+  return apiFetch<T.SalaryAdvanceRow>('/hr/advances', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function updateSalaryAdvanceStatus(
+  id: string,
+  body: { status: string; paidDate?: string },
+): Promise<T.SalaryAdvanceRow> {
+  return apiFetch<T.SalaryAdvanceRow>(`/hr/advances/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body,
+  });
+}
+
 
 
 

@@ -27,9 +27,16 @@ import {
   User,
   Wrench,
   X,
+  Camera,
+  Image as ImageIcon,
+  Trash2,
 } from "lucide-react";
 
-import { advanceOrderStage, getComprehensiveProductionMatrix } from "@/lib/api";
+import {
+  advanceOrderStage,
+  addStageUpdate,
+  getComprehensiveProductionMatrix,
+} from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { faDate, toFa } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -158,6 +165,8 @@ export default function WorkerProductionPage() {
   // دیالوگ ارتقای مرحله
   const [selectedOrder, setSelectedOrder] = React.useState<ProductionMatrixRow | null>(null);
   const [advanceNotes, setAdvanceNotes] = React.useState("");
+  const [advancePhotos, setAdvancePhotos] = React.useState<string[]>([]);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const {
     data: orders = [],
@@ -170,26 +179,56 @@ export default function WorkerProductionPage() {
     refetchInterval: 12000, // بروزرسانی زنده کارگاه هر ۱۲ ثانیه
   });
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        const result = uploadEvent.target?.result as string;
+        if (result) {
+          setAdvancePhotos((prev) => [...prev, result]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const advanceMutation = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       orderId,
       stage,
       notes,
+      photos,
     }: {
       orderId: string;
       stage: string;
       notes?: string;
-    }) =>
-      advanceOrderStage(orderId, {
+      photos?: string[];
+    }) => {
+      if (photos && photos.length > 0) {
+        return addStageUpdate(orderId, {
+          stationCode: stage,
+          title: `تایید ایستگاه ${STAGE_CONFIG[stage]?.label || stage}`,
+          notes,
+          photos,
+          operatorName: user?.fullName || user?.username || "اپراتور کارگاه",
+          advanceStage: true,
+        });
+      }
+      return advanceOrderStage(orderId, {
         stage,
         operatorName: user?.fullName || user?.username || "اپراتور کارگاه",
         notes,
-      }),
+      });
+    },
     onSuccess: (_, vars) => {
       playSuccessBeep();
       queryClient.invalidateQueries({ queryKey: ["production-matrix"] });
       setSelectedOrder(null);
       setAdvanceNotes("");
+      setAdvancePhotos([]);
       const targetConfig = STAGE_CONFIG[vars.stage];
       toast({
         title: "مرحله با موفقیت تایید شد",
@@ -529,8 +568,64 @@ export default function WorkerProductionPage() {
                       value={advanceNotes}
                       onChange={(e) => setAdvanceNotes(e.target.value)}
                       placeholder="مثال: قطعات کاملاً برش خورده و بازرسی ابعادی تایید شد..."
-                      className="text-xs rounded-xl min-h-[80px]"
+                      className="text-xs rounded-xl min-h-[70px]"
                     />
+                  </div>
+
+                  {/* ثبت عکس کارگاهی با دوربین گوشی */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="font-bold text-foreground text-[11px]">
+                        عکس‌های مرحله کارگاه (دوربین / گالری):
+                      </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="h-6 text-[10px] gap-1 font-bold text-emerald-700 hover:text-emerald-800"
+                      >
+                        <Camera className="size-3" />
+                        ثبت عکس با گوشی
+                      </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        multiple
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                      />
+                    </div>
+
+                    {advancePhotos.length > 0 ? (
+                      <div className="grid grid-cols-3 gap-1.5 p-2 bg-muted/40 rounded-xl border border-border/60">
+                        {advancePhotos.map((photo, i) => (
+                          <div key={i} className="relative aspect-video rounded-lg overflow-hidden border bg-background group">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={photo} alt="Stage preview" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => setAdvancePhotos((p) => p.filter((_, idx) => idx !== i))}
+                              className="absolute top-1 right-1 p-0.5 rounded-md bg-black/60 text-white hover:bg-rose-600 transition-colors"
+                            >
+                              <Trash2 className="size-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border border-dashed border-border/80 rounded-xl p-2.5 text-center cursor-pointer hover:border-emerald-500/50 hover:bg-emerald-500/[0.02] transition-colors"
+                      >
+                        <Camera className="size-4 mx-auto text-muted-foreground/60 mb-0.5" />
+                        <span className="text-[10px] text-muted-foreground">
+                          برای ثبت و الصاق عکس مرحله با دوربین گوشی کلیک کنید
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-[11px] text-muted-foreground bg-muted/40 p-2.5 rounded-lg border border-border/50">
@@ -545,7 +640,10 @@ export default function WorkerProductionPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSelectedOrder(null)}
+                    onClick={() => {
+                      setSelectedOrder(null);
+                      setAdvancePhotos([]);
+                    }}
                     className="text-xs"
                   >
                     انصراف
@@ -559,6 +657,7 @@ export default function WorkerProductionPage() {
                         orderId: selectedOrder.id,
                         stage: nextKey,
                         notes: advanceNotes || undefined,
+                        photos: advancePhotos.length > 0 ? advancePhotos : undefined,
                       });
                     }}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5"

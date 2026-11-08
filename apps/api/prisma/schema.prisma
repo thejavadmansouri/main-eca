@@ -77,6 +77,8 @@ model User {
   notificationsSent       StaffNotification[]      @relation("NotificationSender")
   messagesSent            InternalMessage[]        @relation("SentMessages")
   messagesReceived        InternalMessage[]        @relation("ReceivedMessages")
+  approvedLeaves          EmployeeLeave[]          @relation("LeaveApprover")
+  approvedAdvances        SalaryAdvance[]          @relation("AdvanceApprover")
 }
 
 model Warehouse {
@@ -3221,6 +3223,8 @@ model Employee {
   user             User?              @relation(fields: [userId], references: [id])
   contracts        EmployeeContract[]
   payrollSlips     PayrollSlip[]
+  leaves           EmployeeLeave[]
+  salaryAdvances   SalaryAdvance[]
 
   @@index([personnelCode])
   @@index([nationalId])
@@ -3318,10 +3322,71 @@ model PayrollSlip {
 
   period             PayrollPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
   employee           Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  advances           SalaryAdvance[]
 
   @@unique([periodId, employeeId])
   @@index([periodId])
   @@index([employeeId])
+  @@index([status])
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+// مدیریت مرخصی پرسنل (Leave Management System)
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+model EmployeeLeave {
+  id             String         @id @default(uuid())
+  employeeId     String
+  leaveType      String         // DAILY (روزانه استحقاقی), HOURLY (ساعتی), SICK (استعلاجی), UNPAID (بدون حقوق), MARRIAGE (ازدواج), BEREAVEMENT (فوت), OTHER
+  startDate      DateTime
+  endDate        DateTime
+  hours          Float          @default(0) // ساعت مرخصی (برای مرخصی ساعتی)
+  days           Float          @default(1) // تعداد روز مرخصی (برای ساعتی مثلا ۰.۲۵ روز)
+  reason         String?        // علت مرخصی / توضیحات
+  medicalCertUrl String?        // پیوست گواهی پزشکی در مرخصی استعلاجی
+  status         String         @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedById   String?        // مدیر یا سرپرست تاییدکننده
+  approvedAt     DateTime?
+  managerNotes   String?        // یادداشت یا دلیل رد/تایید
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  employee       Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  approvedBy     User?          @relation("LeaveApprover", fields: [approvedById], references: [id])
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([startDate])
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+// مدیریت مساعده و وام پرسنلی (Salary Advances & Deductions)
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+model SalaryAdvance {
+  id             String         @id @default(uuid())
+  employeeId     String
+  amount         Float          // مبلغ مساعده (ریال)
+  requestDate    DateTime       @default(now())
+  paidDate       DateTime?
+  periodYear     Int            // سال دوره حقوق (مثلا ۱۴۰۴)
+  periodMonth    Int            // ماه دوره حقوق (مثلا ۸)
+  reason         String?        // دلیل تقاضای مساعده
+  paymentMethod  String         @default("TRANSFER") // CASH, TRANSFER
+  trackingCode   String?        // شماره پیگیری یا فیش بانکی
+  status         String         @default("APPROVED") // PENDING, APPROVED, DEDUCTED, REJECTED
+  approvedById   String?
+  approvedAt     DateTime?
+  payrollSlipId  String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  employee       Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  approvedBy     User?          @relation("AdvanceApprover", fields: [approvedById], references: [id])
+  payrollSlip    PayrollSlip?   @relation(fields: [payrollSlipId], references: [id])
+
+  @@index([employeeId])
+  @@index([periodYear, periodMonth])
   @@index([status])
 }
 

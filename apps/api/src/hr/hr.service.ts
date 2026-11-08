@@ -8,6 +8,10 @@ import {
   UpdateContractDto,
   UpdateDepartmentDto,
   UpdateEmployeeDto,
+  CreateLeaveDto,
+  UpdateLeaveStatusDto,
+  CreateSalaryAdvanceDto,
+  UpdateSalaryAdvanceStatusDto,
 } from './dto/hr.dto';
 
 @Injectable()
@@ -448,7 +452,18 @@ export class HrService {
     const delayHours = dto.delayHours ?? 0;
     const leaveDays = dto.leaveDays ?? 0;
     const absenceDays = dto.absenceDays ?? 0;
-    const loanDeductions = dto.loanDeductions ?? 0;
+
+    // بررسی و اعمال خودکار مساعده‌های دریافتی پرسنل در این دوره حقوقی
+    const approvedAdvances = await this.prisma.salaryAdvance.findMany({
+      where: {
+        employeeId: dto.employeeId,
+        periodYear: period.year,
+        periodMonth: period.month,
+        status: { in: ['APPROVED', 'DEDUCTED'] },
+      },
+    });
+    const advanceDeductions = approvedAdvances.reduce((sum, a) => sum + a.amount, 0);
+    const loanDeductions = (dto.loanDeductions ?? 0) + advanceDeductions;
     const otherDeductions = dto.otherDeductions ?? 0;
 
     // ۱. دستمزد پایه کارکرد ماهانه
@@ -590,6 +605,14 @@ export class HrService {
 
     // به‌روزرسانی جمع‌های کل دوره
     await this.updatePeriodAggregates(dto.periodId);
+
+    // ثبت وضعیت کسر مساعده‌ها روی فیش
+    if (approvedAdvances.length > 0) {
+      await this.prisma.salaryAdvance.updateMany({
+        where: { id: { in: approvedAdvances.map((a) => a.id) } },
+        data: { status: 'DEDUCTED', payrollSlipId: slip.id },
+      });
+    }
 
     return slip;
   }
@@ -766,5 +789,211 @@ export class HrService {
         netPayable: s.netPayable,
       })),
     };
+  }
+
+  // ───────────────────────── مدیریت مرخصی پرسنل ─────────────────────────
+  async getLeaves(params?: { employeeId?: string; status?: string; leaveType?: string }) {
+    const where: any = {};
+    if (params?.employeeId) where.employeeId = params.employeeId;
+    if (params?.status && params.status !== 'ALL') where.status = params.status;
+    if (params?.leaveType && params.leaveType !== 'ALL') where.leaveType = params.leaveType;
+
+    return this.prisma.employeeLeave.findMany({
+      where,
+      include: {
+        employee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            personnelCode: true,
+            jobTitle: true,
+            department: true,
+          },
+        },
+        approvedBy: { select: { id: true, fullName: true, username: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getLeaveBalance(employeeId: string) {
+    const employee = await this.prisma.employee.findUnique({ where: { id: employeeId } });
+    if (!employee) throw new NotFoundException('پرسنل یافت نشد.');
+
+    // سهمیه قانون کار: ۲.۵ روز به ازای هر ماه = ۳۰ روز در سال
+    const totalEntitledDays = 30;
+
+    const approvedLeaves = await this.prisma.employeeLeave.findMany({
+      where: {
+        employeeId,
+        status: 'APPROVED',
+      },
+    });
+
+    let usedDays = 0;
+    let usedHourlyHours = 0;
+    let sickDays = 0;
+    let unpaidDays = 0;
+
+    for (const l of approvedLeaves) {
+      if (l.leaveType === 'DAILY') {
+        usedDays += l.days;
+      } else if (l.leaveType === 'HOURLY') {
+        usedHourlyHours += l.hours;
+        usedDays += l.hours / 8; // تبدیل ساعات به روز (هر ۸ ساعت کاری = ۱ روز مرخصی)
+      } else if (l.leaveType === 'SICK') {
+        sickDays += l.days;
+      } else if (l.leaveType === 'UNPAID') {
+        unpaidDays += l.days;
+      } else {
+        usedDays += l.days;
+      }
+    }
+
+    const remainingDays = Math.max(0, Math.round((totalEntitledDays - usedDays) * 10) / 10);
+
+    return {
+      employeeId,
+      totalEntitledDays,
+      usedDays: Math.round(usedDays * 10) / 10,
+      usedHourlyHours: Math.round(usedHourlyHours * 10) / 10,
+      sickDays,
+      unpaidDays,
+      remainingDays,
+    };
+  }
+
+  async createLeave(dto: CreateLeaveDto) {
+    const employee = await this.prisma.employee.findUnique({ where: { id: dto.employeeId } });
+    if (!employee) throw new NotFoundException('پرسنل یافت نشد.');
+
+    const start = new Date(dto.startDate);
+    const end = new Date(dto.endDate);
+    let days = dto.days || 1;
+    let hours = dto.hours || 0;
+
+    if (dto.leaveType === 'HOURLY') {
+      if (hours <= 0) hours = 2; // پیش‌فرض ۲ ساعت مرخصی ساعتی
+      days = Math.round((hours / 8) * 100) / 100;
+    } else {
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      days = Math.max(1, diffDays);
+    }
+
+    return this.prisma.employeeLeave.create({
+      data: {
+        employeeId: dto.employeeId,
+        leaveType: dto.leaveType || 'DAILY',
+        startDate: start,
+        endDate: end,
+        hours,
+        days,
+        reason: dto.reason || null,
+        medicalCertUrl: dto.medicalCertUrl || null,
+        status: 'PENDING',
+      },
+      include: {
+        employee: true,
+      },
+    });
+  }
+
+  async updateLeaveStatus(id: string, dto: UpdateLeaveStatusDto, approverUserId?: string) {
+    const leave = await this.prisma.employeeLeave.findUnique({ where: { id } });
+    if (!leave) throw new NotFoundException('درخواست مرخصی یافت نشد.');
+
+    return this.prisma.employeeLeave.update({
+      where: { id },
+      data: {
+        status: dto.status,
+        managerNotes: dto.managerNotes || null,
+        approvedById: approverUserId || null,
+        approvedAt: new Date(),
+      },
+      include: {
+        employee: true,
+        approvedBy: { select: { fullName: true } },
+      },
+    });
+  }
+
+  async deleteLeave(id: string) {
+    const leave = await this.prisma.employeeLeave.findUnique({ where: { id } });
+    if (!leave) throw new NotFoundException('درخواست مرخصی یافت نشد.');
+    if (leave.status === 'APPROVED') {
+      throw new BadRequestException('امکان لغو مرخصی تأییدشده وجود ندارد.');
+    }
+    return this.prisma.employeeLeave.delete({ where: { id } });
+  }
+
+  // ───────────────────────── مدیریت مساعده و وام پرسنلی ─────────────────────────
+  async getSalaryAdvances(params?: {
+    employeeId?: string;
+    periodYear?: number;
+    periodMonth?: number;
+    status?: string;
+  }) {
+    const where: any = {};
+    if (params?.employeeId) where.employeeId = params.employeeId;
+    if (params?.periodYear) where.periodYear = Number(params.periodYear);
+    if (params?.periodMonth) where.periodMonth = Number(params.periodMonth);
+    if (params?.status && params.status !== 'ALL') where.status = params.status;
+
+    return this.prisma.salaryAdvance.findMany({
+      where,
+      include: {
+        employee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            personnelCode: true,
+            jobTitle: true,
+            department: true,
+          },
+        },
+        approvedBy: { select: { id: true, fullName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createSalaryAdvance(dto: CreateSalaryAdvanceDto, approverUserId?: string) {
+    const employee = await this.prisma.employee.findUnique({ where: { id: dto.employeeId } });
+    if (!employee) throw new NotFoundException('پرسنل یافت نشد.');
+
+    return this.prisma.salaryAdvance.create({
+      data: {
+        employeeId: dto.employeeId,
+        amount: Number(dto.amount),
+        periodYear: Number(dto.periodYear),
+        periodMonth: Number(dto.periodMonth),
+        reason: dto.reason || null,
+        paymentMethod: dto.paymentMethod || 'TRANSFER',
+        trackingCode: dto.trackingCode || null,
+        status: 'APPROVED',
+        approvedById: approverUserId || null,
+        approvedAt: new Date(),
+        paidDate: new Date(),
+      },
+      include: {
+        employee: true,
+      },
+    });
+  }
+
+  async updateSalaryAdvanceStatus(id: string, dto: UpdateSalaryAdvanceStatusDto) {
+    const adv = await this.prisma.salaryAdvance.findUnique({ where: { id } });
+    if (!adv) throw new NotFoundException('رکورد مساعده یافت نشد.');
+
+    return this.prisma.salaryAdvance.update({
+      where: { id },
+      data: {
+        status: dto.status,
+        ...(dto.paidDate && { paidDate: new Date(dto.paidDate) }),
+      },
+    });
   }
 }

@@ -21,12 +21,17 @@ import {
   Mail,
   Award,
   Bell,
+  CalendarDays,
   RefreshCw,
+  Wallet,
   ExternalLink,
   ChevronLeft,
   Sparkles,
   Info,
 } from "lucide-react";
+
+import { ProfileLeavesTab } from "./profile-leaves-tab";
+import { ProfileAdvancesTab } from "./profile-advances-tab";
 
 import { getMyProfile } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
@@ -173,10 +178,10 @@ export default function UserProfilePage() {
 
       {/* تب‌های اصلی محتوا */}
       <Tabs defaultValue="tasks" className="w-full">
-        <TabsList className="grid grid-cols-2 md:grid-cols-5 h-auto p-1 bg-muted/60 rounded-xl gap-1">
-          <TabsTrigger value="tasks" className="gap-2 py-2.5 text-xs font-bold">
-            <ClipboardList className="size-4 text-blue-600" />
-            وظایف و تسک‌های من
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto p-1 bg-muted/60 rounded-xl gap-1">
+          <TabsTrigger value="tasks" className="gap-1.5 py-2.5 text-xs font-bold">
+            <ClipboardList className="size-3.5 text-blue-600" />
+            وظایف و تسک‌ها
             {assignedTasks.length > 0 && (
               <Badge variant="secondary" className="text-[10px] h-4.5 px-1 font-mono">
                 {toFa(assignedTasks.length)}
@@ -184,13 +189,13 @@ export default function UserProfilePage() {
             )}
           </TabsTrigger>
 
-          <TabsTrigger value="contract" className="gap-2 py-2.5 text-xs font-bold">
-            <FileText className="size-4 text-emerald-600" />
+          <TabsTrigger value="contract" className="gap-1.5 py-2.5 text-xs font-bold">
+            <FileText className="size-3.5 text-emerald-600" />
             حکم حقوق و مزایا
           </TabsTrigger>
 
-          <TabsTrigger value="payroll" className="gap-2 py-2.5 text-xs font-bold">
-            <Receipt className="size-4 text-amber-600" />
+          <TabsTrigger value="payroll" className="gap-1.5 py-2.5 text-xs font-bold">
+            <Receipt className="size-3.5 text-amber-600" />
             فیش‌های حقوقی
             {payrollSlips.length > 0 && (
               <Badge variant="secondary" className="text-[10px] h-4.5 px-1 font-mono">
@@ -199,13 +204,23 @@ export default function UserProfilePage() {
             )}
           </TabsTrigger>
 
-          <TabsTrigger value="duties" className="gap-2 py-2.5 text-xs font-bold">
-            <Briefcase className="size-4 text-indigo-600" />
+          <TabsTrigger value="leaves" className="gap-1.5 py-2.5 text-xs font-bold">
+            <CalendarDays className="size-3.5 text-teal-600" />
+            مرخصی و کاردکس
+          </TabsTrigger>
+
+          <TabsTrigger value="advances" className="gap-1.5 py-2.5 text-xs font-bold">
+            <Wallet className="size-3.5 text-emerald-600" />
+            مساعده و وام
+          </TabsTrigger>
+
+          <TabsTrigger value="duties" className="gap-1.5 py-2.5 text-xs font-bold">
+            <Briefcase className="size-3.5 text-indigo-600" />
             شرح وظایف سازمانی
           </TabsTrigger>
 
-          <TabsTrigger value="notifications" className="gap-2 py-2.5 text-xs font-bold">
-            <Bell className="size-4 text-purple-600" />
+          <TabsTrigger value="notifications" className="gap-1.5 py-2.5 text-xs font-bold">
+            <Bell className="size-3.5 text-purple-600" />
             پیام‌های مدیر
             {notifications.length > 0 && (
               <Badge variant="secondary" className="text-[10px] h-4.5 px-1 font-mono">
@@ -484,6 +499,16 @@ export default function UserProfilePage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* ───────────────── تب مرخصی‌ها و کاردکس ───────────────── */}
+        <TabsContent value="leaves" className="mt-4">
+          <ProfileLeavesTab employee={employee} />
+        </TabsContent>
+
+        {/* ───────────────── تب مساعده و وام ───────────────── */}
+        <TabsContent value="advances" className="mt-4">
+          <ProfileAdvancesTab employee={employee} />
         </TabsContent>
 
         {/* ───────────────── تب ۴: شرح وظایف سازمانی ───────────────── */}

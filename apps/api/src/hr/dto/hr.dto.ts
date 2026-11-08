@@ -130,3 +130,34 @@ export class CreatePayrollPeriodDto {
   month: number;
   title?: string;
 }
+
+export class CreateLeaveDto {
+  employeeId: string;
+  leaveType: string; // DAILY, HOURLY, SICK, UNPAID, MARRIAGE, BEREAVEMENT, OTHER
+  startDate: string;
+  endDate: string;
+  hours?: number;
+  days?: number;
+  reason?: string;
+  medicalCertUrl?: string;
+}
+
+export class UpdateLeaveStatusDto {
+  status: string; // APPROVED, REJECTED
+  managerNotes?: string;
+}
+
+export class CreateSalaryAdvanceDto {
+  employeeId: string;
+  amount: number;
+  periodYear: number;
+  periodMonth: number;
+  reason?: string;
+  paymentMethod?: string; // CASH, TRANSFER
+  trackingCode?: string;
+}
+
+export class UpdateSalaryAdvanceStatusDto {
+  status: string; // APPROVED, DEDUCTED, REJECTED
+  paidDate?: string;
+}

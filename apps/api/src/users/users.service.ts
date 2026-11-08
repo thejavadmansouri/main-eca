@@ -111,6 +111,24 @@ export class UsersService {
               orderBy: { createdAt: 'desc' },
               take: 12,
             },
+            leaves: {
+              include: {
+                approvedBy: {
+                  select: { id: true, fullName: true, username: true },
+                },
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 20,
+            },
+            salaryAdvances: {
+              include: {
+                approvedBy: {
+                  select: { id: true, fullName: true, username: true },
+                },
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 20,
+            },
           },
         },
         workTasksAssigned: {
