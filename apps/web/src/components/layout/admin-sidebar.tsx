@@ -17,11 +17,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ROLE_LABELS } from "@/lib/format";
 
 /**
- * راست‌چینِ واقعیِ منوی راست (استاندارد رایج پنل فارسی):
+ * پیاده‌سازی راست‌چین اصیل و استاندارد پنل ERP (Native RTL):
  *
- * ردیف با `dir=ltr` + `justify-end` تا ترتیب «لوگو/آیکن ← متن» حفظ شود
- * و کل ردیف به لبه‌ی راست بچسبد — متن راست‌ترین عنصر است، لوگو دقیقاً قبلش.
- * نه اینکه با `dir=rtl` متن برود سمت چپِ آیکن.
+ * ستون آیکن‌ها به‌صورت عمودی در سمت راست قرار می‌گیرد.
+ * عنوان ماژول‌ها در ادامه به سمت چپ امتداد می‌یابد و فلش‌ها در لبه‌ی چپ قرار می‌گیرند.
  */
 
 function NavLink({
@@ -40,44 +39,43 @@ function NavLink({
     <Link
       href={item.href ?? "#"}
       title={collapsed ? item.title : undefined}
-      dir="ltr"
+      dir="rtl"
       className={cn(
-        "relative flex w-full items-center justify-end gap-2.5 rounded-lg text-sm font-medium transition-colors",
-        collapsed ? "justify-center px-2 py-2.5" : "px-3 py-2.5",
-        nested && !collapsed && "py-2 text-[13px]",
+        "group relative flex w-full items-center gap-2.5 rounded-lg text-xs font-medium transition-all duration-150 select-none",
+        collapsed ? "justify-center p-2.5" : "px-3 py-2",
+        nested && !collapsed && "py-1.5 pe-3 ps-7 text-[12px]",
         isActive
-          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-          : "text-sidebar-foreground/85 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
+          ? "bg-primary/10 text-primary font-bold shadow-xs"
+          : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
       )}
     >
-      {/* نوار فعال روی لبه‌ی راست فیزیکی منو */}
+      {/* نوار شاخص فعال در لبه‌ی راست */}
       {isActive ? (
         <span
           aria-hidden
           className={cn(
-            "absolute inset-y-1.5 right-0 w-[3px] rounded-full bg-sidebar-primary",
+            "absolute inset-y-1.5 right-0 w-1 rounded-l-full bg-primary transition-all",
             collapsed && "inset-y-2",
           )}
         />
       ) : null}
 
-      {/* dir=ltr + justify-end → [آیکن][متن] چسبیده به راست؛ متن راست‌ترین است.
-          آیکن‌ها ۲۰px هستند (نه ۱۸px) — روی مانیتور مغازه از فاصله‌ی یک متر هم
-          شکل‌شان از هم تشخیص داده می‌شود؛ `strokeWidth` کمی نازک‌تر تا در این
-          اندازه تودرتو و سیاه نشوند. */}
       <Icon
-        strokeWidth={nested ? 1.9 : 1.8}
+        strokeWidth={isActive ? 2.1 : nested ? 1.8 : 1.9}
         className={cn(
-          "size-5 shrink-0",
-          nested && "size-[1.125rem] opacity-80",
-          isActive && "text-sidebar-primary",
+          "size-4.5 shrink-0 transition-colors",
+          nested && "size-4 opacity-85",
+          isActive
+            ? "text-primary"
+            : "text-muted-foreground/80 group-hover:text-foreground",
         )}
       />
+
       {!collapsed ? (
         <span
           className={cn(
-            "min-w-0 truncate text-right",
-            isActive && "font-semibold",
+            "flex-1 truncate text-right",
+            isActive ? "font-bold text-primary" : "text-foreground/85 group-hover:text-foreground",
           )}
         >
           {item.title}
@@ -109,36 +107,35 @@ function NavGroup({
     <div className="flex flex-col gap-0.5">
       <button
         type="button"
-        dir="ltr"
+        dir="rtl"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         className={cn(
-          "flex w-full items-center justify-end gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+          "group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-150 select-none",
           anyActive
-            ? "bg-sidebar-accent/70 text-sidebar-accent-foreground"
-            : "text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            ? "bg-primary/5 text-foreground font-semibold"
+            : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
         )}
       >
-        {/* فلش سمت چپ ردیف؛ آیکن + عنوان چسبیده به راست */}
+        <Icon
+          strokeWidth={1.9}
+          className={cn(
+            "size-4.5 shrink-0 transition-colors",
+            anyActive ? "text-primary" : "text-muted-foreground/80 group-hover:text-foreground",
+          )}
+        />
+        <span className="flex-1 truncate text-right">{item.title}</span>
         <ChevronDown
           className={cn(
-            "me-auto size-4 shrink-0 text-sidebar-foreground/45 transition-transform duration-200",
-            !open && "-rotate-90",
+            "ms-auto size-3.5 shrink-0 text-muted-foreground/60 transition-transform duration-200",
+            !open && "rotate-90",
           )}
         />
-        <Icon
-          strokeWidth={1.8}
-          className={cn(
-            "size-5 shrink-0",
-            anyActive && "text-sidebar-primary",
-          )}
-        />
-        <span className="min-w-0 truncate text-right">{item.title}</span>
       </button>
 
       {open ? (
         <div
-          className="me-3 flex flex-col gap-0.5 border-r-2 border-sidebar-border pe-2"
+          className="ms-3 flex flex-col gap-0.5 border-r border-border/80 pe-1 my-0.5"
           role="group"
           aria-label={item.title}
         >
@@ -261,23 +258,23 @@ function SidebarSection({
     <div className="flex flex-col gap-0.5">
       <button
         type="button"
-        dir="ltr"
+        dir="rtl"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center justify-end gap-2 px-3 pb-1.5 pt-2.5 hover:text-sidebar-foreground transition-colors select-none"
+        className="flex w-full items-center gap-2 px-3 pb-1 pt-3 text-muted-foreground/70 hover:text-foreground transition-colors select-none"
       >
-        <ChevronDown
-          className={cn(
-            "size-3.5 shrink-0 text-sidebar-foreground/40 transition-transform duration-200 me-auto",
-            !open && "-rotate-90",
-          )}
-        />
-        <span className="text-[11px] font-bold tracking-wider text-sidebar-foreground/60">
+        {SectionIcon ? (
+          <SectionIcon className="size-3.5 text-muted-foreground/60 shrink-0" />
+        ) : null}
+        <span className="flex-1 text-right text-[11px] font-bold tracking-normal text-muted-foreground/80">
           {section.title}
         </span>
-        {SectionIcon ? (
-          <SectionIcon className="size-3.5 text-sidebar-foreground/45 shrink-0" />
-        ) : null}
+        <ChevronDown
+          className={cn(
+            "size-3 shrink-0 text-muted-foreground/50 transition-transform duration-200 ms-auto",
+            !open && "rotate-90",
+          )}
+        />
       </button>
       {open ? (
         <div className="flex flex-col gap-0.5">
@@ -313,37 +310,34 @@ export function AdminSidebar({
       : pathname === href || pathname.startsWith(href + "/");
 
   return (
-    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      {/*
-        برند: متن راست‌ترین، لوگو دقیقاً قبلش (چپِ متن).
-        dir=ltr + justify-end → [لوگو][کاردو] چسبیده به راست.
-      */}
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground border-e border-sidebar-border shadow-xs">
+      {/* سربرگ برند و هویت سازمانی کاردو ERP */}
       <div
-        dir="ltr"
+        dir="rtl"
         className={cn(
-          "flex h-14 shrink-0 items-center justify-end gap-3 border-b border-sidebar-border",
-          collapsed ? "justify-center px-2" : "px-4",
+          "flex h-12 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar/50 px-3.5 transition-all",
+          collapsed ? "justify-center px-2" : "",
         )}
       >
         <img
           src="/logo.png"
-          alt="کاردو"
-          className="size-9 shrink-0 rounded-lg shadow-sm"
+          alt="کاردو ERP"
+          className="size-8 shrink-0 rounded-lg shadow-sm ring-1 ring-border"
         />
         {!collapsed ? (
-          <div className="min-w-0 text-right">
-            <p className="truncate text-sm font-bold leading-tight text-sidebar-foreground">
-              کاردو
-            </p>
-            <p className="truncate text-[11px] text-sidebar-foreground/55">
-              پنل مدیریت
-            </p>
+          <div className="flex flex-col text-right min-w-0">
+            <span className="truncate text-xs font-black tracking-tight text-foreground">
+              کاردو ERP
+            </span>
+            <span className="truncate text-[10px] text-muted-foreground font-medium">
+              سامانه جامع سازمانی
+            </span>
           </div>
         ) : null}
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <nav className="flex flex-col gap-3 px-2.5 py-3" aria-label="منوی اصلی">
+        <nav className="flex flex-col gap-2.5 px-2 py-2.5" aria-label="منوی اصلی">
           {sections.map((section, index) => (
             <SidebarSection
               key={`${section.title || "pinned"}-${index}`}
@@ -356,20 +350,22 @@ export function AdminSidebar({
         </nav>
       </ScrollArea>
 
+      {/* اطلاعات کاربر و وضعیت نشست در انتهای سایدبار */}
       {!collapsed && user ? (
-        <div className="shrink-0 border-t border-sidebar-border p-2.5">
+        <div className="shrink-0 border-t border-sidebar-border p-2 bg-sidebar/40">
           <div
-            dir="ltr"
-            className="flex items-center justify-end gap-2.5 rounded-lg bg-sidebar-accent/60 px-2.5 py-2"
+            dir="rtl"
+            className="flex items-center gap-2.5 rounded-lg bg-sidebar-accent/50 p-2 border border-border/40"
           >
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-xs font-bold text-sidebar-primary-foreground">
+            <div className="relative flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs ring-1 ring-primary/20">
               {(user.fullName ?? user.username).charAt(0)}
+              <span className="absolute bottom-0 left-0 size-2 rounded-full bg-emerald-500 ring-1 ring-background" />
             </div>
-            <div className="min-w-0 text-right">
-              <p className="truncate text-xs font-semibold text-sidebar-foreground">
-                {user.fullName}
+            <div className="min-w-0 flex-1 text-right">
+              <p className="truncate text-xs font-bold text-foreground">
+                {user.fullName || user.username}
               </p>
-              <p className="truncate text-[11px] text-sidebar-foreground/55">
+              <p className="truncate text-[10px] text-muted-foreground font-medium">
                 {ROLE_LABELS[user.role] ?? user.role}
               </p>
             </div>
@@ -392,7 +388,7 @@ export function SidebarCollapseToggle({
       variant="ghost"
       size="icon"
       onClick={onToggle}
-      className="size-8 shrink-0 rounded-md text-muted-foreground hover:bg-muted"
+      className="size-7 shrink-0 rounded-md text-muted-foreground hover:bg-muted transition-colors"
       title={collapsed ? "باز کردن منو" : "جمع کردن منو"}
     >
       {collapsed ? (

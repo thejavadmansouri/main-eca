@@ -11,16 +11,20 @@ import {
   ExternalLink,
   Factory,
   FileSpreadsheet,
+  Filter,
   Layers,
   LayoutGrid,
   PackageCheck,
   Plus,
   Printer,
+  QrCode,
   RefreshCw,
   Ruler,
   Scissors,
   Search,
   ShieldCheck,
+  Sparkles,
+  Tag,
   Truck,
   Wrench,
 } from "lucide-react";
@@ -57,8 +61,58 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+
+/** دیاگرام مینیاتوری بصری نوار PVC ۴ لبه قطعه کارگاهی */
+function EdgeBandingMiniDiagram({
+  l1,
+  l2,
+  w1,
+  w2,
+}: {
+  l1?: string | null;
+  l2?: string | null;
+  w1?: string | null;
+  w2?: string | null;
+}) {
+  const isL1 = l1 && l1 !== "بدون نوار";
+  const isL2 = l2 && l2 !== "بدون نوار";
+  const isW1 = w1 && w1 !== "بدون نوار";
+  const isW2 = w2 && w2 !== "بدون نوار";
+
+  return (
+    <div
+      className="relative size-7 rounded-sm bg-muted/60 flex items-center justify-center p-0.5 border border-dashed border-border transition-all hover:scale-110"
+      title={`طول ۱: ${l1 || "بدون نوار"} | طول ۲: ${l2 || "بدون نوار"} | عرض ۱: ${w1 || "بدون نوار"} | عرض ۲: ${w2 || "بدون نوار"}`}
+    >
+      <span
+        className={cn(
+          "absolute top-0 inset-x-0 h-[2px] rounded-full transition-colors",
+          isL1 ? "bg-amber-500 shadow-xs" : "bg-transparent",
+        )}
+      />
+      <span
+        className={cn(
+          "absolute bottom-0 inset-x-0 h-[2px] rounded-full transition-colors",
+          isL2 ? "bg-amber-500 shadow-xs" : "bg-transparent",
+        )}
+      />
+      <span
+        className={cn(
+          "absolute right-0 inset-y-0 w-[2px] rounded-full transition-colors",
+          isW1 ? "bg-blue-500 shadow-xs" : "bg-transparent",
+        )}
+      />
+      <span
+        className={cn(
+          "absolute left-0 inset-y-0 w-[2px] rounded-full transition-colors",
+          isW2 ? "bg-blue-500 shadow-xs" : "bg-transparent",
+        )}
+      />
+      <span className="text-[8px] font-mono text-muted-foreground/60 select-none">MDF</span>
+    </div>
+  );
+}
 
 export default function WoodIndustryPage() {
   const queryClient = useQueryClient();
@@ -70,6 +124,9 @@ export default function WoodIndustryPage() {
   const [isAddCuttingOpen, setIsAddCuttingOpen] = React.useState(false);
   const [isAddProfileOpen, setIsAddProfileOpen] = React.useState(false);
   const [isAddInstallationOpen, setIsAddInstallationOpen] = React.useState(false);
+
+  // پیش‌نمایش لیبل بارکد کارگاهی
+  const [selectedLabelItem, setSelectedLabelItem] = React.useState<CuttingListItemRow | null>(null);
 
   // فرم قطعه برش
   const [newPart, setNewPart] = React.useState({
@@ -114,7 +171,6 @@ export default function WoodIndustryPage() {
     queryFn: () => getProductionOrders(),
   });
 
-  // تنظیم سفارش فعال پیش‌فرض
   React.useEffect(() => {
     if (productionOrders.length > 0 && !selectedOrderId) {
       setSelectedOrderId(productionOrders[0].id);
@@ -196,16 +252,29 @@ export default function WoodIndustryPage() {
 
   const selectedOrder = productionOrders.find((o) => o.id === selectedOrderId);
 
-  // محاسبات خلاصه
+  // محاسبات شاخص‌های خلاصه
   const totalCuttingCount = cuttingItems.length;
   const completedCuttingCount = cuttingItems.filter((i) => i.isCut).length;
   const totalEdgeCount = cuttingItems.filter((i) => i.isEdged).length;
+  const totalCncCount = cuttingItems.filter((i) => i.isCncDone).length;
+
+  // فیلتر جستجوی زنده قطعات برش
+  const filteredCuttingItems = cuttingItems.filter((it) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      it.partName.toLowerCase().includes(q) ||
+      it.barcode.toLowerCase().includes(q) ||
+      it.materialType.toLowerCase().includes(q) ||
+      (it.notes && it.notes.toLowerCase().includes(q))
+    );
+  });
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-5 p-5 sm:p-6 transition-all">
       <PageHeader
         title="مدیریت تخصصی صنایع چوب، MDF و برش‌کاری"
-        description="سامانه هوشمند لیست ابعاد برش، نوار لبه PVC، لیبل پروفیل و شیشه، ماتریس جامع خط تولید کارخانه و ردیابی بارگیری و نصب"
+        description="سامانه هوشمند لیست ابعاد برش، کنترل نوار لبه PVC، لیبل پروفیل و شیشه، ماتریس جامع خط تولید و تحلیل بارگیری و نصب"
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -215,172 +284,211 @@ export default function WoodIndustryPage() {
                 refetchMatrix();
                 refetchInstallations();
               }}
-              className="gap-2 text-xs"
+              className="gap-2 text-xs h-8"
             >
               <RefreshCw className="size-3.5" />
               به‌روزرسانی
             </Button>
             {activeTab === "cutting" && (
-              <Button size="sm" onClick={() => setIsAddCuttingOpen(true)} className="gap-2 text-xs">
+              <Button size="sm" onClick={() => setIsAddCuttingOpen(true)} className="gap-2 text-xs h-8 shadow-xs">
                 <Plus className="size-3.5" />
                 ثبت قطعه برش جدید
               </Button>
             )}
             {activeTab === "profiles" && (
-              <Button size="sm" onClick={() => setIsAddProfileOpen(true)} className="gap-2 text-xs">
+              <Button size="sm" onClick={() => setIsAddProfileOpen(true)} className="gap-2 text-xs h-8 shadow-xs">
                 <Plus className="size-3.5" />
                 ثبت پروفیل / شیشه
               </Button>
             )}
             {activeTab === "installations" && (
-              <Button size="sm" onClick={() => setIsAddInstallationOpen(true)} className="gap-2 text-xs">
+              <Button size="sm" onClick={() => setIsAddInstallationOpen(true)} className="gap-2 text-xs h-8 shadow-xs">
                 <Plus className="size-3.5" />
-                ثبت حواله نصب و بارگیری
+                ثبت حواله بارگیری
               </Button>
             )}
           </div>
         }
       />
 
-      {/* شاخص‌های کلیدی آماری ماژول چوب */}
+      {/* ۱. کارت‌های شاخص عملکرد (KPI Cards) با هاور مدرن و ریتم بصری دقیق */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="flex flex-col justify-between p-4 bg-gradient-to-br from-card to-amber-500/5 border-border">
+        <Card className="flex flex-col justify-between p-4 bg-card hover:border-amber-500/40 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">قطعات ثبت‌شده برش</span>
-            <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600">
+            <span className="text-xs font-semibold text-muted-foreground">قطعات ثبت‌شده در برگه برش</span>
+            <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600 ring-1 ring-amber-500/20">
               <Scissors className="size-4" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black">{toFa(totalCuttingCount)} <span className="text-xs font-normal text-muted-foreground">قطعه</span></div>
-            <p className="mt-1 text-[11px] text-muted-foreground">در سفارش فعال: {selectedOrder?.code || "—"}</p>
+            <div className="text-2xl font-black tracking-tight">{toFa(totalCuttingCount)} <span className="text-xs font-normal text-muted-foreground">قطعه</span></div>
+            <p className="mt-1 text-[11px] text-muted-foreground flex items-center gap-1">
+              <span>سفارش:</span>
+              <strong className="font-mono text-foreground">{selectedOrder?.code || "—"}</strong>
+            </p>
           </div>
         </Card>
 
-        <Card className="flex flex-col justify-between p-4 bg-gradient-to-br from-card to-blue-500/5 border-border">
+        <Card className="flex flex-col justify-between p-4 bg-card hover:border-blue-500/40 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">ایستگاه اره و برش (SAW)</span>
-            <div className="rounded-xl bg-blue-500/10 p-2 text-blue-600">
+            <span className="text-xs font-semibold text-muted-foreground">پیشرفت اره برش (SAW)</span>
+            <div className="rounded-xl bg-blue-500/10 p-2 text-blue-600 ring-1 ring-blue-500/20">
               <LayoutGrid className="size-4" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-blue-600">{toFa(completedCuttingCount)} / {toFa(totalCuttingCount)}</div>
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              {totalCuttingCount > 0 ? toFa(Math.round((completedCuttingCount / totalCuttingCount) * 100)) : "۰"}٪ برش خورده
-            </p>
+            <div className="text-2xl font-black text-blue-600 tracking-tight">{toFa(completedCuttingCount)} / {toFa(totalCuttingCount)}</div>
+            <div className="mt-1 flex items-center gap-2">
+              <div className="w-24 bg-muted rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-blue-600 h-1.5 rounded-full transition-all"
+                  style={{ width: `${totalCuttingCount > 0 ? (completedCuttingCount / totalCuttingCount) * 100 : 0}%` }}
+                />
+              </div>
+              <span className="text-[11px] font-mono text-muted-foreground">
+                {totalCuttingCount > 0 ? toFa(Math.round((completedCuttingCount / totalCuttingCount) * 100)) : "۰"}٪
+              </span>
+            </div>
           </div>
         </Card>
 
-        <Card className="flex flex-col justify-between p-4 bg-gradient-to-br from-card to-emerald-500/5 border-border">
+        <Card className="flex flex-col justify-between p-4 bg-card hover:border-emerald-500/40 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">ایستگاه لبه‌چسبان PVC</span>
-            <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600">
+            <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600 ring-1 ring-emerald-500/20">
               <Layers className="size-4" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-emerald-600">{toFa(totalEdgeCount)} / {toFa(totalCuttingCount)}</div>
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              {totalCuttingCount > 0 ? toFa(Math.round((totalEdgeCount / totalCuttingCount) * 100)) : "۰"}٪ لبه‌چسبانی کامل
-            </p>
+            <div className="text-2xl font-black text-emerald-600 tracking-tight">{toFa(totalEdgeCount)} / {toFa(totalCuttingCount)}</div>
+            <div className="mt-1 flex items-center gap-2">
+              <div className="w-24 bg-muted rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-emerald-600 h-1.5 rounded-full transition-all"
+                  style={{ width: `${totalCuttingCount > 0 ? (totalEdgeCount / totalCuttingCount) * 100 : 0}%` }}
+                />
+              </div>
+              <span className="text-[11px] font-mono text-muted-foreground">
+                {totalCuttingCount > 0 ? toFa(Math.round((totalEdgeCount / totalCuttingCount) * 100)) : "۰"}٪
+              </span>
+            </div>
           </div>
         </Card>
 
-        <Card className="flex flex-col justify-between p-4 bg-gradient-to-br from-card to-indigo-500/5 border-border">
+        <Card className="flex flex-col justify-between p-4 bg-card hover:border-indigo-500/40 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">پروژه‌های نصب در محل</span>
-            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600">
+            <span className="text-xs font-semibold text-muted-foreground">پروژه‌های لجستیک و نصب</span>
+            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600 ring-1 ring-indigo-500/20">
               <Truck className="size-4" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-indigo-600">{toFa(installations.length)} <span className="text-xs font-normal text-muted-foreground">پروژه</span></div>
-            <p className="mt-1 text-[11px] text-muted-foreground">تحت نظارت و زمان‌بندی نصاب</p>
+            <div className="text-2xl font-black text-indigo-600 tracking-tight">{toFa(installations.length)} <span className="text-xs font-normal text-muted-foreground">پروژه</span></div>
+            <p className="mt-1 text-[11px] text-muted-foreground">آماده بارگیری و اعزام نصاب</p>
           </div>
         </Card>
       </div>
 
-      {/* تب‌های اصلی سیستم منطبق با مدل FlexERP */}
+      {/* ۲. تب‌بار روان با کلیدهای کپسولی (Segmented Pill Switcher) */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 rounded-lg bg-muted/70 p-1 border border-border/60">
           <button
             onClick={() => setActiveTab("cutting")}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-colors",
+              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
               activeTab === "cutting"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Scissors className="size-3.5" />
-            لیست ابعاد و قطعات برش (Cutting List)
+            <Scissors className="size-3.5 text-amber-600" />
+            لیست ابعاد برش (Cutting List)
+            <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-mono">{toFa(cuttingItems.length)}</Badge>
           </button>
+
           <button
             onClick={() => setActiveTab("profiles")}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-colors",
+              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
               activeTab === "profiles"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Barcode className="size-3.5" />
-            لیبل پروفیل، شیشه و فرم تأمین‌کننده
+            <Barcode className="size-3.5 text-primary" />
+            لیبل پروفیل و شیشه
+            <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-mono">{toFa(profiles.length)}</Badge>
           </button>
+
           <button
             onClick={() => setActiveTab("matrix")}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-colors",
+              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
               activeTab === "matrix"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <FileSpreadsheet className="size-3.5" />
+            <FileSpreadsheet className="size-3.5 text-blue-600" />
             گزارش جامع تولید (FlexERP Matrix)
           </button>
+
           <button
             onClick={() => setActiveTab("installations")}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-colors",
+              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
               activeTab === "installations"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Truck className="size-3.5" />
-            بارگیری، لجستیک و نصب در محل
+            <Truck className="size-3.5 text-indigo-600" />
+            بارگیری و نصب
+            <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-mono">{toFa(installations.length)}</Badge>
           </button>
         </div>
 
-        {/* انتخابگر سفارش تولید در تب‌های وابسته */}
-        {(activeTab === "cutting" || activeTab === "profiles") && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">انتخاب سفارش تولید:</span>
-            <select
-              value={selectedOrderId}
-              onChange={(e) => setSelectedOrderId(e.target.value)}
-              className="h-8 rounded-md border border-input bg-background px-2.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              {productionOrders.map((ord) => (
-                <option key={ord.id} value={ord.id}>
-                  {ord.code} — {ord.product?.name || "سفارش کارگاهی"}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        {/* فیلتر سریع و انتخاب سفارش */}
+        <div className="flex items-center gap-2">
+          {activeTab === "cutting" && (
+            <div className="relative">
+              <Search className="size-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+              <Input
+                placeholder="جستجو در قطعات، بارکد..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 w-44 pe-8 text-xs bg-background"
+              />
+            </div>
+          )}
+
+          {(activeTab === "cutting" || activeTab === "profiles") && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">سفارش:</span>
+              <select
+                value={selectedOrderId}
+                onChange={(e) => setSelectedOrderId(e.target.value)}
+                className="h-8 rounded-md border border-input bg-background px-2.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary shadow-xs"
+              >
+                {productionOrders.map((ord) => (
+                  <option key={ord.id} value={ord.id}>
+                    {ord.code} — {ord.product?.name || "سفارش کارگاهی"}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* محتوای تب ۱: لیست ابعاد و قطعات برش MDF */}
       {activeTab === "cutting" && (
-        <Card className="p-0 overflow-hidden border border-border">
-          <div className="flex items-center justify-between border-b border-border bg-muted/40 p-3.5">
+        <Card className="p-0 overflow-hidden border border-border shadow-xs">
+          <div className="flex items-center justify-between border-b border-border bg-muted/40 p-3">
             <div className="flex items-center gap-2">
               <Scissors className="size-4 text-amber-600" />
-              <span className="text-xs font-bold">جدول ابعاد دقیق قطعات، جهت رگه و نوار PVC (میلیمتر)</span>
-              <Badge variant="outline" className="text-[10px]">{toFa(cuttingItems.length)} قطعه</Badge>
+              <span className="text-xs font-bold text-foreground">لیست تفصیلی قطعات MDF با ابعاد میلی‌متر و کنترل نوارهای چهار وجه</span>
+              <Badge variant="outline" className="text-[10px] font-mono">{toFa(filteredCuttingItems.length)} ردیف</Badge>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -397,79 +505,105 @@ export default function WoodIndustryPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border">
+              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border select-none">
                 <tr>
-                  <th className="py-2.5 px-3">بارکد ردیابی</th>
+                  <th className="py-2.5 px-3">بارکد</th>
+                  <th className="py-2.5 px-3">پیش‌نمایش نوار</th>
                   <th className="py-2.5 px-3">نام قطعه یونیت</th>
-                  <th className="py-2.5 px-3">جنس و مغز ورق</th>
-                  <th className="py-2.5 px-3 text-center">ابعاد نهایی (طول x عرض)</th>
+                  <th className="py-2.5 px-3">مغز و روکش ورق</th>
+                  <th className="py-2.5 px-3 text-center">ابعاد برش (L × W)</th>
                   <th className="py-2.5 px-3 text-center">ضخامت</th>
                   <th className="py-2.5 px-3 text-center">تعداد</th>
                   <th className="py-2.5 px-3 text-center">جهت رگه</th>
                   <th className="py-2.5 px-3 text-center">نوار طول‌ها (L1 / L2)</th>
                   <th className="py-2.5 px-3 text-center">نوار عرض‌ها (W1 / W2)</th>
-                  <th className="py-2.5 px-3 text-center">مراحل خط تولید</th>
-                  <th className="py-2.5 px-3">یادداشت کارگاهی</th>
+                  <th className="py-2.5 px-3 text-center">ایستگاه‌های خط</th>
+                  <th className="py-2.5 px-3">دستور کارگاه</th>
+                  <th className="py-2.5 px-2 text-center">لیبل</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border font-medium">
-                {cuttingItems.length === 0 ? (
+                {filteredCuttingItems.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="py-12 text-center text-muted-foreground">
-                      قطعه‌ای برای این سفارش تولید ثبت نشده است. روی «ثبت قطعه برش جدید» کلیک کنید.
+                    <td colSpan={13} className="py-12 text-center text-muted-foreground">
+                      موردی یافت نشد. برای ثبت قطعه جدید روی «ثبت قطعه برش جدید» کلیک کنید.
                     </td>
                   </tr>
                 ) : (
-                  cuttingItems.map((item) => (
+                  filteredCuttingItems.map((item) => (
                     <tr key={item.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="py-2.5 px-3">
-                        <span className="font-mono text-[11px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                      <td className="py-2 px-3">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLabelItem(item)}
+                          className="font-mono text-[11px] font-bold text-primary bg-primary/10 hover:bg-primary/20 px-1.5 py-0.5 rounded transition-colors"
+                          title="مشاهده و چاپ لیبل بارکد کارگاهی"
+                        >
                           {item.barcode}
-                        </span>
+                        </button>
                       </td>
-                      <td className="py-2.5 px-3 font-bold text-foreground">{item.partName}</td>
-                      <td className="py-2.5 px-3 text-muted-foreground">{item.materialType}</td>
-                      <td className="py-2.5 px-3 text-center font-mono font-bold">
-                        {toFa(item.lengthMm)} × {toFa(item.widthMm)} <span className="text-[10px] text-muted-foreground">mm</span>
+                      <td className="py-2 px-3">
+                        <EdgeBandingMiniDiagram
+                          l1={item.edgeL1}
+                          l2={item.edgeL2}
+                          w1={item.edgeW1}
+                          w2={item.edgeW2}
+                        />
                       </td>
-                      <td className="py-2.5 px-3 text-center font-mono">{toFa(item.thicknessMm)} mm</td>
-                      <td className="py-2.5 px-3 text-center font-bold text-foreground">{toFa(item.quantity)}</td>
-                      <td className="py-2.5 px-3 text-center">
-                        <Badge variant="outline" className="text-[10px]">
+                      <td className="py-2 px-3 font-bold text-foreground">{item.partName}</td>
+                      <td className="py-2 px-3 text-muted-foreground">{item.materialType}</td>
+                      <td className="py-2 px-3 text-center font-mono font-bold text-foreground">
+                        {toFa(item.lengthMm)} × {toFa(item.widthMm)} <span className="text-[10px] text-muted-foreground font-normal">mm</span>
+                      </td>
+                      <td className="py-2 px-3 text-center font-mono">{toFa(item.thicknessMm)} mm</td>
+                      <td className="py-2 px-3 text-center font-bold text-foreground">{toFa(item.quantity)}</td>
+                      <td className="py-2 px-3 text-center">
+                        <Badge variant="outline" className="text-[10px] font-normal">
                           {item.grainDirection === "LENGTHWISE" ? "طولی" : item.grainDirection === "WIDTHWISE" ? "عرضی" : "بدون جهت"}
                         </Badge>
                       </td>
-                      <td className="py-2.5 px-3 text-center text-[11px]">
-                        <div className="flex items-center justify-center gap-1">
-                          <span className={cn("px-1.5 py-0.5 rounded text-[10px]", item.edgeL1 && item.edgeL1 !== "بدون نوار" ? "bg-amber-500/10 text-amber-700 font-bold" : "text-muted-foreground")}>
+                      <td className="py-2 px-3 text-center text-[11px]">
+                        <div className="flex items-center justify-center gap-1 font-mono">
+                          <span className={cn("px-1 py-0.5 rounded text-[10px]", item.edgeL1 && item.edgeL1 !== "بدون نوار" ? "bg-amber-500/10 text-amber-700 font-bold" : "text-muted-foreground")}>
                             {item.edgeL1 || "—"}
                           </span>
                           <span className="text-muted-foreground">/</span>
-                          <span className={cn("px-1.5 py-0.5 rounded text-[10px]", item.edgeL2 && item.edgeL2 !== "بدون نوار" ? "bg-amber-500/10 text-amber-700 font-bold" : "text-muted-foreground")}>
+                          <span className={cn("px-1 py-0.5 rounded text-[10px]", item.edgeL2 && item.edgeL2 !== "بدون نوار" ? "bg-amber-500/10 text-amber-700 font-bold" : "text-muted-foreground")}>
                             {item.edgeL2 || "—"}
                           </span>
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 text-center text-[11px]">
-                        <div className="flex items-center justify-center gap-1">
-                          <span className={cn("px-1.5 py-0.5 rounded text-[10px]", item.edgeW1 && item.edgeW1 !== "بدون نوار" ? "bg-blue-500/10 text-blue-700 font-bold" : "text-muted-foreground")}>
+                      <td className="py-2 px-3 text-center text-[11px]">
+                        <div className="flex items-center justify-center gap-1 font-mono">
+                          <span className={cn("px-1 py-0.5 rounded text-[10px]", item.edgeW1 && item.edgeW1 !== "بدون نوار" ? "bg-blue-500/10 text-blue-700 font-bold" : "text-muted-foreground")}>
                             {item.edgeW1 || "—"}
                           </span>
                           <span className="text-muted-foreground">/</span>
-                          <span className={cn("px-1.5 py-0.5 rounded text-[10px]", item.edgeW2 && item.edgeW2 !== "بدون نوار" ? "bg-blue-500/10 text-blue-700 font-bold" : "text-muted-foreground")}>
+                          <span className={cn("px-1 py-0.5 rounded text-[10px]", item.edgeW2 && item.edgeW2 !== "بدون نوار" ? "bg-blue-500/10 text-blue-700 font-bold" : "text-muted-foreground")}>
                             {item.edgeW2 || "—"}
                           </span>
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-2 px-3 text-center">
                         <div className="flex items-center justify-center gap-1 text-[10px]">
-                          <span className={cn("px-1 rounded", item.isCut ? "bg-emerald-500/10 text-emerald-700 font-bold" : "bg-muted text-muted-foreground")}>اره</span>
-                          <span className={cn("px-1 rounded", item.isEdged ? "bg-emerald-500/10 text-emerald-700 font-bold" : "bg-muted text-muted-foreground")}>لبه</span>
-                          <span className={cn("px-1 rounded", item.isCncDone ? "bg-emerald-500/10 text-emerald-700 font-bold" : "bg-muted text-muted-foreground")}>CNC</span>
-                          <span className={cn("px-1 rounded", item.isAssembled ? "bg-emerald-500/10 text-emerald-700 font-bold" : "bg-muted text-muted-foreground")}>مونتاژ</span>
+                          <span className={cn("px-1 rounded font-bold", item.isCut ? "bg-emerald-500/10 text-emerald-700" : "bg-muted text-muted-foreground")}>اره</span>
+                          <span className={cn("px-1 rounded font-bold", item.isEdged ? "bg-emerald-500/10 text-emerald-700" : "bg-muted text-muted-foreground")}>لبه</span>
+                          <span className={cn("px-1 rounded font-bold", item.isCncDone ? "bg-emerald-500/10 text-emerald-700" : "bg-muted text-muted-foreground")}>CNC</span>
+                          <span className={cn("px-1 rounded font-bold", item.isAssembled ? "bg-emerald-500/10 text-emerald-700" : "bg-muted text-muted-foreground")}>مونتاژ</span>
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 text-muted-foreground text-[11px]">{item.notes || "—"}</td>
+                      <td className="py-2 px-3 text-muted-foreground text-[11px] max-w-xs truncate">{item.notes || "—"}</td>
+                      <td className="py-2 px-2 text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setSelectedLabelItem(item)}
+                          className="size-7 text-muted-foreground hover:text-primary"
+                          title="پیش‌نمایش لیبل فیزیکی قطعه"
+                        >
+                          <Tag className="size-3.5" />
+                        </Button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -481,12 +615,12 @@ export default function WoodIndustryPage() {
 
       {/* محتوای تب ۲: فرم تأمین‌کننده و لیبل پروفیل و شیشه */}
       {activeTab === "profiles" && (
-        <Card className="p-0 overflow-hidden border border-border">
-          <div className="flex items-center justify-between border-b border-border bg-muted/40 p-3.5">
+        <Card className="p-0 overflow-hidden border border-border shadow-xs">
+          <div className="flex items-center justify-between border-b border-border bg-muted/40 p-3">
             <div className="flex items-center gap-2">
               <Barcode className="size-4 text-primary" />
-              <span className="text-xs font-bold">اقلام غیر چوبی (پروفیل‌های آلومینیومی، شیشه سکوریت و اینفیل)</span>
-              <Badge variant="outline" className="text-[10px]">{toFa(profiles.length)} قلم</Badge>
+              <span className="text-xs font-bold text-foreground">اقلام غیر چوبی، پروفیل‌های آلومینیومی و شیشه‌های سفارش داده شده به کارگاه همکار</span>
+              <Badge variant="outline" className="text-[10px] font-mono">{toFa(profiles.length)} قلم</Badge>
             </div>
             <Button
               variant="outline"
@@ -501,7 +635,7 @@ export default function WoodIndustryPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border">
+              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border select-none">
                 <tr>
                   <th className="py-2.5 px-3">بارکد ردیابی</th>
                   <th className="py-2.5 px-3">نوع قلم</th>
@@ -510,7 +644,7 @@ export default function WoodIndustryPage() {
                   <th className="py-2.5 px-3 text-center">مقدار و واحد</th>
                   <th className="py-2.5 px-3">نام تأمین‌کننده / کارگاه همکار</th>
                   <th className="py-2.5 px-3 text-center">وضعیت</th>
-                  <th className="py-2.5 px-3">توضیحات تکمیلی</th>
+                  <th className="py-2.5 px-3">دستورالعمل و توضیحات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border font-medium">
@@ -536,7 +670,7 @@ export default function WoodIndustryPage() {
                       <td className="py-2.5 px-3 font-bold text-foreground">{p.title}</td>
                       <td className="py-2.5 px-3 text-center font-mono font-bold">{p.dimensions}</td>
                       <td className="py-2.5 px-3 text-center font-bold">
-                        {toFa(p.quantity)} <span className="text-[10px] text-muted-foreground">{p.unit}</span>
+                        {toFa(p.quantity)} <span className="text-[10px] text-muted-foreground font-normal">{p.unit}</span>
                       </td>
                       <td className="py-2.5 px-3 text-muted-foreground">{p.supplierName || "تأمین داخلی"}</td>
                       <td className="py-2.5 px-3 text-center">
@@ -554,13 +688,13 @@ export default function WoodIndustryPage() {
         </Card>
       )}
 
-      {/* محتوای تب ۳: گزارش جامع تولید (FlexERP Production Matrix) */}
+      {/* محتوای تب ۳: گزارش جامع تولید (FlexERP Matrix) */}
       {activeTab === "matrix" && (
-        <Card className="p-0 overflow-hidden border border-border">
-          <div className="flex items-center justify-between border-b border-border bg-muted/40 p-3.5">
+        <Card className="p-0 overflow-hidden border border-border shadow-xs">
+          <div className="flex items-center justify-between border-b border-border bg-muted/40 p-3">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="size-4 text-blue-600" />
-              <span className="text-xs font-bold">ماتریس چندبعدی ردیابی سفارشات در خطوط تولید کارخانه (FlexERP Matrix)</span>
+              <span className="text-xs font-bold text-foreground">ماتریس چندبعدی ردیابی سفارشات در خطوط تولید کارخانه (FlexERP Matrix)</span>
             </div>
             <Button
               variant="outline"
@@ -569,23 +703,23 @@ export default function WoodIndustryPage() {
               className="gap-1.5 text-xs h-7"
             >
               <RefreshCw className="size-3" />
-              به‌روزرسانی ماتریس
+              تازه‌سازی ماتریس
             </Button>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border">
+              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border select-none">
                 <tr>
-                  <th className="py-2.5 px-3">کد سفارش کار</th>
+                  <th className="py-2.5 px-3">کد سفارش</th>
                   <th className="py-2.5 px-3">محصول نهایی</th>
                   <th className="py-2.5 px-3 text-center">تیراژ</th>
-                  <th className="py-2.5 px-3 text-center">تعداد کل قطعات</th>
-                  <th className="py-2.5 px-3 text-center">ایستگاه اره (SAW)</th>
-                  <th className="py-2.5 px-3 text-center">ایستگاه لبه‌چسبان (EDGE)</th>
-                  <th className="py-2.5 px-3 text-center">ایستگاه ماشین‌کاری (CNC)</th>
-                  <th className="py-2.5 px-3 text-center">ایستگاه مونتاژ (ASSM)</th>
-                  <th className="py-2.5 px-3 text-center">پیشرفت کل</th>
+                  <th className="py-2.5 px-3 text-center">کل قطعات</th>
+                  <th className="py-2.5 px-3 text-center">اره (SAW)</th>
+                  <th className="py-2.5 px-3 text-center">لبه‌چسبان (EDGE)</th>
+                  <th className="py-2.5 px-3 text-center">ماشین‌کاری (CNC)</th>
+                  <th className="py-2.5 px-3 text-center">مونتاژ (ASSM)</th>
+                  <th className="py-2.5 px-3 text-center">پیشرفت نهایی</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border font-medium">
@@ -603,7 +737,7 @@ export default function WoodIndustryPage() {
                       </td>
                       <td className="py-2.5 px-3 font-bold text-foreground">{row.productName}</td>
                       <td className="py-2.5 px-3 text-center font-mono">{toFa(row.targetQuantity)} عدد</td>
-                      <td className="py-2.5 px-3 text-center font-bold text-amber-600">{toFa(row.totalParts)} قطعه</td>
+                      <td className="py-2.5 px-3 text-center font-bold text-amber-600 font-mono">{toFa(row.totalParts)} قطعه</td>
                       <td className="py-2.5 px-3 text-center font-mono">
                         {toFa(row.cutCount)} / {toFa(row.totalParts)}
                       </td>
@@ -620,7 +754,7 @@ export default function WoodIndustryPage() {
                         <div className="flex items-center justify-center gap-2">
                           <div className="w-20 bg-muted rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-primary h-2 rounded-full"
+                              className="bg-primary h-2 rounded-full transition-all"
                               style={{ width: `${row.progressPercent}%` }}
                             />
                           </div>
@@ -638,31 +772,31 @@ export default function WoodIndustryPage() {
 
       {/* محتوای تب ۴: بارگیری، اعزام و نصب در محل */}
       {activeTab === "installations" && (
-        <Card className="p-0 overflow-hidden border border-border">
-          <div className="flex items-center justify-between border-b border-border bg-muted/40 p-3.5">
+        <Card className="p-0 overflow-hidden border border-border shadow-xs">
+          <div className="flex items-center justify-between border-b border-border bg-muted/40 p-3">
             <div className="flex items-center gap-2">
               <Truck className="size-4 text-indigo-600" />
-              <span className="text-xs font-bold">برنامه بارگیری کارخانه، لجستیک و نصب در پروژه مشتری (تحلیل بارگیری و نصب)</span>
-              <Badge variant="outline" className="text-[10px]">{toFa(installations.length)} پروژه</Badge>
+              <span className="text-xs font-bold text-foreground">تحلیل بارگیری و برنامه اعزام تیم نصب در پروژه مشتری</span>
+              <Badge variant="outline" className="text-[10px] font-mono">{toFa(installations.length)} پروژه</Badge>
             </div>
             <Button
               size="sm"
               onClick={() => setIsAddInstallationOpen(true)}
-              className="gap-1.5 text-xs h-7"
+              className="gap-1.5 text-xs h-7 shadow-xs"
             >
               <Plus className="size-3" />
-              ثبت مأموریت نصب جدید
+              ثبت حواله جدید
             </Button>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border">
+              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border select-none">
                 <tr>
                   <th className="py-2.5 px-3">شماره حواله</th>
                   <th className="py-2.5 px-3">مشتری و شماره تماس</th>
                   <th className="py-2.5 px-3">آدرس محل نصب پروژه</th>
-                  <th className="py-2.5 px-3">راننده و ناوگان حمل</th>
+                  <th className="py-2.5 px-3">راننده و خودروی حمل</th>
                   <th className="py-2.5 px-3">سرپرست تیم نصب</th>
                   <th className="py-2.5 px-3 text-center">تاریخ اعزام</th>
                   <th className="py-2.5 px-3 text-center">وضعیت عملیات</th>
@@ -683,7 +817,7 @@ export default function WoodIndustryPage() {
                       </td>
                       <td className="py-2.5 px-3 font-bold text-foreground">
                         {inst.customerName}
-                        <div className="text-[10px] font-normal text-muted-foreground">{inst.contactPhone}</div>
+                        <div className="text-[10px] font-normal text-muted-foreground font-mono">{inst.contactPhone}</div>
                       </td>
                       <td className="py-2.5 px-3 text-muted-foreground text-[11px] max-w-xs truncate">{inst.projectAddress}</td>
                       <td className="py-2.5 px-3 text-foreground">{inst.driverName || "تعیین نشده"}</td>
@@ -705,6 +839,77 @@ export default function WoodIndustryPage() {
           </div>
         </Card>
       )}
+
+      {/* مودال پیش‌نمایش چاپ لیبل فیزیکی کارگاهی */}
+      <Dialog open={!!selectedLabelItem} onOpenChange={() => setSelectedLabelItem(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Barcode className="size-5 text-primary" />
+              پیش‌نمایش لیبل بارکد قطعه (Zebra / Thermal)
+            </DialogTitle>
+            <DialogDescription>
+              لیبل چسبان حرارتی جهت نصب روی قطعه کارگاهی قبل از ورود به خط
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedLabelItem && (
+            <div className="p-4 border-2 border-dashed border-border rounded-xl bg-card flex flex-col gap-3 font-mono">
+              <div className="flex items-center justify-between border-b pb-2 text-xs">
+                <span className="font-bold text-primary font-sans">کاردو ERP — صنایع چوب</span>
+                <span className="text-muted-foreground">{toFa(new Date().toLocaleDateString("fa-IR"))}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-bold font-sans text-foreground">{selectedLabelItem.partName}</div>
+                  <div className="text-xs text-muted-foreground font-sans mt-0.5">{selectedLabelItem.materialType}</div>
+                </div>
+                <div className="p-1 border rounded bg-white dark:bg-zinc-900">
+                  <QrCode className="size-10 text-foreground" />
+                </div>
+              </div>
+
+              <div className="bg-muted/50 p-2.5 rounded-lg flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-[10px] text-muted-foreground font-sans">ابعاد: </span>
+                  <strong className="text-sm font-bold">{selectedLabelItem.lengthMm} × {selectedLabelItem.widthMm} mm</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground font-sans">ضخامت: </span>
+                  <strong>{selectedLabelItem.thicknessMm} mm</strong>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-[11px] font-sans">
+                <div className="p-1.5 border rounded bg-background">
+                  <span className="text-[10px] text-muted-foreground">نوارهای طولی:</span>
+                  <div className="font-bold mt-0.5">L1: {selectedLabelItem.edgeL1 || "—"} / L2: {selectedLabelItem.edgeL2 || "—"}</div>
+                </div>
+                <div className="p-1.5 border rounded bg-background">
+                  <span className="text-[10px] text-muted-foreground">نوارهای عرضی:</span>
+                  <div className="font-bold mt-0.5">W1: {selectedLabelItem.edgeW1 || "—"} / W2: {selectedLabelItem.edgeW2 || "—"}</div>
+                </div>
+              </div>
+
+              <div className="text-center py-2 bg-muted/40 rounded-lg border">
+                <div className="font-mono text-base font-black tracking-widest text-primary">{selectedLabelItem.barcode}</div>
+                <div className="text-[10px] text-muted-foreground font-sans">شناسه اختصاصی ردیابی در ایستگاه‌ها</div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" size="sm" onClick={() => setSelectedLabelItem(null)}>
+              بستن
+            </Button>
+            <Button size="sm" onClick={() => window.print()} className="gap-1.5">
+              <Printer className="size-3.5" />
+              ارسال به چاپگر لیبل
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* مودال ثبت قطعه برش جدید */}
       <Dialog open={isAddCuttingOpen} onOpenChange={setIsAddCuttingOpen}>
@@ -786,7 +991,6 @@ export default function WoodIndustryPage() {
               </select>
             </div>
 
-            {/* کنترل ۴ لبه نوار PVC */}
             <div className="col-span-2 pt-2 border-t border-border">
               <span className="text-[11px] font-bold text-foreground">تنظیمات نوار لبه PVC (چهار وجه):</span>
               <div className="grid grid-cols-2 gap-2 mt-2">

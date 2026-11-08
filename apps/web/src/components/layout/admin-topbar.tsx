@@ -106,7 +106,7 @@ export function AdminTopbar({
       فرمان شدند. آن ۲۴ پیکسل مستقیماً به ارتفاعِ جدولِ فروش اضافه می‌شود —
       یعنی یک ردیف کالای بیشتر در هر صفحه.
     */
-    <header className="sticky top-0 z-30 flex h-10 items-center gap-1 border-b bg-background px-2">
+    <header className="sticky top-0 z-30 flex h-11 items-center gap-2 border-b border-border/80 bg-background/85 backdrop-blur-md px-3 shadow-xs transition-all">
       {/* دکمه منوی موبایل */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetTrigger asChild>
