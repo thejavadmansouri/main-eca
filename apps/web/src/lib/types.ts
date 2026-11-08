@@ -3670,6 +3670,95 @@ export interface BiExecutiveMetrics {
   customerRetentionRate: number;
 }
 
-
-
 // =====================================================
+// صنایع چوب، ام‌دی‌اف و خط تولید کارگاهی (Wood Industry & Shop-Floor)
+// =====================================================
+
+export interface CuttingListItemRow {
+  id: string;
+  productionOrderId: string;
+  partName: string;
+  materialType: string;
+  lengthMm: number;
+  widthMm: number;
+  thicknessMm: number;
+  quantity: number;
+  grainDirection: string;
+  edgeL1?: string | null;
+  edgeL2?: string | null;
+  edgeW1?: string | null;
+  edgeW2?: string | null;
+  barcode: string;
+  isCut: boolean;
+  isEdged: boolean;
+  isCncDone: boolean;
+  isAssembled: boolean;
+  status: string;
+  notes?: string | null;
+  createdAt: string;
+  productionOrder?: { code: string; product?: { name: string } };
+}
+
+export interface WoodOrderProfileRow {
+  id: string;
+  productionOrderId: string;
+  itemType: string;
+  title: string;
+  dimensions: string;
+  quantity: number;
+  unit: string;
+  supplierName?: string | null;
+  barcode: string;
+  status: string;
+  notes?: string | null;
+  createdAt: string;
+  productionOrder?: { code: string };
+}
+
+export interface ProductionScanLogRow {
+  id: string;
+  productionOrderId?: string | null;
+  barcode: string;
+  stationCode: string;
+  operatorName: string;
+  action: string;
+  isSuccess: boolean;
+  scannedAt: string;
+  productionOrder?: { code: string } | null;
+}
+
+export interface ProductionMatrixRow {
+  id: string;
+  code: string;
+  productName: string;
+  targetQuantity: number;
+  priority: string;
+  status: string;
+  dueDate?: string | null;
+  totalParts: number;
+  cutCount: number;
+  edgeCount: number;
+  cncCount: number;
+  assembledCount: number;
+  progressPercent: number;
+}
+
+export interface InstallationOrderRow {
+  id: string;
+  orderNumber: string;
+  productionOrderId?: string | null;
+  customerId?: string | null;
+  projectAddress: string;
+  customerName: string;
+  contactPhone: string;
+  driverName?: string | null;
+  installerLead?: string | null;
+  scheduledDate: string;
+  installedAt?: string | null;
+  status: string;
+  satisfactionScore?: number | null;
+  notes?: string | null;
+  createdAt: string;
+  productionOrder?: { code: string } | null;
+}
+

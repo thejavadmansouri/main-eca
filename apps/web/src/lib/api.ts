@@ -3790,4 +3790,101 @@ export function getBiExecutiveMetrics(): Promise<T.BiExecutiveMetrics> {
   return apiFetch<T.BiExecutiveMetrics>('/integrations/bi/metrics');
 }
 
+// =====================================================
+// توابع صنایع چوب، ام‌دی‌اف و خط تولید کارگاهی (Wood Industry & Shop-Floor)
+// =====================================================
+
+export function getCuttingList(orderId: string): Promise<T.CuttingListItemRow[]> {
+  return apiFetch<T.CuttingListItemRow[]>(`/wood-industry/orders/${encodeURIComponent(orderId)}/cutting-list`);
+}
+
+export function addCuttingItem(body: {
+  productionOrderId: string;
+  partName: string;
+  materialType: string;
+  lengthMm: number;
+  widthMm: number;
+  thicknessMm?: number;
+  quantity?: number;
+  grainDirection?: string;
+  edgeL1?: string;
+  edgeL2?: string;
+  edgeW1?: string;
+  edgeW2?: string;
+  notes?: string;
+}): Promise<T.CuttingListItemRow> {
+  return apiFetch<T.CuttingListItemRow>('/wood-industry/cutting-list', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function getWoodProfiles(orderId: string): Promise<T.WoodOrderProfileRow[]> {
+  return apiFetch<T.WoodOrderProfileRow[]>(`/wood-industry/orders/${encodeURIComponent(orderId)}/profiles`);
+}
+
+export function addWoodProfile(body: {
+  productionOrderId: string;
+  itemType: string;
+  title: string;
+  dimensions: string;
+  quantity?: number;
+  unit?: string;
+  supplierName?: string;
+  notes?: string;
+}): Promise<T.WoodOrderProfileRow> {
+  return apiFetch<T.WoodOrderProfileRow>('/wood-industry/profiles', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function processShopFloorScan(body: {
+  barcode: string;
+  stationCode: string;
+  operatorName: string;
+}): Promise<{
+  type: string;
+  message: string;
+  part?: any;
+  profile?: any;
+  order?: any;
+  orderCode?: string;
+  isSuccess: boolean;
+}> {
+  return apiFetch('/wood-industry/scan', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function getRecentScanLogs(limit = 20): Promise<T.ProductionScanLogRow[]> {
+  return apiFetch<T.ProductionScanLogRow[]>(`/wood-industry/scans/recent?limit=${limit}`);
+}
+
+export function getComprehensiveProductionMatrix(): Promise<T.ProductionMatrixRow[]> {
+  return apiFetch<T.ProductionMatrixRow[]>('/wood-industry/matrix-report');
+}
+
+export function getInstallationOrders(): Promise<T.InstallationOrderRow[]> {
+  return apiFetch<T.InstallationOrderRow[]>('/wood-industry/installations');
+}
+
+export function createInstallationOrder(body: {
+  productionOrderId?: string;
+  customerId?: string;
+  projectAddress: string;
+  customerName: string;
+  contactPhone: string;
+  driverName?: string;
+  installerLead?: string;
+  scheduledDate: string;
+}): Promise<T.InstallationOrderRow> {
+  return apiFetch<T.InstallationOrderRow>('/wood-industry/installations', {
+    method: 'POST',
+    body,
+  });
+}
+
+
 

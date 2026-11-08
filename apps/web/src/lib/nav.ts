@@ -26,6 +26,8 @@ import {
   Receipt,
   RotateCcw,
   Scale,
+  ScanLine,
+  Scissors,
   ScrollText,
   Settings,
   ShieldAlert,
@@ -220,6 +222,18 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/admin/manufacturing?tab=orders",
         icon: Factory,
         roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "صنایع چوب و ابعاد برش (MDF)",
+        href: "/admin/wood-industry",
+        icon: Scissors,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "مانیتور اسکن خط تولید (Kiosk)",
+        href: "/admin/shop-floor",
+        icon: ScanLine,
+        roles: ["ADMIN", "MANAGER", "STAFF"],
       },
       {
         title: "درخت محصول و فرمول ساخت (BOM)",

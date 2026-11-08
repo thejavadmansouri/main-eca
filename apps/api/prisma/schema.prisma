@@ -3008,6 +3008,7 @@ model Workstation {
 
   bomOperations         BomOperation[]
   orderOperations       ProductionOrderOperation[]
+  scanLogs              ProductionScanLog[]
 
   @@index([status])
 }
@@ -3068,6 +3069,9 @@ model ProductionOrder {
   operations         ProductionOrderOperation[]
   materials          ProductionMaterialIssue[]
   qualityChecks      QualityCheck[]
+  cuttingListItems   CuttingListItem[]
+  scanLogs           ProductionScanLog[]
+  installationOrders InstallationOrder[]
 
   @@index([status])
   @@index([productId])
@@ -3389,5 +3393,108 @@ model WebhookLog {
   @@index([event])
   @@index([createdAt])
 }
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+// ماژول تخصصی صنایع چوب، مانیتور اسکن کارگاهی و لجستیک نصب (FlexERP-Inspired Wood Manufacturing)
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+model CuttingListItem {
+  id                String          @id @default(uuid())
+  productionOrderId String
+  partName          String          // نام قطعه مثلاً «دیواره چپ»، «کفی کمد»، «درب چپ»
+  materialType      String          // نوع ورق مثلاً «ام‌دی‌اف سفید صابونی ۱۶ میل»، «ام‌دی‌اف گردویی»
+  lengthMm          Float           // طول قطعه به میلی‌متر
+  widthMm           Float           // عرض قطعه به میلی‌متر
+  thicknessMm       Float           @default(16) // ضخامت
+  quantity          Int             @default(1)
+  grainDirection    String          @default("NONE") // NONE, LENGTHWISE (طولی), WIDTHWISE (عرضی)
+
+  // لبه‌چسبان و نوار PVC در ۴ ضلع قطعه (L1, L2, W1, W2)
+  edgeL1            String?         // نوار طول ۱ (مثلاً PVC 2mm)
+  edgeL2            String?         // نوار طول ۲
+  edgeW1            String?         // نوار عرض ۱
+  edgeW2            String?         // نوار عرض ۲
+
+  barcode           String          @unique // بارکد یکتای قطعه جهت اسکن در خط تولید (CUT-00123)
+  status            String          @default("PENDING") // PENDING, CUT, EDGED, CNC_DONE, ASSEMBLED
+  isCut             Boolean         @default(false)
+  isEdged           Boolean         @default(false)
+  isCncDone         Boolean         @default(false)
+  isAssembled       Boolean         @default(false)
+  notes             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  productionOrder   ProductionOrder @relation(fields: [productionOrderId], references: [id], onDelete: Cascade)
+
+  @@index([productionOrderId])
+  @@index([barcode])
+  @@index([status])
+}
+
+model WoodOrderProfile {
+  id                String          @id @default(uuid())
+  productionOrderId String
+  itemType          String          // PROFILE (پروفیل), GLASS (شیشه), INFILL (فیلر)
+  title             String          // مثلاً «پروفیل آلومینیومی تاج»، «شیشه دودی سکوریت ۶ میل»
+  dimensions        String          // مثلاً «طول ۲۴۰۰ میلی‌متر» یا «۴۵۰x۸۰۰ میلی‌متر»
+  quantity          Float           @default(1)
+  unit              String          @default("شاخه") // شاخه، متر، جام، عدد
+  supplierName      String?         // نام تأمین‌کننده شیشه یا پروفیل
+  barcode           String          @unique
+  status            String          @default("ORDERED") // ORDERED, RECEIVED, CUT, INSTALLED
+  labelPrintedAt    DateTime?
+  notes             String?
+  createdAt         DateTime        @default(now())
+
+  @@index([productionOrderId])
+  @@index([barcode])
+}
+
+model ProductionScanLog {
+  id                String          @id @default(uuid())
+  productionOrderId String?
+  workstationId     String?
+  barcode           String          // بارکد اسکن‌شده
+  operatorName      String          // اپراتور یا ایستگاه
+  stationCode       String          // کد ایستگاه مثلاً SAW, EDGE, CNC, ASSM, PACK
+  action            String          // اسکن شروع، اسکن پایان مرحله، خروج
+  scannedAt         DateTime        @default(now())
+  isSuccess         Boolean         @default(true)
+  message           String?
+
+  productionOrder   ProductionOrder? @relation(fields: [productionOrderId], references: [id], onDelete: SetNull)
+  workstation       Workstation?     @relation(fields: [workstationId], references: [id], onDelete: SetNull)
+
+  @@index([productionOrderId])
+  @@index([workstationId])
+  @@index([barcode])
+  @@index([scannedAt])
+}
+
+model InstallationOrder {
+  id                String          @id @default(uuid())
+  orderNumber       String          @unique // INST-1404-0001
+  productionOrderId String?
+  customerId        String?
+  projectAddress    String          // آدرس محل پروژه و نصب
+  customerName      String          // نام تحویل‌گیرنده
+  contactPhone      String
+  driverName        String?         // راننده و ناوگان بارگیری
+  installerLead     String?         // سرپرست تیم نصب
+  scheduledDate     DateTime        // تاریخ برنامه‌ریزی بارگیری و اعزام
+  status            String          @default("SCHEDULED") // SCHEDULED, LOADED, IN_TRANSIT, INSTALLING, COMPLETED
+  completionNotes   String?
+  customerSignature Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  productionOrder   ProductionOrder? @relation(fields: [productionOrderId], references: [id])
+
+  @@index([orderNumber])
+  @@index([status])
+  @@index([scheduledDate])
+}
+
 
 
