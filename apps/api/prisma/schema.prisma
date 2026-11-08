@@ -91,6 +91,94 @@ model Warehouse {
   onlineOrders    OnlineOrder[]
 }
 
+/// ─── ساختار سازمانی چندشرکته و شعب (Multi-Company ERP Core) ───
+
+model Company {
+  id              String        @id @default(uuid())
+  code            String        @unique
+  name            String
+  legalName       String?
+  nationalId      String?
+  economicCode    String?
+  registrationNo  String?
+  phone           String?
+  email           String?
+  address         String?
+  postalCode      String?
+  currency        String        @default("TOMAN")
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  branches        Branch[]
+  fiscalYears     FiscalYear[]
+}
+
+model Branch {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  name        String
+  companyId   String
+  company     Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  phone       String?
+  address     String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model FiscalYear {
+  id          String     @id @default(uuid())
+  title       String
+  companyId   String
+  company     Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  startDate   DateTime
+  endDate     DateTime
+  isClosed    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([companyId, title])
+}
+
+/// ─── فیلدهای سفارشی پویا (Dynamic Custom Fields Engine) ───
+
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  BOOLEAN
+  SELECT
+  DATE
+}
+
+model CustomField {
+  id          String             @id @default(uuid())
+  entityType  String
+  name        String
+  label       String
+  type        CustomFieldType    @default(TEXT)
+  options     String[]
+  isRequired  Boolean            @default(false)
+  order       Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  values      CustomFieldValue[]
+
+  @@unique([entityType, name])
+}
+
+model CustomFieldValue {
+  id            String       @id @default(uuid())
+  customFieldId String
+  customField   CustomField  @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
+  entityId      String
+  value         String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@unique([customFieldId, entityId])
+  @@index([entityId])
+}
+
 model LocationType {
   id          String     @id @default(uuid())
   warehouseId String
