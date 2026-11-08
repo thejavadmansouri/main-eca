@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 
 import { PostingService } from './posting.service';
 import { ReconciliationService } from './reconciliation.service';
+import { TrialBalanceService } from './trial-balance.service';
 import { VouchersController } from './vouchers.controller';
 
 /**
@@ -11,7 +12,7 @@ import { VouchersController } from './vouchers.controller';
 @Global()
 @Module({
   controllers: [VouchersController],
-  providers: [PostingService, ReconciliationService],
-  exports: [PostingService, ReconciliationService],
+  providers: [PostingService, ReconciliationService, TrialBalanceService],
+  exports: [PostingService, ReconciliationService, TrialBalanceService],
 })
 export class VouchersModule {}

@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PostingService } from './posting.service';
 import { ACCOUNT_LABELS, SOURCE_LABELS } from './labels';
 import { ReconciliationService } from './reconciliation.service';
+import { TrialBalanceService } from './trial-balance.service';
 
 /** هر سند در پاسخ — سرصفحه + خطوطِ برچسب‌خورده + لینکِ فاکتورِ مبدأ (اگر باشد). */
 type VoucherOut = {
@@ -67,7 +68,51 @@ export class VouchersController {
     private prisma: PrismaService,
     private posting: PostingService,
     private reconciliation: ReconciliationService,
+    private trialBalance: TrialBalanceService,
   ) {}
+
+  /**
+   * گزارش تراز آزمایشی ۴ و ۸ ستونی استاندارد ایران.
+   */
+  @Get('trial-balance')
+  async getTrialBalance(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('includeZero') includeZero?: string,
+    @Query('includeCustomerDetails') includeCustomerDetails?: string,
+  ) {
+    return this.trialBalance.getTrialBalance({
+      from,
+      to,
+      includeZero: includeZero === 'true',
+      includeCustomerDetails: includeCustomerDetails !== 'false',
+    });
+  }
+
+  /**
+   * درخت کدینگ سه سطحی استاندارد حسابداری ایران (گروه، کل، معین).
+   */
+  @Get('chart-of-accounts')
+  async getChartOfAccounts() {
+    return this.trialBalance.getChartOfAccounts();
+  }
+
+  /**
+   * دفتر کل و معین به همراه مانده شناور برای یک حساب مشخص.
+   */
+  @Get('general-ledger/:account')
+  async getGeneralLedger(
+    @Param('account') account: FixedAccount,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('customerId') customerId?: string,
+  ) {
+    return this.trialBalance.getGeneralLedger(account, {
+      from,
+      to,
+      customerId,
+    });
+  }
 
   /**
    * گزارشِ تطبیقِ سندری — مانده‌ی هر حساب از سندها در برابر مدلِ عملیاتی.

@@ -2664,6 +2664,37 @@ export function getVouchersByInvoice(
   );
 }
 
+/** تراز آزمایشی ۴ و ۸ ستونی استاندارد ایران */
+export function getTrialBalance(
+  p: {
+    from?: string;
+    to?: string;
+    includeZero?: boolean;
+    includeCustomerDetails?: boolean;
+  } = {},
+): Promise<T.TrialBalanceReport> {
+  return apiFetch<T.TrialBalanceReport>(`/vouchers/trial-balance?${reportQs(p)}`);
+}
+
+/** دفتر کل و معین به همراه مانده شناور */
+export function getGeneralLedger(
+  account: string,
+  p: {
+    from?: string;
+    to?: string;
+    customerId?: string;
+  } = {},
+): Promise<T.GeneralLedgerReport> {
+  return apiFetch<T.GeneralLedgerReport>(
+    `/vouchers/general-ledger/${encodeURIComponent(account)}?${reportQs(p)}`,
+  );
+}
+
+/** ساختار و درخت کدینگ سه سطحی حسابداری */
+export function getChartOfAccounts(): Promise<T.ChartOfAccountsResponse> {
+  return apiFetch<T.ChartOfAccountsResponse>('/vouchers/chart-of-accounts');
+}
+
 // =====================================================
 // پرداخت به مشتری بستانکار (تسویه بستانکاری)
 // =====================================================

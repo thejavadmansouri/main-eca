@@ -3058,6 +3058,147 @@ export interface VouchersResponse {
 /** پاسخِ GET /vouchers/by-invoice/:id — سندهایِ یک فاکتور به ترتیبِ زمان. */
 export type InvoiceVouchers = VoucherRow[];
 
+export interface TrialBalanceItem {
+  code: string;
+  name: string;
+  level: "GROUP" | "KOL" | "MOEIN" | "DETAIL";
+  fixedAccount?: string;
+  parentCode?: string;
+  debitTurn: number;
+  creditTurn: number;
+  debitBalance: number;
+  creditBalance: number;
+  openingDebitBalance: number;
+  openingCreditBalance: number;
+  periodDebit: number;
+  periodCredit: number;
+  cumulativeDebit: number;
+  cumulativeCredit: number;
+  closingDebitBalance: number;
+  closingCreditBalance: number;
+}
+
+export interface CustomerDetailItem {
+  customerId: string;
+  customerName: string;
+  customerPhone?: string | null;
+  debitTurn: number;
+  creditTurn: number;
+  debitBalance: number;
+  creditBalance: number;
+  openingDebitBalance: number;
+  openingCreditBalance: number;
+  periodDebit: number;
+  periodCredit: number;
+  closingDebitBalance: number;
+  closingCreditBalance: number;
+}
+
+export interface TrialBalanceReport {
+  generatedAt: string;
+  dateRange: {
+    from: string | null;
+    to: string | null;
+  };
+  isBalanced: boolean;
+  totals: {
+    totalDebitTurn: number;
+    totalCreditTurn: number;
+    totalDebitBalance: number;
+    totalCreditBalance: number;
+    totalOpeningDebitBalance: number;
+    totalOpeningCreditBalance: number;
+    totalPeriodDebit: number;
+    totalPeriodCredit: number;
+    totalCumulativeDebit: number;
+    totalCumulativeCredit: number;
+    totalClosingDebitBalance: number;
+    totalClosingCreditBalance: number;
+  };
+  groups: TrialBalanceItem[];
+  kols: TrialBalanceItem[];
+  moeins: TrialBalanceItem[];
+  customerDetails?: CustomerDetailItem[];
+}
+
+export interface GeneralLedgerEntry {
+  lineId: string;
+  voucherId: string;
+  voucherNumber: number;
+  date: string;
+  sourceType: VoucherSourceType;
+  sourceLabel: string;
+  sourceId: string;
+  note: string | null;
+  debit: number;
+  credit: number;
+  runningBalance: number;
+  counterparty: {
+    kind: "CUSTOMER" | "SUPPLIER";
+    id: string;
+    name: string;
+  } | null;
+}
+
+export interface GeneralLedgerReport {
+  account: string;
+  accountInfo: {
+    code: string;
+    name: string;
+    kolCode: string;
+    kolName: string;
+    groupCode: string;
+    groupName: string;
+    nature: string;
+  };
+  filter: {
+    from: string | null;
+    to: string | null;
+    customerId?: string;
+  };
+  openingBalance: {
+    amount: number;
+    debit: number;
+    credit: number;
+  };
+  periodTotals: {
+    debit: number;
+    credit: number;
+  };
+  closingBalance: {
+    amount: number;
+    debit: number;
+    credit: number;
+  };
+  entries: GeneralLedgerEntry[];
+}
+
+export interface ChartOfAccountsNode {
+  groupCode: string;
+  groupName: string;
+  nature: string;
+  category: string;
+  kols: {
+    kolCode: string;
+    kolName: string;
+    nature: string;
+    category: string;
+    moeins: {
+      moeinCode: string;
+      moeinName: string;
+      fixedAccount: string;
+      nature: string;
+      category: string;
+      description: string;
+    }[];
+  }[];
+}
+
+export interface ChartOfAccountsResponse {
+  groups: ChartOfAccountsNode[];
+  mapping: Record<string, any>;
+}
+
 // =====================================================
 // اصلاح نحوهٔ پرداخت (تسویهٔ از نو)
 // =====================================================
