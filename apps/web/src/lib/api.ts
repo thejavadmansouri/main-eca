@@ -4170,6 +4170,60 @@ export function getTreasuryTransactions(limit = 30): Promise<T.TreasuryTransacti
   return apiFetch<T.TreasuryTransactionRow[]>(`/treasury/transactions?limit=${limit}`);
 }
 
+// ─────────────────────────────────────────────────────────────
+// قرارداد پروژه‌های صنایع چوب و پرداخت‌های مرحله‌ای (Project Contracts & Milestones)
+// ─────────────────────────────────────────────────────────────
+
+export function getProjectContract(orderId: string): Promise<T.ProjectContractRow | null> {
+  return apiFetch<T.ProjectContractRow | null>(`/wood-industry/orders/${encodeURIComponent(orderId)}/contract`);
+}
+
+export function getAllProjectContracts(): Promise<T.ProjectContractRow[]> {
+  return apiFetch<T.ProjectContractRow[]>('/wood-industry/contracts');
+}
+
+export function createOrUpdateProjectContract(body: {
+  productionOrderId: string;
+  totalAmount: number;
+  discount?: number;
+  tax?: number;
+  terms?: string;
+  warrantyMonths?: number;
+  milestones?: Array<{
+    stepNumber: number;
+    title: string;
+    percentage: number;
+    amount: number;
+    dueStage?: string;
+    dueDate?: string;
+    notes?: string;
+  }>;
+}): Promise<T.ProjectContractRow> {
+  return apiFetch<T.ProjectContractRow>('/wood-industry/contracts', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function recordProjectPayment(body: {
+  contractId: string;
+  milestoneId?: string;
+  amount: number;
+  method?: string;
+  trackingCode?: string;
+  chequeNumber?: string;
+  chequeDueDate?: string;
+  chequeBank?: string;
+  verifiedBy?: string;
+  notes?: string;
+}): Promise<T.ProjectContractRow> {
+  return apiFetch<T.ProjectContractRow>('/wood-industry/contracts/payments', {
+    method: 'POST',
+    body,
+  });
+}
+
+
 
 
 

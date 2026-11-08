@@ -3961,4 +3961,74 @@ export interface TreasuryTransactionRow {
   createdAt: string;
 }
 
+// ─────────────────────────────────────────────────────────────
+// قرارداد پروژه‌های دکوراسیون، کابینت و پرداخت‌های مرحله‌ای
+// ─────────────────────────────────────────────────────────────
+
+export interface ProjectPaymentRow {
+  id: string;
+  contractId: string;
+  milestoneId?: string | null;
+  amount: number;
+  method: string; // CASH, CARD_READER, TRANSFER, CHEQUE
+  trackingCode?: string | null;
+  chequeNumber?: string | null;
+  chequeDueDate?: string | null;
+  chequeBank?: string | null;
+  paidAt: string;
+  verifiedBy?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface ProjectMilestoneRow {
+  id: string;
+  contractId: string;
+  stepNumber: number;
+  title: string;
+  percentage: number;
+  amount: number;
+  dueStage?: string | null;
+  status: "PENDING" | "DUE" | "PAID" | "OVERDUE";
+  paidAmount: number;
+  dueDate?: string | null;
+  paidAt?: string | null;
+  notes?: string | null;
+  payments?: ProjectPaymentRow[];
+}
+
+export interface ProjectContractRow {
+  id: string;
+  contractNumber: string;
+  productionOrderId: string;
+  totalAmount: number;
+  paidAmount: number;
+  discount: number;
+  tax: number;
+  terms?: string | null;
+  warrantyMonths: number;
+  status: "DRAFT" | "ACTIVE" | "COMPLETED" | "SUSPENDED" | "TERMINATED";
+  signedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  hasStageBlock?: boolean;
+  blockReason?: string | null;
+  remainingAmount?: number;
+  productionOrder?: {
+    id: string;
+    code: string;
+    customerType?: string | null;
+    customerName?: string | null;
+    endClientName?: string | null;
+    projectTitle?: string | null;
+    currentStage?: string | null;
+    assignedInstaller?: string | null;
+    installerPhone?: string | null;
+    product?: { name: string };
+  };
+  milestones?: ProjectMilestoneRow[];
+  payments?: ProjectPaymentRow[];
+}
+
+
 

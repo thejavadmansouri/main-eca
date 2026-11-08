@@ -18,6 +18,8 @@ import {
   AdvanceStageDto,
   CreateInboundReceiptDto,
   VerifyInboundReceiptDto,
+  CreateProjectContractDto,
+  RecordProjectPaymentDto,
 } from './dto/wood-industry.dto';
 import { WoodIndustryService } from './wood-industry.service';
 
@@ -112,5 +114,26 @@ export class WoodIndustryController {
   @Post('installations')
   async createInstallationOrder(@Body() dto: CreateInstallationDto) {
     return this.woodService.createInstallationOrder(dto);
+  }
+
+  // ───────────────────────── قرارداد پروژه‌ها و پرداخت‌های مرحله‌ای ─────────────────────────
+  @Get('contracts')
+  async getAllProjectContracts() {
+    return this.woodService.getAllProjectContracts();
+  }
+
+  @Get('orders/:id/contract')
+  async getProjectContract(@Param('id') orderId: string) {
+    return this.woodService.getProjectContract(orderId);
+  }
+
+  @Post('contracts')
+  async createOrUpdateProjectContract(@Body() dto: CreateProjectContractDto) {
+    return this.woodService.createOrUpdateProjectContract(dto);
+  }
+
+  @Post('contracts/payments')
+  async recordProjectPayment(@Body() dto: RecordProjectPaymentDto) {
+    return this.woodService.recordProjectPayment(dto);
   }
 }

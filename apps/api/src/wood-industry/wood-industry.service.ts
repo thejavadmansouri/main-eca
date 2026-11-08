@@ -9,6 +9,8 @@ import {
   AdvanceStageDto,
   CreateInboundReceiptDto,
   VerifyInboundReceiptDto,
+  CreateProjectContractDto,
+  RecordProjectPaymentDto,
 } from './dto/wood-industry.dto';
 
 @Injectable()
@@ -520,5 +522,258 @@ export class WoodIndustryService {
         status: 'SCHEDULED',
       },
     });
+  }
+
+  // ───────────────────────── قرارداد پروژه‌ها و پرداخت‌های مرحله‌ای (Project Contracts & Milestones) ─────────────────────────
+  async getProjectContract(productionOrderId: string) {
+    const contract = await this.prisma.projectContract.findUnique({
+      where: { productionOrderId },
+      include: {
+        productionOrder: {
+          include: { product: true },
+        },
+        milestones: {
+          orderBy: { stepNumber: 'asc' },
+          include: { payments: true },
+        },
+        payments: {
+          orderBy: { paidAt: 'desc' },
+        },
+      },
+    });
+    if (!contract) return null;
+
+    // بررسی سررسید اقساط بر اساس مرحله جاری خط تولید
+    const currentStage = contract.productionOrder.currentStage || 'CUTTING';
+    const stageRank: Record<string, number> = {
+      CUTTING: 1,
+      EDGE_BANDING: 2,
+      CNC: 3,
+      ASSEMBLY: 4,
+      PAINTING: 5,
+      QC_PACKING: 6,
+      INSTALLATION: 7,
+      COMPLETED: 8,
+    };
+    const currentRank = stageRank[currentStage] || 1;
+
+    let hasStageBlock = false;
+    let blockReason: string | null = null;
+
+    for (const ms of contract.milestones) {
+      if (ms.dueStage) {
+        const msRank = stageRank[ms.dueStage] || 1;
+        if (currentRank >= msRank && ms.status !== 'PAID') {
+          hasStageBlock = true;
+          blockReason = `سفارش در مرحله ${currentStage} است اما قسط «${ms.title}» هنوز تسویه نشده است.`;
+          break;
+        }
+      }
+    }
+
+    return {
+      ...contract,
+      hasStageBlock,
+      blockReason,
+      remainingAmount: Math.max(0, contract.totalAmount - contract.paidAmount - contract.discount),
+    };
+  }
+
+  async getAllProjectContracts() {
+    return this.prisma.projectContract.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        productionOrder: {
+          include: { product: true },
+        },
+        milestones: {
+          orderBy: { stepNumber: 'asc' },
+        },
+      },
+    });
+  }
+
+  async createOrUpdateProjectContract(dto: CreateProjectContractDto) {
+    const order = await this.prisma.productionOrder.findUnique({
+      where: { id: dto.productionOrderId },
+    });
+    if (!order) throw new NotFoundException('سفارش تولید پیدا نشد.');
+
+    const totalAmount = Number(dto.totalAmount) || 0;
+    const discount = Number(dto.discount) || 0;
+    const tax = Number(dto.tax) || 0;
+    const payableTotal = Math.max(0, totalAmount - discount + tax);
+
+    // اقساط پیش‌فرض سه مرحله‌ای استاندارد: ۳۰٪ پیش‌پرداخت، ۴۰٪ مونتاژ، ۳۰٪ نصب و تحویل
+    const milestonesData = (dto.milestones && dto.milestones.length > 0)
+      ? dto.milestones
+      : [
+          {
+            stepNumber: 1,
+            title: 'قسط اول: پیش‌پرداخت عقد قرارداد و شروع برش‌کاری',
+            percentage: 30,
+            amount: Math.round(payableTotal * 0.3),
+            dueStage: 'CUTTING',
+            notes: 'پیش‌پرداخت جهت خرید ورق و شروع خط اره',
+          },
+          {
+            stepNumber: 2,
+            title: 'قسط دوم: اتمام ماشین‌کاری CNC و مونتاژ یونیت‌ها',
+            percentage: 40,
+            amount: Math.round(payableTotal * 0.4),
+            dueStage: 'ASSEMBLY',
+            notes: 'تسویه قبل از خروج یونیت‌ها از کارگاه و اعزام',
+          },
+          {
+            stepNumber: 3,
+            title: 'قسط سوم: تسویه نهایی، تحویل پروژه و نصب کامل',
+            percentage: 30,
+            amount: Math.round(payableTotal * 0.3),
+            dueStage: 'INSTALLATION',
+            notes: 'تسویه کامل همزمان با رضایت‌نامه تحویل کلید',
+          },
+        ];
+
+    let contract = await this.prisma.projectContract.findUnique({
+      where: { productionOrderId: dto.productionOrderId },
+    });
+
+    if (contract) {
+      // ویرایش قرارداد موجود
+      contract = await this.prisma.projectContract.update({
+        where: { id: contract.id },
+        data: {
+          totalAmount,
+          discount,
+          tax,
+          terms: dto.terms,
+          warrantyMonths: dto.warrantyMonths || 12,
+        },
+      });
+
+      // بازتعریف اقساط در صورتی که پرداختی نداشته باشند
+      const paidMilestones = await this.prisma.projectMilestone.count({
+        where: { contractId: contract.id, paidAmount: { gt: 0 } },
+      });
+      if (paidMilestones === 0) {
+        await this.prisma.projectMilestone.deleteMany({
+          where: { contractId: contract.id },
+        });
+        for (const ms of milestonesData) {
+          await this.prisma.projectMilestone.create({
+            data: {
+              contractId: contract.id,
+              stepNumber: ms.stepNumber,
+              title: ms.title,
+              percentage: ms.percentage,
+              amount: ms.amount,
+              dueStage: ms.dueStage || null,
+              notes: ms.notes || null,
+              dueDate: ms.dueDate ? new Date(ms.dueDate) : null,
+              status: 'PENDING',
+            },
+          });
+        }
+      }
+    } else {
+      // ایجاد قرارداد جدید
+      const count = await this.prisma.projectContract.count();
+      const contractNumber = `CONT-1404-${String(count + 1).padStart(4, '0')}`;
+
+      contract = await this.prisma.projectContract.create({
+        data: {
+          contractNumber,
+          productionOrderId: dto.productionOrderId,
+          totalAmount,
+          discount,
+          tax,
+          terms: dto.terms || 'تعهدات ساخت طبق نقشه و مشخصات تأییدشده. گارانتی شامل یراق‌آلات و نوارهای PVC.',
+          warrantyMonths: dto.warrantyMonths || 12,
+          signedAt: new Date(),
+          status: 'ACTIVE',
+          milestones: {
+            create: milestonesData.map((ms) => ({
+              stepNumber: ms.stepNumber,
+              title: ms.title,
+              percentage: ms.percentage,
+              amount: ms.amount,
+              dueStage: ms.dueStage || null,
+              notes: ms.notes || null,
+              dueDate: ms.dueDate ? new Date(ms.dueDate) : null,
+              status: 'PENDING',
+            })),
+          },
+        },
+      });
+    }
+
+    return this.getProjectContract(dto.productionOrderId);
+  }
+
+  async recordProjectPayment(dto: RecordProjectPaymentDto) {
+    const contract = await this.prisma.projectContract.findUnique({
+      where: { id: dto.contractId },
+      include: { milestones: { orderBy: { stepNumber: 'asc' } } },
+    });
+    if (!contract) throw new NotFoundException('قرارداد پروژه پیدا نشد.');
+
+    const paymentAmount = Number(dto.amount) || 0;
+    if (paymentAmount <= 0) throw new BadRequestException('مبلغ پرداخت باید بزرگ‌تر از صفر باشد.');
+
+    // ثبت پرداخت
+    const payment = await this.prisma.projectPayment.create({
+      data: {
+        contractId: dto.contractId,
+        milestoneId: dto.milestoneId || null,
+        amount: paymentAmount,
+        method: dto.method || 'TRANSFER',
+        trackingCode: dto.trackingCode || null,
+        chequeNumber: dto.chequeNumber || null,
+        chequeDueDate: dto.chequeDueDate ? new Date(dto.chequeDueDate) : null,
+        chequeBank: dto.chequeBank || null,
+        verifiedBy: dto.verifiedBy || 'امور مالی کاردو',
+        notes: dto.notes || null,
+      },
+    });
+
+    // تخصیص مبلغ به قسط مشخص یا تسویه ترتیبی اقساط
+    let targetMilestoneId = dto.milestoneId;
+    if (!targetMilestoneId) {
+      const openMilestone = contract.milestones.find((m) => m.status !== 'PAID');
+      if (openMilestone) targetMilestoneId = openMilestone.id;
+    }
+
+    if (targetMilestoneId) {
+      const ms = await this.prisma.projectMilestone.findUnique({ where: { id: targetMilestoneId } });
+      if (ms) {
+        const newPaid = ms.paidAmount + paymentAmount;
+        const isFullyPaid = newPaid >= ms.amount;
+        await this.prisma.projectMilestone.update({
+          where: { id: targetMilestoneId },
+          data: {
+            paidAmount: newPaid,
+            status: isFullyPaid ? 'PAID' : 'DUE',
+            paidAt: isFullyPaid ? new Date() : ms.paidAt,
+          },
+        });
+      }
+    }
+
+    // به‌روزرسانی جمع کل پرداختی قرارداد
+    const allPayments = await this.prisma.projectPayment.findMany({
+      where: { contractId: dto.contractId },
+    });
+    const totalPaid = allPayments.reduce((sum, p) => sum + p.amount, 0);
+    const isContractDone = totalPaid >= (contract.totalAmount - contract.discount);
+
+    await this.prisma.projectContract.update({
+      where: { id: dto.contractId },
+      data: {
+        paidAmount: totalPaid,
+        status: isContractDone ? 'COMPLETED' : 'ACTIVE',
+      },
+    });
+
+    return this.getProjectContract(contract.productionOrderId);
   }
 }

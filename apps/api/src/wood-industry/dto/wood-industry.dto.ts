@@ -85,3 +85,37 @@ export class VerifyInboundReceiptDto {
   status: 'VERIFIED' | 'REJECTED';
   notes?: string;
 }
+
+export class CreateProjectMilestoneDto {
+  stepNumber: number;
+  title: string;
+  percentage: number;
+  amount: number;
+  dueStage?: string;
+  dueDate?: string;
+  notes?: string;
+}
+
+export class CreateProjectContractDto {
+  productionOrderId: string;
+  totalAmount: number;
+  discount?: number;
+  tax?: number;
+  terms?: string;
+  warrantyMonths?: number;
+  milestones?: CreateProjectMilestoneDto[];
+}
+
+export class RecordProjectPaymentDto {
+  contractId: string;
+  milestoneId?: string;
+  amount: number;
+  method?: string; // CASH, CARD_READER, TRANSFER, CHEQUE
+  trackingCode?: string;
+  chequeNumber?: string;
+  chequeDueDate?: string;
+  chequeBank?: string;
+  verifiedBy?: string;
+  notes?: string;
+}
+

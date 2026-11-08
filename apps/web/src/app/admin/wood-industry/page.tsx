@@ -37,6 +37,9 @@ import {
   ChevronRight,
   PackagePlus,
   CheckCircle,
+  FileCheck2,
+  Banknote,
+  Scale,
 } from "lucide-react";
 
 import {
@@ -55,7 +58,9 @@ import {
   createInboundReceipt,
   verifyInboundReceipt,
   getWarehouses,
+  getAllProjectContracts,
 } from "@/lib/api";
+import { ProjectContractModal } from "./contract-dialog";
 import { faDate, money, toFa } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type {
@@ -160,9 +165,12 @@ const STAGE_CONFIG: Record<
 export default function WoodIndustryPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = React.useState<"matrix" | "cutting" | "profiles" | "inbound" | "installations">("matrix");
+  const [activeTab, setActiveTab] = React.useState<"matrix" | "cutting" | "profiles" | "inbound" | "installations" | "contracts">("matrix");
   const [selectedOrderId, setSelectedOrderId] = React.useState<string>("");
   const [searchQuery, setSearchQuery] = React.useState("");
+
+  // دیالوگ قرارداد و تسویه مالی مرحله‌ای
+  const [contractOrderId, setContractOrderId] = React.useState<string | null>(null);
 
   // دیالوگ‌های افزودن
   const [isAddCuttingOpen, setIsAddCuttingOpen] = React.useState(false);
@@ -257,6 +265,12 @@ export default function WoodIndustryPage() {
   const { data: inboundReceipts = [], refetch: refetchInbound } = useQuery({
     queryKey: ["inbound-receipts"],
     queryFn: () => getInboundReceipts(),
+  });
+
+  const { data: allContracts = [], refetch: refetchContracts } = useQuery({
+    queryKey: ["project-contracts"],
+    queryFn: () => getAllProjectContracts(),
+    refetchInterval: 5000,
   });
 
   const feasibilityQ = useQuery({
@@ -652,6 +666,20 @@ export default function WoodIndustryPage() {
             <Truck className="size-3.5 text-indigo-600" />
             بارگیری و نصاب‌ها
             <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-mono">{toFa(installations.length)}</Badge>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("contracts")}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
+              activeTab === "contracts"
+                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <FileCheck2 className="size-3.5 text-emerald-600" />
+            قراردادها و تسویه مرحله‌ای
+            <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-mono">{toFa(allContracts.length)}</Badge>
           </button>
         </div>
 
@@ -1050,6 +1078,16 @@ export default function WoodIndustryPage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => setContractOrderId(row.id)}
+                              className="h-7 text-[10px] px-2 gap-1 border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10"
+                              title="مشاهده و مدیریت قرارداد مالی، اقساط ۳ مرحله‌ای و وصولی‌ها"
+                            >
+                              <FileCheck2 className="size-3 text-emerald-600" />
+                              قرارداد و اقساط
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => setFeasibilityOrderId(row.id)}
                               className="h-7 text-[10px] px-2 gap-1 border-blue-500/30 text-blue-700 hover:bg-blue-500/10"
                               title="استعلام موجودی ورق، روکش و نوارهای PVC در انبار"
@@ -1295,6 +1333,137 @@ export default function WoodIndustryPage() {
                       </td>
                     </tr>
                   ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* محتوای تب ۵: قراردادها، اقساط مرحله‌ای و امور مالی پروژه‌ها */}
+      {activeTab === "contracts" && (
+        <Card className="p-0 overflow-hidden border border-border shadow-xs">
+          <div className="flex flex-wrap items-center justify-between border-b border-border bg-muted/40 p-3 gap-2">
+            <div className="flex items-center gap-2">
+              <FileCheck2 className="size-4 text-emerald-600" />
+              <span className="text-xs font-bold text-foreground">
+                قراردادهای مالی پروژه‌ها و برنامه تسویه ۳ مرحله‌ای (Milestone Billing)
+              </span>
+              <Badge variant="outline" className="text-[10px] font-mono">{toFa(allContracts.length)} قرارداد</Badge>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetchContracts()}
+              className="gap-1.5 text-xs h-7"
+            >
+              <RefreshCw className="size-3" />
+              تازه‌سازی
+            </Button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border select-none">
+                <tr>
+                  <th className="py-2.5 px-3">شماره قرارداد</th>
+                  <th className="py-2.5 px-3">سفارش و پروژه</th>
+                  <th className="py-2.5 px-3">مشتری و ذینفع نهایی</th>
+                  <th className="py-2.5 px-3 text-center">مبلغ کل قرارداد</th>
+                  <th className="py-2.5 px-3 text-center">وصولی‌ها</th>
+                  <th className="py-2.5 px-3 text-center">مانده طلب</th>
+                  <th className="py-2.5 px-3 text-center">درصد تسویه</th>
+                  <th className="py-2.5 px-3 text-center">مرحله تولید</th>
+                  <th className="py-2.5 px-3 text-center">وضعیت تسویه و توقف</th>
+                  <th className="py-2.5 px-3 text-center">عملیات مالی</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border font-medium">
+                {allContracts.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="py-12 text-center text-muted-foreground">
+                      هنوز قراردادی ثبت نشده است. از تب «جریان سفارشات» روی دکمه «قرارداد و اقساط» هر سفارش کلیک کنید.
+                    </td>
+                  </tr>
+                ) : (
+                  allContracts.map((c) => {
+                    const remaining = Math.max(0, c.totalAmount - c.paidAmount - c.discount);
+                    const pct = c.totalAmount > 0 ? Math.round((c.paidAmount / (c.totalAmount - c.discount)) * 100) : 0;
+                    const stage = c.productionOrder?.currentStage || "CUTTING";
+                    const stageConf = STAGE_CONFIG[stage] || STAGE_CONFIG.CUTTING;
+
+                    return (
+                      <tr key={c.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-2.5 px-3">
+                          <span className="font-mono font-bold text-emerald-700 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                            {c.contractNumber}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-mono font-bold text-primary">{c.productionOrder?.code || "—"}</span>
+                            <span className="text-[11px] text-foreground font-semibold">
+                              {c.productionOrder?.projectTitle || c.productionOrder?.product?.name || "پروژه سفارشی"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="flex flex-col gap-0.5">
+                            <strong className="text-foreground">{c.productionOrder?.customerName || "—"}</strong>
+                            {c.productionOrder?.endClientName && (
+                              <span className="text-[10px] text-muted-foreground">
+                                کارفرمای نهایی: {c.productionOrder.endClientName}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-center font-mono font-bold text-foreground">
+                          {money(c.totalAmount)}
+                        </td>
+                        <td className="py-2.5 px-3 text-center font-mono font-bold text-emerald-700">
+                          {money(c.paidAmount)}
+                        </td>
+                        <td className="py-2.5 px-3 text-center font-mono font-bold text-amber-700">
+                          {money(remaining)}
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5 font-mono">
+                            <div className="w-12 bg-muted rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className="bg-emerald-600 h-1.5 rounded-full"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] font-bold">{toFa(pct)}٪</span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          <span className={cn("inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold border", stageConf.badgeClass)}>
+                            {stageConf.label}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          {c.status === "COMPLETED" ? (
+                            <Badge className="bg-emerald-600 text-white text-[9px]">تسویه کامل</Badge>
+                          ) : pct >= 70 ? (
+                            <Badge variant="outline" className="border-blue-500/40 text-blue-700 bg-blue-500/10 text-[9px]">در انتظار تسویه نهایی</Badge>
+                          ) : (
+                            <Badge variant="outline" className="border-amber-500/40 text-amber-700 bg-amber-500/10 text-[9px]">اقساط جاری</Badge>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          <Button
+                            size="sm"
+                            onClick={() => setContractOrderId(c.productionOrderId)}
+                            className="h-7 text-[10px] px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                          >
+                            <FileCheck2 className="size-3" />
+                            مدیریت و ثبت واریزی
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -2236,6 +2405,13 @@ export default function WoodIndustryPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ۷. مودال جامع قرارداد مالی، اقساط مرحله‌ای و ثبت وصولی‌ها */}
+      <ProjectContractModal
+        orderId={contractOrderId}
+        open={!!contractOrderId}
+        onOpenChange={(open) => !open && setContractOrderId(null)}
+      />
     </div>
   );
 }

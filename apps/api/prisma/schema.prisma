@@ -3097,6 +3097,7 @@ model ProductionOrder {
   cuttingListItems   CuttingListItem[]
   scanLogs           ProductionScanLog[]
   installationOrders InstallationOrder[]
+  contract           ProjectContract?
 
   @@index([status])
   @@index([productId])
@@ -3595,6 +3596,91 @@ model TreasuryTransaction {
   @@index([targetAccountId])
   @@index([transactionDate])
 }
+
+// ─────────────────────────────────────────────────────────────
+// قرارداد پروژه‌های صنایع چوب و پرداخت‌های مرحله‌ای (Project Contracts & Milestones)
+// ─────────────────────────────────────────────────────────────
+
+model ProjectContract {
+  id                 String                @id @default(uuid())
+  contractNumber     String                @unique // CONT-1404-001
+  productionOrderId  String                @unique
+  totalAmount        Float                 // مبلغ کل قرارداد
+  paidAmount         Float                 @default(0)
+  discount           Float                 @default(0)
+  tax                Float                 @default(0)
+  terms              String?               // شرایط و تعهدات قرارداد
+  warrantyMonths     Int                   @default(12) // گارانتی مثلا ۱۲ ماه
+  status             ProjectContractStatus @default(ACTIVE)
+  signedAt           DateTime?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  productionOrder    ProductionOrder       @relation(fields: [productionOrderId], references: [id], onDelete: Cascade)
+  milestones         ProjectMilestone[]
+  payments           ProjectPayment[]
+
+  @@index([productionOrderId])
+  @@index([status])
+}
+
+enum ProjectContractStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  SUSPENDED
+  TERMINATED
+}
+
+model ProjectMilestone {
+  id                 String              @id @default(uuid())
+  contractId         String
+  stepNumber         Int                 // 1, 2, 3...
+  title              String              // پیش‌پرداخت عقد قرارداد، قسط دوم مونتاژ، تسویه نهایی نصب
+  percentage         Float               // 30, 40, 30
+  amount             Float               // مبلغ این قسط
+  dueStage           String?             // CUTTING, ASSEMBLY, QC_PACKING, INSTALLATION
+  status             MilestoneStatus     @default(PENDING) // PENDING, DUE, PAID, OVERDUE
+  paidAmount         Float               @default(0)
+  dueDate            DateTime?
+  paidAt             DateTime?
+  notes              String?
+
+  contract           ProjectContract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  payments           ProjectPayment[]
+
+  @@index([contractId])
+  @@index([status])
+}
+
+enum MilestoneStatus {
+  PENDING
+  DUE
+  PAID
+  OVERDUE
+}
+
+model ProjectPayment {
+  id                 String              @id @default(uuid())
+  contractId         String
+  milestoneId        String?
+  amount             Float               // مبلغ پرداختی
+  method             String              @default("TRANSFER") // CASH, CARD_READER, TRANSFER, CHEQUE
+  trackingCode       String?             // شماره پیگیری یا فیش بانکی
+  chequeNumber       String?             // شماره صیاد چک
+  chequeDueDate      DateTime?           // سررسید چک
+  chequeBank         String?             // نام بانک
+  paidAt             DateTime            @default(now())
+  verifiedBy         String?             // نام تاییدکننده
+  notes              String?
+  createdAt          DateTime            @default(now())
+
+  contract           ProjectContract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  milestone          ProjectMilestone?   @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+
+  @@index([contractId])
+}
+
 
 
 
