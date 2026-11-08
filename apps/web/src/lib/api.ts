@@ -4059,6 +4059,16 @@ export function createInstallationOrder(body: {
   });
 }
 
+export function updateInstallationStatus(
+  id: string,
+  body: T.UpdateInstallationStatusDto,
+): Promise<T.InstallationOrderRow> {
+  return apiFetch<T.InstallationOrderRow>(`/wood-industry/installations/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body,
+  });
+}
+
 export function createWoodProductionOrder(
   body: T.CreateWoodOrderDto,
 ): Promise<T.ProductionOrderRow> {

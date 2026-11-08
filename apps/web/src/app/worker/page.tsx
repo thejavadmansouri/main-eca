@@ -201,6 +201,34 @@ export default function WorkerHomePage() {
           </div>
         </Link>
 
+        {/* کاشی ۳: کارتابل اعزام و نصاب‌ها */}
+        <Link
+          href="/worker/installations"
+          className="group relative overflow-hidden rounded-2xl border-2 border-amber-500/30 bg-gradient-to-br from-card via-card to-amber-500/[0.04] p-4 shadow-xs transition-all active:scale-[0.98] hover:border-amber-500/60 hover:shadow-md"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3.5">
+              <div className="flex size-13 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 border border-amber-500/30 shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-xs">
+                <HardHat className="size-7" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black text-foreground">
+                    کارتابل اعزام و نصاب‌ها
+                  </h3>
+                  <Badge className="bg-amber-600 text-white text-[10px] font-bold">
+                    در محل مشتری
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  آدرس و تماس مشتری، مسیریابی، شروع نصب و ثبت چک‌لیست و رضایت‌نامه
+                </p>
+              </div>
+            </div>
+            <ChevronLeft className="size-5 text-muted-foreground/60 group-hover:text-amber-600 group-hover:-translate-x-1 transition-all shrink-0 mt-1" />
+          </div>
+        </Link>
+
         {/* کاشی ۳: ثبت ورود بارکدی کالا */}
         <Link
           href="/worker/scan"

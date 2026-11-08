@@ -42,6 +42,12 @@ export class CreateInstallationDto {
   scheduledDate: string;
 }
 
+export class UpdateInstallationStatusDto {
+  status: string; // SCHEDULED, LOADED, IN_TRANSIT, INSTALLING, COMPLETED, CANCELLED
+  completionNotes?: string;
+  customerSignature?: boolean;
+}
+
 export class CreateWoodOrderDto {
   code?: string;
   customerType?: string; // B2B | B2C

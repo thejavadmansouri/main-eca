@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import {
   AddCuttingItemDto,
   AddProfileGlassDto,
   CreateInstallationDto,
+  UpdateInstallationStatusDto,
   ProcessScanDto,
   CreateWoodOrderDto,
   AdvanceStageDto,
@@ -114,6 +116,14 @@ export class WoodIndustryController {
   @Post('installations')
   async createInstallationOrder(@Body() dto: CreateInstallationDto) {
     return this.woodService.createInstallationOrder(dto);
+  }
+
+  @Patch('installations/:id/status')
+  async updateInstallationStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateInstallationStatusDto,
+  ) {
+    return this.woodService.updateInstallationStatus(id, dto);
   }
 
   // ───────────────────────── قرارداد پروژه‌ها و پرداخت‌های مرحله‌ای ─────────────────────────

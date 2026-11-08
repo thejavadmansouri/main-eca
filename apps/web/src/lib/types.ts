@@ -3947,10 +3947,25 @@ export interface InstallationOrderRow {
   scheduledDate: string;
   installedAt?: string | null;
   status: string;
+  completionNotes?: string | null;
+  customerSignature?: boolean;
   satisfactionScore?: number | null;
   notes?: string | null;
   createdAt: string;
-  productionOrder?: { code: string } | null;
+  productionOrder?: {
+    id?: string;
+    code: string;
+    projectTitle?: string;
+    customerType?: string;
+    customerName?: string;
+    endClientName?: string | null;
+  } | null;
+}
+
+export interface UpdateInstallationStatusDto {
+  status: string;
+  completionNotes?: string;
+  customerSignature?: boolean;
 }
 
 // =====================================================

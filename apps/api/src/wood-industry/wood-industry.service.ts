@@ -4,6 +4,7 @@ import {
   AddCuttingItemDto,
   AddProfileGlassDto,
   CreateInstallationDto,
+  UpdateInstallationStatusDto,
   ProcessScanDto,
   CreateWoodOrderDto,
   AdvanceStageDto,
@@ -522,6 +523,50 @@ export class WoodIndustryService {
         status: 'SCHEDULED',
       },
     });
+  }
+
+  async updateInstallationStatus(id: string, dto: UpdateInstallationStatusDto) {
+    const inst = await this.prisma.installationOrder.findUnique({
+      where: { id },
+      include: { productionOrder: true },
+    });
+    if (!inst) throw new NotFoundException('سفارش نصب مورد نظر یافت نشد.');
+
+    const updated = await this.prisma.installationOrder.update({
+      where: { id },
+      data: {
+        status: dto.status,
+        ...(dto.completionNotes !== undefined && { completionNotes: dto.completionNotes }),
+        ...(dto.customerSignature !== undefined && { customerSignature: dto.customerSignature }),
+      },
+      include: { productionOrder: true },
+    });
+
+    // در صورت تکمیل نصب، وضعیت مرحله سفارش تولید به INSTALLED تغییر می‌یابد
+    if (dto.status === 'COMPLETED' && inst.productionOrderId) {
+      await this.prisma.productionOrder.update({
+        where: { id: inst.productionOrderId },
+        data: {
+          currentStage: 'INSTALLED',
+          status: 'COMPLETED',
+          actualEndDate: new Date(),
+        },
+      });
+
+      await this.prisma.productionScanLog.create({
+        data: {
+          productionOrderId: inst.productionOrderId,
+          barcode: inst.orderNumber,
+          operatorName: inst.installerLead || 'تیم نصب کاردو',
+          stationCode: 'INSTALLED',
+          action: 'تکمیل نصب و دریافت تاییدیه مشتری در محل',
+          isSuccess: true,
+          message: dto.completionNotes,
+        },
+      });
+    }
+
+    return updated;
   }
 
   // ───────────────────────── قرارداد پروژه‌ها و پرداخت‌های مرحله‌ای (Project Contracts & Milestones) ─────────────────────────
