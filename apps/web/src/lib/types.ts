@@ -11,6 +11,8 @@ export interface User {
   role: Role;
   /** دسترسی به بخش «فروشگاه اینترنتی» — مستقل از نقش. */
   canManageSite?: boolean;
+  permissions?: string[];
+  isActive?: boolean;
 }
 
 // طبق بخش ۴ — POST /auth/login
@@ -567,6 +569,8 @@ export interface CreateUserDto {
   role: Role;
   /** دسترسی به فروشگاه اینترنتی — مستقل از نقش. */
   canManageSite?: boolean;
+  permissions?: string[];
+  isActive?: boolean;
 }
 
 export interface UpdateRoleDto {

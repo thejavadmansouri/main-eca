@@ -13,6 +13,8 @@ import {
   ChangeRoleDto,
   ChangeSiteAccessDto,
   CreateUserDto,
+  UpdatePermissionsDto,
+  ToggleActiveDto,
 } from './dto/user.dto';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -62,5 +64,21 @@ export class UsersController {
   @Patch(':id/site-access')
   setSiteAccess(@Param('id') id: string, @Body() body: ChangeSiteAccessDto) {
     return this.service.setSiteAccess(id, body.canManageSite);
+  }
+
+  /** به‌روزرسانی سطح دسترسی‌ها و اختیارات جزئی کاربر — فقط مدیر کل */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Patch(':id/permissions')
+  updatePermissions(@Param('id') id: string, @Body() body: UpdatePermissionsDto) {
+    return this.service.updatePermissions(id, body.permissions);
+  }
+
+  /** فعال/غیرفعال‌سازی وضعیت حساب کاربری — فقط مدیر کل */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Patch(':id/active')
+  toggleActive(@Param('id') id: string, @Body() body: ToggleActiveDto) {
+    return this.service.toggleActive(id, body.isActive);
   }
 }

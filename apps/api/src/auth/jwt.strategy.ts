@@ -42,12 +42,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         username: true,
         role: true,
         canManageSite: true,
+        permissions: true,
+        isActive: true,
         activeSessionId: true,
       },
     });
 
     if (!user) {
       throw new UnauthorizedException('کاربر دیگر وجود ندارد');
+    }
+
+    if (user.isActive === false) {
+      throw new UnauthorizedException('حساب کاربری شما توسط مدیر غیرفعال شده است');
     }
 
     // توکن‌های صادرشده پیش از افزوده‌شدن نشست `sid` ندارند و باید دوباره وارد شوند.

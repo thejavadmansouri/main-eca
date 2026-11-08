@@ -128,6 +128,10 @@ export class AuthService implements OnModuleInit {
       throw new UnauthorizedException('نام کاربری یا رمز عبور اشتباه است.');
     }
 
+    if (user.isActive === false) {
+      throw new UnauthorizedException('حساب کاربری شما توسط مدیر سیستم غیرفعال شده است.');
+    }
+
     let isMatch = false;
 
     // Argon2
@@ -198,6 +202,8 @@ export class AuthService implements OnModuleInit {
         fullName: user.fullName,
         role: user.role,
         canManageSite: user.canManageSite,
+        permissions: user.permissions || [],
+        isActive: user.isActive,
       },
     };
   }

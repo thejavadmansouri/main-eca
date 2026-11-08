@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsOptional,
@@ -33,6 +34,15 @@ export class CreateUserDto {
   @IsOptional()
   @IsBoolean()
   canManageSite?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  permissions?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }
 
 /** تغییر نقش کاربر — فقط مدیر. */
@@ -52,4 +62,15 @@ export class ChangePasswordDto {
   @IsString()
   @MinLength(6)
   password: string;
+}
+
+export class UpdatePermissionsDto {
+  @IsArray()
+  @IsString({ each: true })
+  permissions: string[];
+}
+
+export class ToggleActiveDto {
+  @IsBoolean()
+  isActive: boolean;
 }

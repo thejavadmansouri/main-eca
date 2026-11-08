@@ -15,6 +15,8 @@ export class UsersService {
         fullName: true,
         role: true,
         canManageSite: true,
+        permissions: true,
+        isActive: true,
         createdAt: true,
       },
 
@@ -30,6 +32,8 @@ export class UsersService {
     fullName: string;
     role?: Role;
     canManageSite?: boolean;
+    permissions?: string[];
+    isActive?: boolean;
   }) {
     const hash = await argon2.hash(dto.password);
     const role = dto.role ?? Role.STAFF;
@@ -44,6 +48,8 @@ export class UsersService {
         // صفحه‌ی کاربران هر شکلی می‌خواهیم درمی‌آید.
         canManageSite:
           dto.canManageSite ?? (role === Role.ADMIN || role === Role.MANAGER),
+        permissions: dto.permissions ?? [],
+        isActive: dto.isActive ?? true,
       },
 
       select: {
@@ -52,6 +58,8 @@ export class UsersService {
         fullName: true,
         role: true,
         canManageSite: true,
+        permissions: true,
+        isActive: true,
       },
     });
   }
@@ -83,6 +91,8 @@ export class UsersService {
         fullName: true,
         role: true,
         canManageSite: true,
+        permissions: true,
+        isActive: true,
       },
     });
   }
@@ -103,6 +113,40 @@ export class UsersService {
         fullName: true,
         role: true,
         canManageSite: true,
+        permissions: true,
+        isActive: true,
+      },
+    });
+  }
+
+  async updatePermissions(id: string, permissions: string[]) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { permissions },
+      select: {
+        id: true,
+        username: true,
+        fullName: true,
+        role: true,
+        canManageSite: true,
+        permissions: true,
+        isActive: true,
+      },
+    });
+  }
+
+  async toggleActive(id: string, isActive: boolean) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { isActive },
+      select: {
+        id: true,
+        username: true,
+        fullName: true,
+        role: true,
+        canManageSite: true,
+        permissions: true,
+        isActive: true,
       },
     });
   }

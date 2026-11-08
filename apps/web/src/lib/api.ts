@@ -1213,6 +1213,26 @@ export function setUserSiteAccess(
   });
 }
 
+export function updateUserPermissions(
+  id: string,
+  permissions: string[],
+): Promise<T.User> {
+  return apiFetch<T.User>(`/users/${encodeURIComponent(id)}/permissions`, {
+    method: "PATCH",
+    body: { permissions },
+  });
+}
+
+export function setUserActiveStatus(
+  id: string,
+  isActive: boolean,
+): Promise<T.User> {
+  return apiFetch<T.User>(`/users/${encodeURIComponent(id)}/active`, {
+    method: "PATCH",
+    body: { isActive },
+  });
+}
+
 // =====================================================
 // ۶.۱۲. کاتالوگ قطعات
 // =====================================================
