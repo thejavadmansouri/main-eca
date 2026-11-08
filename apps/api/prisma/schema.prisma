@@ -1603,9 +1603,13 @@ model Cheque {
   paymentId        String?      @unique
   receiptPaymentId String?      @unique
   number           String // شماره چک
+  sayadId          String? // شناسه ۱۶ رقمی صیادی
+  chequeType       String       @default("RECEIVABLE") // RECEIVABLE (دریافتی), PAYABLE (پرداختی)
+  amount           Float? // مبلغ ریالی چک
   bankName         String?
   branch           String?
   holderName       String? // صاحب حساب، اگر با مشتری فرق دارد
+  drawerNationalId String? // کد ملی یا شناسه ملی صادرکننده
   dueDate          DateTime // تاریخ سررسید
   /// تفاوتِ فروشِ مدت‌دار که داخلِ مبلغِ همین چک است.
   ///
@@ -1619,16 +1623,24 @@ model Cheque {
   rateBp           Int          @default(0)
   months           Int          @default(0)
   status           ChequeStatus @default(IN_HAND)
+  targetAccountId  String? // حساب بانکی مقصد جهت واگذاری یا وصول
+  bouncedAt        DateTime? // تاریخ برگشت چک
+  bounceReason     String? // علت برگشت چک
+  endorsedTo       String? // شخص ثالث یا تأمین‌کننده‌ای که چک به او خرج شد
+  endorsedAt       DateTime? // تاریخ خرج چک
   settledAt        DateTime?
   note             String?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
-  payment        Payment?        @relation(fields: [paymentId], references: [id])
-  receiptPayment ReceiptPayment? @relation(fields: [receiptPaymentId], references: [id])
+  payment        Payment?         @relation(fields: [paymentId], references: [id])
+  receiptPayment ReceiptPayment?  @relation(fields: [receiptPaymentId], references: [id])
+  targetAccount  TreasuryAccount? @relation("ChequeTargetAccount", fields: [targetAccountId], references: [id])
 
   @@index([status, dueDate])
   @@index([number])
+  @@index([sayadId])
+  @@index([chequeType])
 }
 
 /// دریافت وجه از مشتری بابت بدهی قبلی.
@@ -2345,9 +2357,12 @@ enum ChequeRateMode {
 
 enum ChequeStatus {
   IN_HAND // نزد ما، سررسید نشده
-  DEPOSITED // به بانک ارائه شده
+  DEPOSITED // به بانک ارائه شده / در جریان وصول
   CASHED // وصول شد
-  BOUNCED // برگشت خورد
+  BOUNCED // برگشت خورد / واخواست
+  PASSED // خرج شد به تأمین‌کننده یا شخص ثالث
+  RETURNED // عودت داده شد به مشتری
+  CANCELLED // باطل شد
 }
 
 /// ═══════════════════════════════════════════════════════════════════════════
@@ -3495,6 +3510,55 @@ model InstallationOrder {
   @@index([status])
   @@index([scheduledDate])
 }
+
+/// ═══════════════════════════════════════════════════════════════════════════
+/// خزانه‌داری، حساب‌های بانکی و صندوق‌ها (Treasury & Cash / Bank Accounts)
+/// ═══════════════════════════════════════════════════════════════════════════
+
+model TreasuryAccount {
+  id            String   @id @default(uuid())
+  name          String   // مثلاً «بانک ملت - حساب جاری»، «صندوق مرکزی»
+  type          String   @default("BANK") // BANK, CASH_DESK, PETTY_CASH
+  accountNumber String?  // شماره حساب
+  iban          String?  // شماره شبا (IR...)
+  bankName      String?  // نام بانک
+  branchName    String?  // نام و کد شعبه
+  balance       Float    @default(0) // موجودی فعلی
+  posTerminalId String?  // شماره پایانه کارتخوان متصل
+  isActive      Boolean  @default(true)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  depositedCheques Cheque[]              @relation("ChequeTargetAccount")
+  outTransactions  TreasuryTransaction[] @relation("SourceAccount")
+  inTransactions   TreasuryTransaction[] @relation("TargetAccount")
+
+  @@index([type])
+  @@index([isActive])
+}
+
+model TreasuryTransaction {
+  id                String   @id @default(uuid())
+  transactionNumber String   @unique // TR-1404-0001
+  type              String   // TRANSFER, DEPOSIT, WITHDRAWAL, EXPENSE
+  sourceAccountId   String?
+  targetAccountId   String?
+  amount            Float
+  trackingCode      String?  // شماره پیگیری بانکی
+  transactionDate   DateTime @default(now())
+  description       String
+  voucherId         String?
+  createdAt         DateTime @default(now())
+
+  sourceAccount TreasuryAccount? @relation("SourceAccount", fields: [sourceAccountId], references: [id])
+  targetAccount TreasuryAccount? @relation("TargetAccount", fields: [targetAccountId], references: [id])
+
+  @@index([sourceAccountId])
+  @@index([targetAccountId])
+  @@index([transactionDate])
+}
+
 
 
 

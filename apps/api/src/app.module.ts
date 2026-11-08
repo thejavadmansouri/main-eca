@@ -58,6 +58,7 @@ import { HrModule } from './hr/hr.module';
 import { RepairsModule } from './repairs/repairs.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { WoodIndustryModule } from './wood-industry/wood-industry.module';
+import { TreasuryModule } from './treasury/treasury.module';
 
 /*
  * ماژول‌هایی که **فقط روی سرور انبار** لود می‌شوند.
@@ -113,6 +114,7 @@ const WAREHOUSE_ONLY = [
   RepairsModule,
   IntegrationsModule,
   WoodIndustryModule,
+  TreasuryModule,
 ];
 
 /**

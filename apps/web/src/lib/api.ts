@@ -3886,5 +3886,158 @@ export function createInstallationOrder(body: {
   });
 }
 
+// =====================================================
+// توابع خزانه‌داری، حساب‌های بانکی و چک‌های صیادی (Treasury & Cheques API)
+// =====================================================
+
+export function getTreasuryAccounts(): Promise<T.TreasuryAccountRow[]> {
+  return apiFetch<T.TreasuryAccountRow[]>('/treasury/accounts');
+}
+
+export function getTreasuryAccount(id: string): Promise<T.TreasuryAccountRow & { depositedCheques?: any[]; inTransactions?: any[]; outTransactions?: any[] }> {
+  return apiFetch(`/treasury/accounts/${encodeURIComponent(id)}`);
+}
+
+export function createTreasuryAccount(body: {
+  name: string;
+  type: string;
+  accountNumber?: string;
+  iban?: string;
+  bankName?: string;
+  branchName?: string;
+  balance?: number;
+  posTerminalId?: string;
+  notes?: string;
+}): Promise<T.TreasuryAccountRow> {
+  return apiFetch<T.TreasuryAccountRow>('/treasury/accounts', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function updateTreasuryAccount(id: string, body: {
+  name?: string;
+  accountNumber?: string;
+  iban?: string;
+  bankName?: string;
+  branchName?: string;
+  balance?: number;
+  posTerminalId?: string;
+  isActive?: boolean;
+  notes?: string;
+}): Promise<T.TreasuryAccountRow> {
+  return apiFetch<T.TreasuryAccountRow>(`/treasury/accounts/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body,
+  });
+}
+
+export function getSayadCheques(params?: {
+  status?: string;
+  chequeType?: string;
+  q?: string;
+  fromDate?: string;
+  toDate?: string;
+  isOverdue?: boolean;
+}): Promise<T.SayadChequeRow[]> {
+  const qp = new URLSearchParams();
+  if (params?.status) qp.set('status', params.status);
+  if (params?.chequeType) qp.set('chequeType', params.chequeType);
+  if (params?.q) qp.set('q', params.q);
+  if (params?.fromDate) qp.set('fromDate', params.fromDate);
+  if (params?.toDate) qp.set('toDate', params.toDate);
+  if (params?.isOverdue) qp.set('isOverdue', 'true');
+  const qs = qp.toString() ? `?${qp.toString()}` : '';
+  return apiFetch<T.SayadChequeRow[]>(`/treasury/cheques${qs}`);
+}
+
+export function getChequeAnalytics(): Promise<T.ChequeAnalytics> {
+  return apiFetch<T.ChequeAnalytics>('/treasury/cheques/analytics');
+}
+
+export function registerSayadCheque(body: {
+  number: string;
+  sayadId?: string;
+  chequeType?: string;
+  amount: number;
+  bankName: string;
+  branch?: string;
+  holderName?: string;
+  drawerNationalId?: string;
+  dueDate: string;
+  note?: string;
+}): Promise<T.SayadChequeRow> {
+  return apiFetch<T.SayadChequeRow>('/treasury/cheques', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function depositSayadCheque(id: string, body: {
+  targetAccountId: string;
+  depositDate?: string;
+}): Promise<T.SayadChequeRow> {
+  return apiFetch<T.SayadChequeRow>(`/treasury/cheques/${encodeURIComponent(id)}/deposit`, {
+    method: 'POST',
+    body,
+  });
+}
+
+export function clearSayadCheque(id: string, body?: {
+  targetAccountId?: string;
+  clearDate?: string;
+}): Promise<T.SayadChequeRow> {
+  return apiFetch<T.SayadChequeRow>(`/treasury/cheques/${encodeURIComponent(id)}/clear`, {
+    method: 'POST',
+    body: body || {},
+  });
+}
+
+export function bounceSayadCheque(id: string, body: {
+  bounceReason: string;
+  bouncedDate?: string;
+}): Promise<T.SayadChequeRow> {
+  return apiFetch<T.SayadChequeRow>(`/treasury/cheques/${encodeURIComponent(id)}/bounce`, {
+    method: 'POST',
+    body,
+  });
+}
+
+export function endorseSayadCheque(id: string, body: {
+  endorsedTo: string;
+  endorsedDate?: string;
+  note?: string;
+}): Promise<T.SayadChequeRow> {
+  return apiFetch<T.SayadChequeRow>(`/treasury/cheques/${encodeURIComponent(id)}/endorse`, {
+    method: 'POST',
+    body,
+  });
+}
+
+export function returnSayadCheque(id: string): Promise<T.SayadChequeRow> {
+  return apiFetch<T.SayadChequeRow>(`/treasury/cheques/${encodeURIComponent(id)}/return`, {
+    method: 'POST',
+    body: {},
+  });
+}
+
+export function transferTreasuryFunds(body: {
+  sourceAccountId: string;
+  targetAccountId: string;
+  amount: number;
+  trackingCode?: string;
+  description: string;
+}): Promise<T.TreasuryTransactionRow> {
+  return apiFetch<T.TreasuryTransactionRow>('/treasury/transfers', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function getTreasuryTransactions(limit = 30): Promise<T.TreasuryTransactionRow[]> {
+  return apiFetch<T.TreasuryTransactionRow[]>(`/treasury/transactions?limit=${limit}`);
+}
+
+
 
 

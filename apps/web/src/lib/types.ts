@@ -3762,3 +3762,84 @@ export interface InstallationOrderRow {
   productionOrder?: { code: string } | null;
 }
 
+// =====================================================
+// خزانه‌داری، حساب‌های بانکی و چک‌های صیادی (Treasury & Cheques)
+// =====================================================
+
+export interface TreasuryAccountRow {
+  id: string;
+  name: string;
+  type: 'BANK' | 'CASH_DESK' | 'PETTY_CASH';
+  accountNumber?: string | null;
+  iban?: string | null;
+  bankName?: string | null;
+  branchName?: string | null;
+  balance: number;
+  posTerminalId?: string | null;
+  isActive: boolean;
+  notes?: string | null;
+  createdAt: string;
+  _count?: {
+    depositedCheques: number;
+    inTransactions: number;
+    outTransactions: number;
+  };
+}
+
+export interface SayadChequeRow {
+  id: string;
+  number: string;
+  sayadId?: string | null;
+  chequeType: 'RECEIVABLE' | 'PAYABLE';
+  amount?: number | null;
+  effectiveAmount: number;
+  bankName?: string | null;
+  branch?: string | null;
+  holderName?: string | null;
+  drawerNationalId?: string | null;
+  customerName?: string | null;
+  dueDate: string;
+  status: 'IN_HAND' | 'DEPOSITED' | 'CASHED' | 'BOUNCED' | 'PASSED' | 'RETURNED' | 'CANCELLED';
+  targetAccountId?: string | null;
+  targetAccount?: { id: string; name: string; bankName?: string | null } | null;
+  bouncedAt?: string | null;
+  bounceReason?: string | null;
+  endorsedTo?: string | null;
+  endorsedAt?: string | null;
+  settledAt?: string | null;
+  note?: string | null;
+  createdAt: string;
+}
+
+export interface ChequeAnalytics {
+  inHandAmount: number;
+  inHandCount: number;
+  depositedAmount: number;
+  depositedCount: number;
+  cashedAmount: number;
+  cashedCount: number;
+  bouncedAmount: number;
+  bouncedCount: number;
+  overdueCount: number;
+  overdueAmount: number;
+  upcomingDueCount: number;
+  upcomingDueAmount: number;
+  totalTrackedCount: number;
+}
+
+export interface TreasuryTransactionRow {
+  id: string;
+  transactionNumber: string;
+  type: string;
+  sourceAccountId?: string | null;
+  targetAccountId?: string | null;
+  sourceAccount?: { name: string; type: string } | null;
+  targetAccount?: { name: string; type: string } | null;
+  amount: number;
+  trackingCode?: string | null;
+  transactionDate: string;
+  description: string;
+  createdAt: string;
+}
+
+
