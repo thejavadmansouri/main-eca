@@ -86,11 +86,32 @@ export class HrService {
       where: { id },
       include: {
         department: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            fullName: true,
+            role: true,
+            workTasksAssigned: {
+              take: 10,
+              orderBy: { createdAt: 'desc' },
+              select: {
+                id: true,
+                kind: true,
+                status: true,
+                priority: true,
+                note: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+          },
+        },
         contracts: { orderBy: { createdAt: 'desc' } },
         payrollSlips: {
           include: { period: true },
           orderBy: { createdAt: 'desc' },
-          take: 12,
+          take: 50,
         },
       },
     });

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Award,
@@ -26,6 +27,7 @@ import {
   Sparkles,
   Trash2,
   TrendingUp,
+  User,
   UserCheck,
   UserMinus,
   UserPlus,
@@ -642,16 +644,24 @@ export default function HrPage() {
                     return (
                       <tr key={emp.id} className="hover:bg-primary/[0.03] transition-colors group">
                         <td className="py-3 px-3.5">
-                          <span className="font-mono font-black text-primary text-xs bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">
+                          <Link
+                            href={`/admin/hr/employees/${emp.id}`}
+                            className="font-mono font-black text-primary text-xs bg-primary/10 hover:bg-primary hover:text-primary-foreground px-2 py-0.5 rounded-md border border-primary/20 transition-colors inline-block"
+                            title="مشاهده پروفایل اختصاصی پرسنل"
+                          >
                             {emp.personnelCode}
-                          </span>
+                          </Link>
                         </td>
 
                         <td className="py-3 px-3.5">
                           <div className="flex flex-col gap-0.5">
-                            <span className="font-bold text-foreground text-xs group-hover:text-primary transition-colors">
+                            <Link
+                              href={`/admin/hr/employees/${emp.id}`}
+                              className="font-bold text-foreground text-xs hover:text-primary hover:underline transition-colors"
+                              title="مشاهده پروفایل اختصاصی پرسنل"
+                            >
                               {emp.firstName} {emp.lastName}
-                            </span>
+                            </Link>
                             <span className="text-[10px] text-muted-foreground">
                               {emp.gender === "FEMALE" ? "خانم" : "آقا"} | {emp.bloodType || "—"}
                             </span>
@@ -741,6 +751,15 @@ export default function HrPage() {
 
                         <td className="py-3 px-3 text-center">
                           <div className="flex items-center justify-center gap-1.5">
+                            <Link
+                              href={`/admin/hr/employees/${emp.id}`}
+                              className="h-7 text-[11px] px-2.5 inline-flex items-center gap-1 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20 shadow-2xs font-bold transition-all"
+                              title="مشاهده پروفایل و سوابق جامع پرسنل"
+                            >
+                              <User className="size-3" />
+                              پروفایل
+                            </Link>
+
                             <Button
                               variant="outline"
                               size="sm"
@@ -870,9 +889,17 @@ export default function HrPage() {
 
                         <td className="py-3 px-3.5">
                           <div className="flex flex-col gap-0.5">
-                            <span className="font-bold text-foreground text-xs">
-                              {emp ? `${emp.firstName} ${emp.lastName}` : "—"}
-                            </span>
+                            {emp ? (
+                              <Link
+                                href={`/admin/hr/employees/${cnt.employeeId}`}
+                                className="font-bold text-foreground text-xs hover:text-primary hover:underline transition-colors"
+                                title="مشاهده پروفایل پرسنلی"
+                              >
+                                {emp.firstName} {emp.lastName}
+                              </Link>
+                            ) : (
+                              <span className="font-bold text-foreground text-xs">—</span>
+                            )}
                             <span className="font-mono text-[10px] text-muted-foreground">
                               {emp?.personnelCode} | {emp?.jobTitle}
                             </span>
@@ -1086,10 +1113,22 @@ export default function HrPage() {
                     slips.map((slip) => (
                       <tr key={slip.id} className="hover:bg-primary/[0.03] transition-colors group">
                         <td className="py-3 px-3.5 font-mono font-bold text-primary">
-                          {slip.employee.personnelCode}
+                          <Link
+                            href={`/admin/hr/employees/${slip.employeeId}`}
+                            className="hover:underline"
+                            title="مشاهده پروفایل پرسنل"
+                          >
+                            {slip.employee.personnelCode}
+                          </Link>
                         </td>
                         <td className="py-3 px-3.5 font-bold text-foreground">
-                          {slip.employee.firstName} {slip.employee.lastName}
+                          <Link
+                            href={`/admin/hr/employees/${slip.employeeId}`}
+                            className="hover:text-primary hover:underline transition-colors"
+                            title="مشاهده پروفایل پرسنل"
+                          >
+                            {slip.employee.firstName} {slip.employee.lastName}
+                          </Link>
                         </td>
                         <td className="py-3 px-3 text-center font-mono">
                           {toFa(slip.workingDays)}

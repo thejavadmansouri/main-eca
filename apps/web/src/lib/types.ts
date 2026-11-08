@@ -3507,6 +3507,22 @@ export interface EmployeeRow {
   departmentId?: string | null;
   department?: DepartmentRow | null;
   contracts?: EmployeeContractRow[];
+  payrollSlips?: PayrollSlipRow[];
+  user?: {
+    id: string;
+    username: string;
+    fullName: string;
+    role: string;
+    workTasksAssigned?: Array<{
+      id: string;
+      kind: string;
+      status: string;
+      priority: string;
+      note?: string | null;
+      createdAt: string;
+      updatedAt: string;
+    }>;
+  } | null;
   notes?: string | null;
   _count?: { contracts: number; payrollSlips: number };
   createdAt: string;
@@ -3567,6 +3583,7 @@ export interface PayrollPeriodRow {
 export interface PayrollSlipRow {
   id: string;
   periodId: string;
+  period?: PayrollPeriodRow;
   employeeId: string;
   employee: EmployeeRow;
   workingDays: number;
