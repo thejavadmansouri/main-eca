@@ -301,7 +301,7 @@ export default function CustomersPage() {
                 <TableHead>نام</TableHead>
                 <TableHead className="w-40 text-end">شماره</TableHead>
                 <TableHead className="w-36">دسته</TableHead>
-                <TableHead className={`${NUM} w-44`}>بدهی (ریال)</TableHead>
+                <TableHead className={`${NUM} w-44`}>بدهی / تراز (تومان)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
