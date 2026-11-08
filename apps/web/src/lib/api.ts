@@ -949,18 +949,40 @@ export function generateLocationTree(
 // ۶.۷. موجودی
 // =====================================================
 
-// طبق بخش ۶.۷ — GET /inventory/current-stock?page=&limit=
+// طبق بخش ۶.۷ — GET /inventory/current-stock?page=&limit=&warehouseId=&search=
 export function getCurrentStock(
   page = 1,
   limit = 50,
+  warehouseId?: string,
+  search?: string,
 ): Promise<T.CurrentStockResponse> {
   const qs = new URLSearchParams({
     page: String(page),
     limit: String(limit),
   });
+  if (warehouseId && warehouseId !== "ALL") qs.set("warehouseId", warehouseId);
+  if (search && search.trim()) qs.set("search", search.trim());
   return apiFetch<T.CurrentStockResponse>(
     `/inventory/current-stock?${qs.toString()}`,
   );
+}
+
+// GET /inventory/valuation-summary — داشبورد تجمیع و ارزش انبار
+export function getInventoryValuationSummary(): Promise<T.InventoryValuationSummary> {
+  return apiFetch<T.InventoryValuationSummary>("/inventory/valuation-summary");
+}
+
+// POST /inventory/adjust — تعدیل دستی موجودی
+export function adjustStock(dto: {
+  productId: string;
+  locationId: string;
+  targetQuantity: number;
+  note?: string;
+}): Promise<unknown> {
+  return apiFetch<unknown>("/inventory/adjust", {
+    method: "POST",
+    body: dto,
+  });
 }
 
 // طبق بخش ۶.۷ — GET /inventory/logs (کلید پاسخ items است)

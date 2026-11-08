@@ -121,17 +121,33 @@ export class InventoryController {
   getCurrentStock(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('search') search?: string,
   ) {
     const p = Math.max(1, parseInt(page ?? '1', 10) || 1);
     const l = Math.min(200, Math.max(1, parseInt(limit ?? '50', 10) || 50));
-    return this.service.getStock(p, l);
+    return this.service.getStock(p, l, warehouseId, search);
+  }
+
+  // خلاصه ارزش و تجمیع انبار
+  @Roles(Role.ADMIN, Role.MANAGER, Role.STAFF)
+  @Get('valuation-summary')
+  getValuationSummary() {
+    return this.service.getValuationSummary();
   }
 
   // لیست موجودی
   @Roles(Role.ADMIN, Role.MANAGER, Role.STAFF)
   @Get('stock')
-  stock() {
-    return this.service.getStock();
+  stock(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('search') search?: string,
+  ) {
+    const p = Math.max(1, parseInt(page ?? '1', 10) || 1);
+    const l = Math.min(200, Math.max(1, parseInt(limit ?? '50', 10) || 50));
+    return this.service.getStock(p, l, warehouseId, search);
   }
 
   // موجودی یک موقعیت

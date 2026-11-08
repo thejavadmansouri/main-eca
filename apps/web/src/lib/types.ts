@@ -294,12 +294,24 @@ export interface InventoryRow {
     sku?: string;
     partNumber?: string | null;
     unit?: string | null;
+    minStock?: number;
+    prices?: Array<{
+      salePrice?: number | null;
+      purchasePrice?: number | null;
+    }>;
   } | null;
   location?: {
     id: string;
     name: string;
     code?: string | null;
     barcode?: string | null;
+    path?: string | null;
+    warehouseId?: string | null;
+    warehouse?: {
+      id: string;
+      name: string;
+      code: string;
+    } | null;
   } | null;
 }
 
@@ -308,6 +320,21 @@ export interface PaginatedMeta {
   page: number;
   limit: number;
   totalPages: number;
+  totalQuantity?: number;
+}
+
+export interface InventoryValuationSummary {
+  totalPositions: number;
+  totalQuantity: number;
+  uniqueProductCount: number;
+  lowStockCount: number;
+  warehouses: Array<{
+    id: string;
+    name: string;
+    code: string;
+    totalLocations: number;
+    totalQuantity: number;
+  }>;
 }
 
 // GET /inventory/current-stock → { data, meta }
@@ -408,6 +435,7 @@ export interface InventoryOperationDto {
   productId: string;
   locationId: string;
   quantity: number;
+  unitPrice?: number;
   note?: string;
 }
 

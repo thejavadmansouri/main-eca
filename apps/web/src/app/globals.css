@@ -120,72 +120,60 @@
      نازک و کم‌جان دیده می‌شود؛ ۴۵۰ همان متن است با یک‌خط پررنگ‌تر. */
   --ui-weight: 450;
 
-  /* Light background — near-white, faint blue cast */
-  /* گرم‌کردن زمینه (پیشنهاد ۴): hue از ۲۵۰ (ته‌آبی) به ۸۸ (ته‌کرم).
-     کرومای 0.006 → 0.008 (نسخهٔ آشکارتر — مقایسه در docs/pos-palette-preview.html).
-     بازگشت به سرد: oklch(0.985 0.004 250) */
-  --background: oklch(0.985 0.008 88);
-  --foreground: oklch(0.19 0.022 256);
+  /* Light background — crisp neutral slate surface with industrial emerald brand accents */
+  --background: oklch(0.988 0.003 240);
+  --foreground: oklch(0.18 0.02 240);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.23 0.02 256);
+  --card-foreground: oklch(0.20 0.02 240);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.23 0.02 256);
+  --popover-foreground: oklch(0.20 0.02 240);
 
-  /* Primary: brand blue */
-  --primary: oklch(0.55 0.19 254);
-  --primary-foreground: oklch(0.99 0.005 250);
+  /* Primary: authoritative industrial emerald / forest teal for KARDO ERP */
+  --primary: oklch(0.52 0.155 168);
+  --primary-foreground: oklch(0.99 0 0);
 
-  /* hue 88 — هم‌خانواده با پس‌زمینهٔ گرم (قبلی: 252) */
-  --secondary: oklch(0.968 0.008 88);
-  --secondary-foreground: oklch(0.33 0.05 256);
+  --secondary: oklch(0.955 0.006 240);
+  --secondary-foreground: oklch(0.25 0.03 240);
 
-  --muted: oklch(0.97 0.008 88);
-  /* پررنگ‌تر از ۰٫۵۳: متنِ کم‌رنگ روی مانیتورِ پیشخوان محو می‌شد. */
-  --muted-foreground: oklch(0.455 0.022 256);
+  --muted: oklch(0.96 0.005 240);
+  --muted-foreground: oklch(0.46 0.02 240);
 
-  /* Accent: same brand blue (used for icons/highlights across pages) */
-  --accent: oklch(0.55 0.19 254);
-  --accent-foreground: oklch(0.99 0.005 250);
+  /* Accent: soft emerald highlight */
+  --accent: oklch(0.95 0.025 168);
+  --accent-foreground: oklch(0.32 0.13 168);
 
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(0.985 0 0);
 
-  /* رنگ‌های معنایی — تا «موفق/هشدار/اطلاع» یک منبع واحد داشته باشند و همه‌جا
-     دستی text-emerald-600/text-amber-600 تکرار نشود. success=دریافت/بستانکار،
-     warning=بدهی/سررسید، info=خنثیِ آبی. */
-  --success: oklch(0.6 0.14 155);
+  /* رنگ‌های معنایی — منبع واحد */
+  --success: oklch(0.58 0.16 155);
   --success-foreground: oklch(0.99 0 0);
-  /* warning روی زمینهٔ روشن باید ≥ 4.5:1 باشد. مقدار قبلی (0.7) فقط ~2.8:1
-     داشت و زیر حد AA بود؛ L=0.555 معادل amber-700 است (~5:1). */
-  --warning: oklch(0.555 0.16 60);
-  --warning-foreground: oklch(0.3 0.05 70);
-  --info: oklch(0.6 0.13 235);
+  --warning: oklch(0.60 0.16 65);
+  --warning-foreground: oklch(0.24 0.04 65);
+  --info: oklch(0.58 0.14 220);
   --info-foreground: oklch(0.99 0 0);
 
-  /* hue 88 — گرم (قبلی: 252). روشنی از ۰٫۹۲۸ به ۰٫۸۸ آمد: خطوطِ جدول
-     زیر نورِ مغازه باید دیده شوند، وگرنه ردیف‌ها در هم می‌روند. */
-  --border: oklch(0.88 0.01 88);
-  --input: oklch(0.855 0.012 88);
-  /* Lighter/brighter than --primary and far from --destructive red */
-  --ring: oklch(0.64 0.15 254);
+  --border: oklch(0.90 0.006 240);
+  --input: oklch(0.88 0.008 240);
+  --ring: oklch(0.52 0.155 168);
 
-  --chart-1: oklch(0.55 0.19 254);
-  --chart-2: oklch(0.66 0.14 232);
-  --chart-3: oklch(0.72 0.12 200);
-  --chart-4: oklch(0.45 0.16 268);
-  --chart-5: oklch(0.78 0.09 246);
+  --chart-1: oklch(0.52 0.155 168);
+  --chart-2: oklch(0.62 0.13 188);
+  --chart-3: oklch(0.68 0.14 75);
+  --chart-4: oklch(0.48 0.15 250);
+  --chart-5: oklch(0.72 0.11 150);
 
-  /* Sidebar: white, blue active state */
+  /* Sidebar: white, industrial emerald active state */
   --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.28 0.02 256);
-  --sidebar-primary: oklch(0.55 0.19 254);
-  --sidebar-primary-foreground: oklch(0.99 0.005 250);
-  --sidebar-accent: oklch(0.96 0.02 254);
-  --sidebar-accent-foreground: oklch(0.45 0.16 256);
-  --sidebar-border: oklch(0.93 0.007 252);
-  --sidebar-ring: oklch(0.64 0.15 254);
+  --sidebar-foreground: oklch(0.25 0.02 240);
+  --sidebar-primary: oklch(0.52 0.155 168);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.955 0.025 168);
+  --sidebar-accent-foreground: oklch(0.32 0.13 168);
+  --sidebar-border: oklch(0.91 0.006 240);
+  --sidebar-ring: oklch(0.52 0.155 168);
 }
 
 .dark {
@@ -194,26 +182,26 @@
   --grid-mint: oklch(0.255 0.028 155);
   --grid-pink: oklch(0.255 0.03 330);
 
-  --background: oklch(0.18 0.02 258);
-  --foreground: oklch(0.95 0.005 250);
+  --background: oklch(0.15 0.015 240);
+  --foreground: oklch(0.96 0.005 240);
 
-  --card: oklch(0.22 0.022 258);
-  --card-foreground: oklch(0.95 0.005 250);
+  --card: oklch(0.19 0.018 240);
+  --card-foreground: oklch(0.96 0.005 240);
 
-  --popover: oklch(0.22 0.022 258);
-  --popover-foreground: oklch(0.95 0.005 250);
+  --popover: oklch(0.19 0.018 240);
+  --popover-foreground: oklch(0.96 0.005 240);
 
-  --primary: oklch(0.66 0.17 254);
-  --primary-foreground: oklch(0.16 0.02 258);
+  --primary: oklch(0.65 0.16 168);
+  --primary-foreground: oklch(0.14 0.02 168);
 
-  --secondary: oklch(0.27 0.025 258);
-  --secondary-foreground: oklch(0.95 0.005 250);
+  --secondary: oklch(0.24 0.02 240);
+  --secondary-foreground: oklch(0.96 0.005 240);
 
-  --muted: oklch(0.27 0.025 258);
-  --muted-foreground: oklch(0.72 0.015 250);
+  --muted: oklch(0.24 0.02 240);
+  --muted-foreground: oklch(0.70 0.015 240);
 
-  --accent: oklch(0.66 0.17 254);
-  --accent-foreground: oklch(0.16 0.02 258);
+  --accent: oklch(0.26 0.04 168);
+  --accent-foreground: oklch(0.85 0.08 168);
 
   --destructive: oklch(0.7 0.19 22);
   --destructive-foreground: oklch(0.985 0 0);
@@ -223,28 +211,27 @@
   --success-foreground: oklch(0.16 0.02 155);
   --warning: oklch(0.8 0.15 75);
   --warning-foreground: oklch(0.22 0.04 70);
-  --info: oklch(0.72 0.13 235);
-  --info-foreground: oklch(0.16 0.02 235);
+  --info: oklch(0.72 0.13 220);
+  --info-foreground: oklch(0.16 0.02 220);
 
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
-  /* Brighter than --primary and far from --destructive red */
-  --ring: oklch(0.72 0.13 254);
+  --ring: oklch(0.65 0.16 168);
 
-  --chart-1: oklch(0.66 0.17 254);
-  --chart-2: oklch(0.7 0.13 232);
-  --chart-3: oklch(0.76 0.11 200);
-  --chart-4: oklch(0.56 0.16 268);
-  --chart-5: oklch(0.82 0.07 246);
+  --chart-1: oklch(0.65 0.16 168);
+  --chart-2: oklch(0.70 0.13 188);
+  --chart-3: oklch(0.76 0.13 75);
+  --chart-4: oklch(0.56 0.15 250);
+  --chart-5: oklch(0.80 0.09 150);
 
-  --sidebar: oklch(0.21 0.022 258);
-  --sidebar-foreground: oklch(0.92 0.01 250);
-  --sidebar-primary: oklch(0.66 0.17 254);
-  --sidebar-primary-foreground: oklch(0.16 0.02 258);
-  --sidebar-accent: oklch(0.29 0.03 258);
-  --sidebar-accent-foreground: oklch(0.96 0.01 250);
+  --sidebar: oklch(0.18 0.016 240);
+  --sidebar-foreground: oklch(0.92 0.01 240);
+  --sidebar-primary: oklch(0.65 0.16 168);
+  --sidebar-primary-foreground: oklch(0.14 0.02 168);
+  --sidebar-accent: oklch(0.25 0.035 168);
+  --sidebar-accent-foreground: oklch(0.92 0.06 168);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.72 0.13 254);
+  --sidebar-ring: oklch(0.65 0.16 168);
 }
 
 /*

@@ -242,35 +242,67 @@ export class InventoryService {
     });
   }
 
-  async getStock(page: number = 1, limit: number = 50) {
+  async getStock(
+    page: number = 1,
+    limit: number = 50,
+    warehouseId?: string,
+    search?: string,
+  ) {
     const skip = (page - 1) * limit;
-    const [data, total] = await Promise.all([
+    const where: any = {
+      quantity: {
+        gt: 0,
+      },
+    };
+
+    if (warehouseId) {
+      where.location = { warehouseId };
+    }
+
+    if (search && search.trim()) {
+      const q = search.trim();
+      where.product = {
+        deletedAt: null,
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { sku: { contains: q, mode: 'insensitive' } },
+          { internalBarcode: { contains: q, mode: 'insensitive' } },
+          { barcodes: { some: { barcode: { contains: q, mode: 'insensitive' } } } },
+        ],
+      };
+    }
+
+    const [data, total, agg] = await Promise.all([
       this.prisma.inventory.findMany({
         skip,
         take: limit,
-        where: {
-          quantity: {
-            gt: 0,
-          },
-        },
+        where,
         include: {
           product: {
             include: {
               brand: true,
               vehicleModel: true,
+              prices: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+              },
             },
           },
-          location: true,
+          location: {
+            include: {
+              warehouse: true,
+            },
+          },
         },
         orderBy: {
           updatedAt: 'desc',
         },
       }),
-      this.prisma.inventory.count({
-        where: {
-          quantity: {
-            gt: 0,
-          },
+      this.prisma.inventory.count({ where }),
+      this.prisma.inventory.aggregate({
+        where,
+        _sum: {
+          quantity: true,
         },
       }),
     ]);
@@ -282,7 +314,78 @@ export class InventoryService {
         page,
         limit,
         totalPages: Math.ceil(total / limit),
+        totalQuantity: agg._sum?.quantity ?? 0,
       },
+    };
+  }
+
+  async getValuationSummary() {
+    const [aggregates, totalCount, uniqueProducts, lowStockRaw, warehouses] =
+      await Promise.all([
+        this.prisma.inventory.aggregate({
+          where: { quantity: { gt: 0 } },
+          _sum: {
+            quantity: true,
+          },
+        }),
+        this.prisma.inventory.count({
+          where: { quantity: { gt: 0 } },
+        }),
+        this.prisma.inventory.groupBy({
+          by: ['productId'],
+          where: { quantity: { gt: 0 } },
+        }),
+        this.prisma.$queryRaw<{ count: bigint }[]>`
+          SELECT COUNT(*)::bigint AS count FROM (
+            SELECT p."id" FROM "Product" p
+            LEFT JOIN "Inventory" i ON i."productId" = p."id"
+            WHERE p."deletedAt" IS NULL AND p."minStock" > 0
+            GROUP BY p."id", p."minStock"
+            HAVING COALESCE(SUM(i."quantity"),0) <= p."minStock"
+          ) t
+        `,
+        this.prisma.warehouse.findMany({
+          where: { isActive: true },
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            locations: {
+              select: {
+                id: true,
+                inventories: {
+                  where: { quantity: { gt: 0 } },
+                  select: { quantity: true },
+                },
+              },
+            },
+          },
+        }),
+      ]);
+
+    const warehouseSummary = warehouses.map((w) => {
+      let totalQty = 0;
+      const totalLocations = w.locations.length;
+      for (const loc of w.locations) {
+        for (const inv of loc.inventories) {
+          totalQty += inv.quantity;
+        }
+      }
+      return {
+        id: w.id,
+        name: w.name,
+        code: w.code,
+        totalLocations,
+        totalQuantity: totalQty,
+      };
+    });
+
+    return {
+      totalPositions: totalCount,
+      totalQuantity: aggregates._sum?.quantity ?? 0,
+      uniqueProductCount: uniqueProducts.length,
+      lowStockCount: Number(lowStockRaw[0]?.count || 0),
+      warehouses: warehouseSummary,
     };
   }
 
