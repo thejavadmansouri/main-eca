@@ -73,6 +73,10 @@ model User {
   imagePublishLogs        ImagePublishLog[]
   employee                Employee?
   repairOrdersAssigned    RepairOrder[]            @relation("TechnicianRepairOrders")
+  notificationsReceived   StaffNotification[]      @relation("NotificationRecipient")
+  notificationsSent       StaffNotification[]      @relation("NotificationSender")
+  messagesSent            InternalMessage[]        @relation("SentMessages")
+  messagesReceived        InternalMessage[]        @relation("ReceivedMessages")
 }
 
 model Warehouse {
@@ -3077,6 +3081,9 @@ model ProductionOrder {
   assignedInstaller  String?               // نصاب مسئول پروژه
   installerPhone     String?               // شماره تماس نصاب
   currentStage       String?               @default("CUTTING") // CUTTING, EDGE_BANDING, CNC, ASSEMBLY, FINISHING, QC_PACKING, READY_TO_INSTALL, INSTALLED
+  progressPercent    Int                   @default(0) // درصد پیشرفت فیزیکی پروژه (۰ تا ۱۰۰)
+  trackingToken      String?               @unique // توکن یکتا جهت ساخت لینک رهگیری زنده برای کارفرما/مشتری
+  estimatedCompletionDate DateTime?        // تاریخ برآوردی تکمیل پروژه و تحویل به مشتری
 
   // هزینه‌ها و بهای تمام‌شده تولید (COGM)
   totalMaterialCost  Float                 @default(0)
@@ -3525,6 +3532,7 @@ model InstallationOrder {
   driverName        String?         // راننده و ناوگان بارگیری
   installerLead     String?         // سرپرست تیم نصب
   scheduledDate     DateTime        // تاریخ برنامه‌ریزی بارگیری و اعزام
+  actualCompletedDate DateTime?     // تاریخ واقعی اتمام نصب جهت مقایسه و محاسبه تاخیر تحویل
   status            String          @default("SCHEDULED") // SCHEDULED, LOADED, IN_TRANSIT, INSTALLING, COMPLETED
   completionNotes   String?
   customerSignature Boolean         @default(false)
@@ -3696,6 +3704,74 @@ model ProjectPayment {
 
   @@index([contractId])
 }
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+// سیستم نوتیفیکیشن‌ها و پیام‌های اداری داخلی (Internal Notifications & Announcements)
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+model StaffNotification {
+  id          String    @id @default(uuid())
+  recipientId String    // شناسه کاربری گیرنده
+  senderId    String?   // شناسه فرستنده (در صورت ارسال توسط مدیر)
+  title       String    // عنوان اعلان (مثلاً: «ماموریت جدید»، «تسک ارجاعی»، «هشدار تسویه»)
+  message     String    // متن پیام یا توضیحات
+  type        String    @default("INFO") // INFO, TASK, WARNING, ANNOUNCEMENT, URGENT
+  linkUrl     String?   // پیوند جهت ارجاع مستقیم کاربر (مثلاً /admin/inbox یا /admin/profile)
+  isRead      Boolean   @default(false)
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  recipient   User      @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      User?     @relation("NotificationSender", fields: [senderId], references: [id], onDelete: SetNull)
+
+  @@index([recipientId, isRead])
+  @@index([createdAt])
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+// سیستم پیام‌رسان و چت داخلی پرسنل (Internal Messaging Hub)
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+model InternalMessage {
+  id          String    @id @default(uuid())
+  senderId    String
+  recipientId String?   // null = پیام عمومی در کانال گروهی
+  channelId   String?   @default("general") // general, sales, workshop, warehouse, logistics
+  content     String
+  attachments Json?
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient   User?     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, recipientId])
+  @@index([channelId, createdAt])
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+// پرونده رانندگان و ناوگان حمل و لجستیک (Driver & Fleet Logistics Dossier)
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+model Driver {
+  id            String    @id @default(uuid())
+  code          String    @unique // DRV-101
+  fullName      String    // نام و نام خانوادگی
+  mobile        String    // شماره تماس راننده
+  nationalId    String?   // کد ملی
+  licenseNumber String?   // شماره گواهینامه
+  plateNumber   String    // شماره پلاک خودرو (مثلاً ۱۲ج۳۴۵ ایران ۱۱)
+  vehicleType   String    // نوع خودرو: وانت، نیسان، خاور، کامیون، ایسوزو، تریلی
+  isActive      Boolean   @default(true) // وضعیت فعال/آماده به کار
+  notes         String?   // توضیحات، بیمه خودرو، مشخصات کارت ماشین
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([plateNumber])
+  @@index([mobile])
+  @@index([isActive])
+}
+
 
 
 

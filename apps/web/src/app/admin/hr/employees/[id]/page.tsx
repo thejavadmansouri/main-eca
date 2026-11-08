@@ -20,6 +20,7 @@ import {
   FileCheck2,
   FileText,
   HeartPulse,
+  KeyRound,
   Layers,
   MapPin,
   Pencil,
@@ -42,6 +43,7 @@ import {
   getPayrollPeriods,
   calculatePayrollSlip,
   deleteContract,
+  createUser,
 } from "@/lib/api";
 import type {
   EmployeeRow,
@@ -49,13 +51,21 @@ import type {
   PayrollSlipRow,
   PayrollPeriodRow,
 } from "@/lib/types";
-import { money, toFa, faDate } from "@/lib/format";
+import { money, toFa, faDate, ROLE_LABELS } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -203,6 +213,49 @@ export default function EmployeeProfilePage() {
     },
   });
 
+  // State ساخت حساب کاربری سامانه برای این پرسنل
+  const [isCreateUserOpen, setIsCreateUserOpen] = React.useState(false);
+  const [userForm, setUserForm] = React.useState({
+    username: "",
+    password: "",
+    role: "STAFF" as any,
+  });
+
+  React.useEffect(() => {
+    if (employee) {
+      setUserForm({
+        username: `${employee.personnelCode}`,
+        password: "",
+        role: "STAFF",
+      });
+    }
+  }, [employee]);
+
+  const createUserMut = useMutation({
+    mutationFn: () =>
+      createUser({
+        fullName: `${employee?.firstName} ${employee?.lastName}`,
+        username: userForm.username.trim(),
+        password: userForm.password.trim(),
+        role: userForm.role,
+        employeeId: employee?.id,
+        isActive: true,
+      }),
+    onSuccess: () => {
+      toast({ title: "حساب کاربری سامانه با موفقیت ایجاد و متصل شد" });
+      queryClient.invalidateQueries({ queryKey: ["employee", id] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setIsCreateUserOpen(false);
+    },
+    onError: (err: any) => {
+      toast({
+        title: "خطا در ایجاد حساب کاربری",
+        description: err?.message || "مشکلی در ساخت حساب رخ داد.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCopyIban = () => {
     if (!employee?.iban) return;
     navigator.clipboard.writeText(employee.iban);
@@ -315,6 +368,18 @@ export default function EmployeeProfilePage() {
             ویرایش مشخصات
           </Button>
 
+          {!employee.user && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsCreateUserOpen(true)}
+              className="h-8 text-xs gap-1.5 border-indigo-500 text-indigo-700 hover:bg-indigo-50 font-bold shadow-2xs"
+            >
+              <KeyRound className="size-3.5" />
+              ساخت حساب کاربری سیستم
+            </Button>
+          )}
+
           <Button
             size="sm"
             onClick={() => {
@@ -410,6 +475,12 @@ export default function EmployeeProfilePage() {
                   <Clock className="size-3 text-sky-600" />
                   <span>سابقه: {formatServiceDuration(employee.hireDate, employee.terminationDate)}</span>
                 </div>
+                {employee.user && (
+                  <div className="flex items-center gap-1 font-semibold text-indigo-700 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
+                    <KeyRound className="size-3 text-indigo-600" />
+                    <span>حساب کاربری: @{employee.user.username} ({ROLE_LABELS[employee.user.role] || employee.user.role})</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1447,6 +1518,82 @@ export default function EmployeeProfilePage() {
               className="bg-primary text-primary-foreground text-xs font-bold gap-1.5"
             >
               {calculateMutation.isPending ? "در حال محاسبه..." : "محاسبه و صدور فیش"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* دیالوگ ایجاد حساب کاربری برای پرسنل */}
+      <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="size-4 text-primary" />
+              ایجاد حساب کاربری سامانه
+            </DialogTitle>
+            <DialogDescription>
+              ایجاد شناسه ورود و کلمه عبور برای «{employee.firstName} {employee.lastName}» (کد: {employee.personnelCode})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="create-username">نام کاربری سامانه *</Label>
+              <Input
+                id="create-username"
+                value={userForm.username}
+                onChange={(e) => setUserForm((f) => ({ ...f, username: e.target.value }))}
+                placeholder="مثلاً 1001 یا ali.r"
+                className="font-mono text-left"
+                dir="ltr"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="create-password">کلمه عبور ورود *</Label>
+              <Input
+                id="create-password"
+                type="password"
+                value={userForm.password}
+                onChange={(e) => setUserForm((f) => ({ ...f, password: e.target.value }))}
+                placeholder="حداقل ۶ کاراکتر"
+                dir="ltr"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>نقش سازمانی *</Label>
+              <Select
+                value={userForm.role}
+                onValueChange={(val: any) => setUserForm((f) => ({ ...f, role: val }))}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="انتخاب نقش" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="STAFF">کارمند / اپراتور (STAFF)</SelectItem>
+                  <SelectItem value="SALES">فروشنده / صندوق‌دار (SALES)</SelectItem>
+                  <SelectItem value="MANAGER">مدیر داخلی / سرپرست (MANAGER)</SelectItem>
+                  <SelectItem value="ADMIN">مدیر ارشد سیستم (ADMIN)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-[11px] text-muted-foreground bg-muted/40 p-2.5 rounded-lg mt-1 leading-relaxed">
+              💡 با ساخت این حساب، کاربر می‌تواند با نام کاربری و رمز خود وارد سیستم شده و در پروفایل خود احکام کارگزینی، فیش‌های حقوقی و وظایف محوله را مشاهده نماید.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCreateUserOpen(false)}
+            >
+              انصراف
+            </Button>
+            <Button
+              size="sm"
+              disabled={createUserMut.isPending || !userForm.username.trim() || userForm.password.trim().length < 6}
+              onClick={() => createUserMut.mutate()}
+              className="bg-primary text-primary-foreground font-bold gap-1.5"
+            >
+              {createUserMut.isPending ? "در حال ایجاد..." : "ساخت و اتصال حساب"}
             </Button>
           </DialogFooter>
         </DialogContent>

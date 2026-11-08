@@ -1233,6 +1233,11 @@ export function setUserActiveStatus(
   });
 }
 
+/** دریافت پروفایل جامع و پرونده پرسنلی کاربر لاگین‌شده */
+export function getMyProfile(): Promise<any> {
+  return apiFetch<any>("/users/me/profile");
+}
+
 // =====================================================
 // ۶.۱۲. کاتالوگ قطعات
 // =====================================================

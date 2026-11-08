@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, Moon, Sun, LogOut, Search } from "lucide-react";
+import { Menu, Moon, Sun, LogOut, Search, UserCircle } from "lucide-react";
 import { useTheme } from "next-themes";
 import { KardoCommandPalette } from "./kardo-command-palette";
 import { Button } from "@/components/ui/button";
@@ -203,20 +204,27 @@ export function AdminTopbar({
             {user?.fullName?.charAt(0) ?? user?.username.charAt(0)}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>
             <div className="flex flex-col">
-              <span className="text-sm font-medium">{user?.fullName}</span>
+              <span className="text-sm font-bold text-foreground">{user?.fullName}</span>
               <span className="text-xs font-normal text-muted-foreground">
                 {user ? ROLE_LABELS[user.role] : ""}
               </span>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/admin/profile" className="flex items-center gap-2 cursor-pointer font-medium">
+              <UserCircle className="size-4 text-primary" />
+              <span>پروفایل و وظایف من</span>
+            </Link>
+          </DropdownMenuItem>
           <ConnectionInfoDialog />
+          <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={handleLogout}
-            className="text-destructive focus:text-destructive"
+            className="text-destructive focus:text-destructive cursor-pointer"
           >
             <LogOut className="ms-2 h-4 w-4" />
             خروج از حساب

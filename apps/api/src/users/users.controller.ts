@@ -6,6 +6,7 @@ import {
   UseGuards,
   Patch,
   Param,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -25,6 +26,12 @@ import { Roles, Role } from '../auth/roles.decorator';
 export class UsersController {
   constructor(private service: UsersService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Get('me/profile')
+  getMyProfile(@Req() req: any) {
+    return this.service.getMyProfile(req.user.userId);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Get()
@@ -41,6 +48,10 @@ export class UsersController {
       password: body.password,
       fullName: body.fullName,
       role: body.role,
+      canManageSite: body.canManageSite,
+      permissions: body.permissions,
+      isActive: body.isActive,
+      employeeId: body.employeeId,
     });
   }
 

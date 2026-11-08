@@ -18,6 +18,19 @@ export class UsersService {
         permissions: true,
         isActive: true,
         createdAt: true,
+        employee: {
+          select: {
+            id: true,
+            personnelCode: true,
+            jobTitle: true,
+            department: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
 
       orderBy: {
@@ -34,18 +47,17 @@ export class UsersService {
     canManageSite?: boolean;
     permissions?: string[];
     isActive?: boolean;
+    employeeId?: string;
   }) {
     const hash = await argon2.hash(dto.password);
     const role = dto.role ?? Role.STAFF;
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         username: dto.username,
         password: hash,
         fullName: dto.fullName,
         role,
-        // پیش‌فرضِ مدیران در صورتِ نداشتنِ صراحت. پرچم مستقل است و بعداً از
-        // صفحه‌ی کاربران هر شکلی می‌خواهیم درمی‌آید.
         canManageSite:
           dto.canManageSite ?? (role === Role.ADMIN || role === Role.MANAGER),
         permissions: dto.permissions ?? [],
@@ -60,6 +72,64 @@ export class UsersService {
         canManageSite: true,
         permissions: true,
         isActive: true,
+      },
+    });
+
+    if (dto.employeeId) {
+      await this.prisma.employee.update({
+        where: { id: dto.employeeId },
+        data: { userId: user.id },
+      });
+    }
+
+    return user;
+  }
+
+  async getMyProfile(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        fullName: true,
+        role: true,
+        permissions: true,
+        isActive: true,
+        canManageSite: true,
+        createdAt: true,
+        employee: {
+          include: {
+            department: true,
+            contracts: {
+              orderBy: { startDate: 'desc' },
+              take: 5,
+            },
+            payrollSlips: {
+              include: {
+                period: true,
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 12,
+            },
+          },
+        },
+        workTasksAssigned: {
+          where: {
+            status: { in: ['PENDING', 'IN_PROGRESS'] },
+          },
+          include: {
+            items: true,
+            requestedBy: {
+              select: { id: true, fullName: true, username: true },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+        },
+        notificationsReceived: {
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+        },
       },
     });
   }

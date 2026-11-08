@@ -13,6 +13,12 @@ export interface User {
   canManageSite?: boolean;
   permissions?: string[];
   isActive?: boolean;
+  employee?: {
+    id: string;
+    personnelCode: string;
+    jobTitle: string;
+    department?: { id: string; name: string };
+  };
 }
 
 // طبق بخش ۴ — POST /auth/login
@@ -571,6 +577,7 @@ export interface CreateUserDto {
   canManageSite?: boolean;
   permissions?: string[];
   isActive?: boolean;
+  employeeId?: string;
 }
 
 export interface UpdateRoleDto {

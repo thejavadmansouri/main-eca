@@ -2,6 +2,7 @@
 
 // طبق بخش ۶.۱۰ — مدیریت کاربران و تعیین سطح دسترسی (فقط ADMIN)
 import * as React from "react";
+import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Users as UsersIcon,
@@ -17,6 +18,7 @@ import {
   UserCheck,
   UserX,
   Sparkles,
+  ExternalLink,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import {
@@ -26,6 +28,7 @@ import {
   updateUserPassword,
   setUserSiteAccess,
   setUserActiveStatus,
+  getEmployees,
 } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { ApiException } from "@/lib/api-error-messages";
@@ -96,6 +99,12 @@ export function UsersPanel({ embedded }: { embedded?: boolean } = {}) {
     queryFn: () => getUsers(),
   });
 
+  // GET /hr/employees
+  const employeesQ = useQuery({
+    queryKey: ["employees"],
+    queryFn: () => getEmployees(),
+  });
+
   // ----- state دیالوگ‌ها -----
   const [createOpen, setCreateOpen] = React.useState(false);
   const [createForm, setCreateForm] = React.useState<CreateUserDto>({
@@ -103,6 +112,7 @@ export function UsersPanel({ embedded }: { embedded?: boolean } = {}) {
     password: "",
     fullName: "",
     role: "STAFF",
+    employeeId: "",
   });
 
   // دیالوگ تعیین سطح دسترسی‌ها
@@ -150,10 +160,11 @@ export function UsersPanel({ embedded }: { embedded?: boolean } = {}) {
   const createMut = useMutation({
     mutationFn: () => createUser(createForm),
     onSuccess: (createdUser) => {
-      toast({ title: "کاربر با موفقیت ساخته شد" });
+      toast({ title: "کاربر با موفقیت ساخته و به پرونده پرسنلی متصل شد" });
       qc.invalidateQueries({ queryKey: ["users"] });
+      qc.invalidateQueries({ queryKey: ["employees"] });
       setCreateOpen(false);
-      setCreateForm({ username: "", password: "", fullName: "", role: "STAFF" });
+      setCreateForm({ username: "", password: "", fullName: "", role: "STAFF", employeeId: "" });
       // اگر کاربر جدید ادمین نیست، دیالوگ دسترسی‌ها را برای تنظیم اختیارات باز می‌کنیم
       if (createdUser && createdUser.role !== "ADMIN") {
         setPermissionsTarget(createdUser);
@@ -217,6 +228,12 @@ export function UsersPanel({ embedded }: { embedded?: boolean } = {}) {
   }
 
   const allUsers = usersQ.data || [];
+  const employees = employeesQ.data || [];
+
+  // پرسنلی که هنوز حساب کاربری به آن‌ها متصل نشده است
+  const availableEmployees = employees.filter(
+    (e: any) => !allUsers.some((u) => u.employee?.id === e.id),
+  );
 
   // آمار کلیدی
   const totalCount = allUsers.length;
@@ -394,12 +411,24 @@ export function UsersPanel({ embedded }: { embedded?: boolean } = {}) {
                     return (
                       <TableRow key={u.id} className={!isActive ? "opacity-60 bg-muted/20" : ""}>
                         <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <span>{u.fullName}</span>
-                            {isSelf && (
-                              <Badge variant="outline" className="text-[10px] bg-slate-100 text-slate-700">
-                                شما
-                              </Badge>
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-foreground">{u.fullName}</span>
+                              {isSelf && (
+                                <Badge variant="outline" className="text-[10px] bg-slate-100 text-slate-700">
+                                  شما
+                                </Badge>
+                              )}
+                              {u.employee?.personnelCode && (
+                                <Badge variant="secondary" className="text-[10px] font-mono bg-blue-50 text-blue-700 border-blue-200">
+                                  {u.employee.personnelCode}
+                                </Badge>
+                              )}
+                            </div>
+                            {u.employee?.jobTitle && (
+                              <span className="text-[10px] text-muted-foreground">
+                                {u.employee.jobTitle} {u.employee.department?.name ? `(${u.employee.department.name})` : ""}
+                              </span>
                             )}
                           </div>
                         </TableCell>
@@ -539,30 +568,71 @@ export function UsersPanel({ embedded }: { embedded?: boolean } = {}) {
           </DialogHeader>
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="u-fullname">نام کامل *</Label>
+              <Label>پرونده پرسنلی مرتبط (منابع انسانی) *</Label>
+              <Select
+                value={createForm.employeeId || ""}
+                onValueChange={(empId) => {
+                  const selectedEmp = employees.find((e: any) => e.id === empId);
+                  if (selectedEmp) {
+                    setCreateForm((f) => ({
+                      ...f,
+                      employeeId: empId,
+                      fullName: `${selectedEmp.firstName} ${selectedEmp.lastName}`,
+                      username: f.username || `${selectedEmp.personnelCode}`,
+                    }));
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="انتخاب فرد از فهرست پرسنل..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableEmployees.length === 0 ? (
+                    <div className="p-3 text-xs text-muted-foreground text-center">
+                      همه پرسنل ثبت‌شده دارای حساب کاربری هستند.
+                    </div>
+                  ) : (
+                    availableEmployees.map((e: any) => (
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.firstName} {e.lastName} (کد: {e.personnelCode} - {e.jobTitle || "پرسنل"})
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground bg-muted/40 p-2 rounded-lg">
+                <span>💡 بر اساس قانون سیستم، ساخت کاربر فقط از میان پرسنل مجاز است.</span>
+                <Link href="/admin/hr" className="text-primary hover:underline font-bold inline-flex items-center gap-1">
+                  ثبت پرسنل جدید
+                  <ExternalLink className="size-3" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="u-fullname">نام کامل پرسنل *</Label>
               <Input
                 id="u-fullname"
                 value={createForm.fullName}
-                onChange={(e) =>
-                  setCreateForm((f) => ({ ...f, fullName: e.target.value }))
-                }
-                placeholder="مثلاً علی رضایی"
+                readOnly
+                className="bg-muted/50 cursor-not-allowed font-bold"
+                placeholder="با انتخاب پرسنل از بالا تکمیل می‌شود"
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="u-username">نام کاربری *</Label>
+              <Label htmlFor="u-username">نام کاربری سامانه *</Label>
               <Input
                 id="u-username"
                 value={createForm.username}
                 onChange={(e) =>
                   setCreateForm((f) => ({ ...f, username: e.target.value }))
                 }
-                placeholder="مثلاً ali.r"
+                placeholder="مثلاً ali.1001"
                 autoComplete="off"
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="u-password">رمز عبور *</Label>
+              <Label htmlFor="u-password">رمز عبور ورود *</Label>
               <Input
                 id="u-password"
                 type="password"
@@ -606,6 +676,7 @@ export function UsersPanel({ embedded }: { embedded?: boolean } = {}) {
               onClick={() => createMut.mutate()}
               disabled={
                 createMut.isPending ||
+                !createForm.employeeId ||
                 !createForm.username.trim() ||
                 !createForm.password.trim() ||
                 !createForm.fullName.trim()

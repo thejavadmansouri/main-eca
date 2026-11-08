@@ -74,6 +74,7 @@ export class HrService {
       where,
       include: {
         department: true,
+        user: { select: { id: true, username: true, role: true, isActive: true, permissions: true } },
         contracts: { where: { isActive: true }, take: 1, orderBy: { createdAt: 'desc' } },
         _count: { select: { contracts: true, payrollSlips: true } },
       },
@@ -92,6 +93,8 @@ export class HrService {
             username: true,
             fullName: true,
             role: true,
+            isActive: true,
+            permissions: true,
             workTasksAssigned: {
               take: 10,
               orderBy: { createdAt: 'desc' },

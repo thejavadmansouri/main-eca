@@ -201,11 +201,15 @@ function SidebarSection({
   section,
   collapsed,
   isActive,
+  isOpen,
+  onToggle,
   onNavigate,
 }: {
   section: NavSection;
   collapsed: boolean;
   isActive: (href: string) => boolean;
+  isOpen: boolean;
+  onToggle: () => void;
   onNavigate?: () => void;
 }) {
   const containsActive = section.items.some(
@@ -213,11 +217,6 @@ function SidebarSection({
       (it.href ? isActive(it.href) : false) ||
       (it.children?.some((c) => (c.href ? isActive(c.href) : false)) ?? false),
   );
-  const [open, setOpen] = React.useState(true);
-
-  React.useEffect(() => {
-    if (containsActive) setOpen(true);
-  }, [containsActive]);
 
   if (section.pinned) {
     return (
@@ -259,25 +258,28 @@ function SidebarSection({
       <button
         type="button"
         dir="rtl"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-2 px-3 pb-1 pt-3 text-muted-foreground/70 hover:text-foreground transition-colors select-none"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        className={cn(
+          "flex w-full items-center gap-2 px-3 pb-1.5 pt-2.5 rounded-lg text-muted-foreground/75 hover:text-foreground hover:bg-muted/50 transition-all select-none cursor-pointer",
+          (isOpen || containsActive) && "text-foreground font-semibold bg-muted/30",
+        )}
       >
         {SectionIcon ? (
-          <SectionIcon className="size-3.5 text-muted-foreground/60 shrink-0" />
+          <SectionIcon className={cn("size-3.5 shrink-0 transition-colors", (isOpen || containsActive) ? "text-primary" : "text-muted-foreground/60")} />
         ) : null}
-        <span className="flex-1 text-right text-[11px] font-bold tracking-normal text-muted-foreground/80">
+        <span className="flex-1 text-right text-[11px] font-bold tracking-normal">
           {section.title}
         </span>
         <ChevronDown
           className={cn(
             "size-3 shrink-0 text-muted-foreground/50 transition-transform duration-200 ms-auto",
-            !open && "rotate-90",
+            !isOpen && "rotate-90",
           )}
         />
       </button>
-      {open ? (
-        <div className="flex flex-col gap-0.5">
+      {isOpen ? (
+        <div className="flex flex-col gap-0.5 ps-1 pt-0.5 transition-all">
           {section.items.map((item) => (
             <NavTree
               key={item.href ?? item.title}
@@ -309,6 +311,29 @@ export function AdminSidebar({
       ? pathname === "/admin"
       : pathname === href || pathname.startsWith(href + "/");
 
+  // حالت آکاردئونی: در هر لحظه فقط یک سرفصل اصلی باز است تا منو منظم و منسجم بماند
+  const [openSectionTitle, setOpenSectionTitle] = React.useState<string | null>(null);
+
+  // هنگام تغییر صفحه، سرفصلی که آدرس فعلی در آن است خودکار باز می‌شود
+  React.useEffect(() => {
+    const activeSection = sections.find(
+      (s) =>
+        !s.pinned &&
+        s.items.some(
+          (it) =>
+            (it.href ? isActive(it.href) : false) ||
+            (it.children?.some((c) => (c.href ? isActive(c.href) : false)) ?? false),
+        ),
+    );
+    if (activeSection) {
+      setOpenSectionTitle(activeSection.title);
+    }
+  }, [pathname]);
+
+  const handleToggle = (title: string) => {
+    setOpenSectionTitle((prev) => (prev === title ? null : title));
+  };
+
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground border-e border-sidebar-border shadow-xs">
       {/* سربرگ برند و هویت سازمانی کاردو ERP */}
@@ -337,13 +362,15 @@ export function AdminSidebar({
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <nav className="flex flex-col gap-2.5 px-2 py-2.5" aria-label="منوی اصلی">
+        <nav className="flex flex-col gap-1.5 px-2 py-2" aria-label="منوی اصلی">
           {sections.map((section, index) => (
             <SidebarSection
               key={`${section.title || "pinned"}-${index}`}
               section={section}
               collapsed={collapsed}
               isActive={isActive}
+              isOpen={section.pinned || openSectionTitle === section.title}
+              onToggle={() => handleToggle(section.title)}
               onNavigate={onNavigate}
             />
           ))}
