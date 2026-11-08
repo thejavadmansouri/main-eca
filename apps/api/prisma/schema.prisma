@@ -93,6 +93,7 @@ model Warehouse {
   onlineOrders    OnlineOrder[]
   sourceProductionOrders ProductionOrder[] @relation("SourceWarehouseProductionOrders")
   targetProductionOrders ProductionOrder[] @relation("TargetWarehouseProductionOrders")
+  inboundReceipts InboundReceipt[]
 }
 
 /// ─── ساختار سازمانی چندشرکته و شعب (Multi-Company ERP Core) ───
@@ -3064,6 +3065,15 @@ model ProductionOrder {
   branchId           String?
   notes              String?
 
+  // جریان سفارش دوگانه B2B/B2C، کارفرمای نهایی، پروژه و نصاب
+  customerType       String?               @default("B2C") // B2B (فروش به همکار/عمده) یا B2C (سفارش مستقیم)
+  customerName       String?               // نام سفارش‌دهنده یا همکار
+  endClientName      String?               // کارفرمای نهایی پروژه (مخصوص B2B)
+  projectTitle       String?               // عنوان و آدرس پروژه
+  assignedInstaller  String?               // نصاب مسئول پروژه
+  installerPhone     String?               // شماره تماس نصاب
+  currentStage       String?               @default("CUTTING") // CUTTING, EDGE_BANDING, CNC, ASSEMBLY, FINISHING, QC_PACKING, READY_TO_INSTALL, INSTALLED
+
   // هزینه‌ها و بهای تمام‌شده تولید (COGM)
   totalMaterialCost  Float                 @default(0)
   totalLaborCost     Float                 @default(0)
@@ -3509,6 +3519,33 @@ model InstallationOrder {
   @@index([orderNumber])
   @@index([status])
   @@index([scheduledDate])
+}
+
+/// ═══════════════════════════════════════════════════════════════════════════
+/// رسید ورود و بازرسی بار انبار (Inbound Goods Receipt & Verification)
+/// ═══════════════════════════════════════════════════════════════════════════
+
+model InboundReceipt {
+  id              String    @id @default(uuid())
+  receiptNumber   String    @unique // GRN-1404-0001
+  supplierName    String
+  driverName      String?
+  truckPlate      String?
+  waybillNumber   String?   // شماره بارنامه
+  warehouseId     String
+  status          String    @default("PENDING_VERIFICATION") // PENDING_VERIFICATION, VERIFIED, REJECTED
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  notes           String?
+  itemCount       Int       @default(0)
+  itemsJson       Json?     // اقلام و مقادیر شمرده‌شده
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  warehouse       Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@index([receiptNumber])
+  @@index([status])
 }
 
 /// ═══════════════════════════════════════════════════════════════════════════

@@ -3908,6 +3908,62 @@ export function createInstallationOrder(body: {
   });
 }
 
+export function createWoodProductionOrder(
+  body: T.CreateWoodOrderDto,
+): Promise<T.ProductionOrderRow> {
+  return apiFetch<T.ProductionOrderRow>('/wood-industry/orders', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function advanceOrderStage(
+  orderId: string,
+  body: T.AdvanceStageDto,
+): Promise<any> {
+  return apiFetch<any>(`/wood-industry/orders/${encodeURIComponent(orderId)}/advance-stage`, {
+    method: 'POST',
+    body,
+  });
+}
+
+export function checkOrderMaterialsFeasibility(
+  orderId: string,
+): Promise<T.MaterialsFeasibilityResult> {
+  return apiFetch<T.MaterialsFeasibilityResult>(
+    `/wood-industry/orders/${encodeURIComponent(orderId)}/feasibility`,
+  );
+}
+
+export function getInboundReceipts(
+  warehouseId?: string,
+): Promise<T.InboundReceiptRow[]> {
+  const qs = warehouseId ? `?warehouseId=${encodeURIComponent(warehouseId)}` : '';
+  return apiFetch<T.InboundReceiptRow[]>(`/wood-industry/inbound-receipts${qs}`);
+}
+
+export function createInboundReceipt(
+  body: T.CreateInboundReceiptDto,
+): Promise<T.InboundReceiptRow> {
+  return apiFetch<T.InboundReceiptRow>('/wood-industry/inbound-receipts', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function verifyInboundReceipt(
+  id: string,
+  body: T.VerifyInboundReceiptDto,
+): Promise<T.InboundReceiptRow> {
+  return apiFetch<T.InboundReceiptRow>(
+    `/wood-industry/inbound-receipts/${encodeURIComponent(id)}/verify`,
+    {
+      method: 'POST',
+      body,
+    },
+  );
+}
+
 // =====================================================
 // توابع خزانه‌داری، حساب‌های بانکی و چک‌های صیادی (Treasury & Cheques API)
 // =====================================================

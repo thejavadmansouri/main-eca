@@ -14,6 +14,10 @@ import {
   AddProfileGlassDto,
   CreateInstallationDto,
   ProcessScanDto,
+  CreateWoodOrderDto,
+  AdvanceStageDto,
+  CreateInboundReceiptDto,
+  VerifyInboundReceiptDto,
 } from './dto/wood-industry.dto';
 import { WoodIndustryService } from './wood-industry.service';
 
@@ -21,6 +25,25 @@ import { WoodIndustryService } from './wood-industry.service';
 @Roles(Role.ADMIN, Role.MANAGER, Role.STAFF)
 export class WoodIndustryController {
   constructor(private readonly woodService: WoodIndustryService) {}
+
+  // ───────────────────────── ثبت و مدیریت سفارش صنایع چوب (B2B / B2C) ─────────────────────────
+  @Post('orders')
+  async createWoodProductionOrder(@Body() dto: CreateWoodOrderDto) {
+    return this.woodService.createWoodProductionOrder(dto);
+  }
+
+  @Post('orders/:id/advance-stage')
+  async advanceOrderStage(
+    @Param('id') id: string,
+    @Body() dto: AdvanceStageDto,
+  ) {
+    return this.woodService.advanceOrderStage(id, dto);
+  }
+
+  @Get('orders/:id/feasibility')
+  async checkOrderMaterialsFeasibility(@Param('id') id: string) {
+    return this.woodService.checkOrderMaterialsFeasibility(id);
+  }
 
   // ───────────────────────── لیست برش قطعات ─────────────────────────
   @Get('orders/:id/cutting-list')
@@ -59,6 +82,25 @@ export class WoodIndustryController {
   @Get('matrix-report')
   async getComprehensiveProductionMatrix() {
     return this.woodService.getComprehensiveProductionMatrix();
+  }
+
+  // ───────────────────────── رسید ورود و بازرسی بار انبار (Inbound Goods Receipt) ─────────────────────────
+  @Get('inbound-receipts')
+  async getInboundReceipts(@Query('warehouseId') warehouseId?: string) {
+    return this.woodService.getInboundReceipts(warehouseId);
+  }
+
+  @Post('inbound-receipts')
+  async createInboundReceipt(@Body() dto: CreateInboundReceiptDto) {
+    return this.woodService.createInboundReceipt(dto);
+  }
+
+  @Post('inbound-receipts/:id/verify')
+  async verifyInboundReceipt(
+    @Param('id') id: string,
+    @Body() dto: VerifyInboundReceiptDto,
+  ) {
+    return this.woodService.verifyInboundReceipt(id, dto);
   }
 
   // ───────────────────────── بارگیری، اعزام و نصب ─────────────────────────

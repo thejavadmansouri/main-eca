@@ -27,6 +27,16 @@ import {
   Tag,
   Truck,
   Wrench,
+  Building2,
+  Boxes,
+  CheckSquare,
+  ShieldAlert,
+  UserCheck,
+  HardHat,
+  ArrowRight,
+  ChevronRight,
+  PackagePlus,
+  CheckCircle,
 } from "lucide-react";
 
 import {
@@ -38,6 +48,13 @@ import {
   getInstallationOrders,
   getProductionOrders,
   getWoodProfiles,
+  createWoodProductionOrder,
+  advanceOrderStage,
+  checkOrderMaterialsFeasibility,
+  getInboundReceipts,
+  createInboundReceipt,
+  verifyInboundReceipt,
+  getWarehouses,
 } from "@/lib/api";
 import { faDate, money, toFa } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -47,6 +64,8 @@ import type {
   ProductionMatrixRow,
   ProductionOrderRow,
   WoodOrderProfileRow,
+  InboundReceiptRow,
+  MaterialsFeasibilityResult,
 } from "@/lib/types";
 
 import { PageHeader } from "@/components/page-header";
@@ -54,6 +73,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ProductSearchSelect } from "@/components/product-search-select";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -114,9 +144,23 @@ function EdgeBandingMiniDiagram({
   );
 }
 
+const STAGE_CONFIG: Record<
+  string,
+  { label: string; badgeClass: string; step: number }
+> = {
+  CUTTING: { label: "برش و اره‌کاری", badgeClass: "bg-amber-500/15 text-amber-700 border-amber-500/30", step: 1 },
+  EDGE_BANDING: { label: "لبه‌چسبان PVC", badgeClass: "bg-blue-500/15 text-blue-700 border-blue-500/30", step: 2 },
+  CNC: { label: "ماشین‌کاری CNC", badgeClass: "bg-purple-500/15 text-purple-700 border-purple-500/30", step: 3 },
+  ASSEMBLY: { label: "مونتاژ و یراق‌آلات", badgeClass: "bg-indigo-500/15 text-indigo-700 border-indigo-500/30", step: 4 },
+  PAINTING: { label: "رنگ و پوشش‌دهی", badgeClass: "bg-pink-500/15 text-pink-700 border-pink-500/30", step: 5 },
+  QC_PACKING: { label: "کنترل کیفی و بسته‌بندی", badgeClass: "bg-teal-500/15 text-teal-700 border-teal-500/30", step: 6 },
+  INSTALLATION: { label: "تحویل به نصاب / پروژه", badgeClass: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30", step: 7 },
+};
+
 export default function WoodIndustryPage() {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = React.useState<"cutting" | "profiles" | "matrix" | "installations">("cutting");
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = React.useState<"matrix" | "cutting" | "profiles" | "inbound" | "installations">("matrix");
   const [selectedOrderId, setSelectedOrderId] = React.useState<string>("");
   const [searchQuery, setSearchQuery] = React.useState("");
 
@@ -124,9 +168,43 @@ export default function WoodIndustryPage() {
   const [isAddCuttingOpen, setIsAddCuttingOpen] = React.useState(false);
   const [isAddProfileOpen, setIsAddProfileOpen] = React.useState(false);
   const [isAddInstallationOpen, setIsAddInstallationOpen] = React.useState(false);
+  const [isAddOrderOpen, setIsAddOrderOpen] = React.useState(false);
+  const [isAddInboundOpen, setIsAddInboundOpen] = React.useState(false);
+
+  // دیالوگ استعلام متریال و ارتقای مرحله
+  const [feasibilityOrderId, setFeasibilityOrderId] = React.useState<string | null>(null);
+  const [advanceOrderId, setAdvanceOrderId] = React.useState<string | null>(null);
+  const [advanceStage, setAdvanceStage] = React.useState<string>("EDGE_BANDING");
+  const [advanceOperator, setAdvanceOperator] = React.useState<string>("اپراتور کارگاه");
+  const [advanceNotes, setAdvanceNotes] = React.useState<string>("");
 
   // پیش‌نمایش لیبل بارکد کارگاهی
   const [selectedLabelItem, setSelectedLabelItem] = React.useState<CuttingListItemRow | null>(null);
+
+  // فرم سفارش جدید صنایع چوب
+  const [newOrder, setNewOrder] = React.useState({
+    customerType: "B2B" as "B2B" | "B2C",
+    customerName: "",
+    endClientName: "",
+    projectTitle: "",
+    assignedInstaller: "",
+    installerPhone: "",
+    productId: "",
+    targetQuantity: 1,
+    priority: 1,
+    dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0],
+    notes: "",
+  });
+
+  // فرم ثبت بارنامه ورود بار
+  const [newInbound, setNewInbound] = React.useState({
+    supplierName: "",
+    driverName: "",
+    truckPlate: "",
+    waybillNumber: "",
+    warehouseId: "",
+    notes: "",
+  });
 
   // فرم قطعه برش
   const [newPart, setNewPart] = React.useState({
@@ -171,11 +249,33 @@ export default function WoodIndustryPage() {
     queryFn: () => getProductionOrders(),
   });
 
+  const { data: warehouses = [] } = useQuery({
+    queryKey: ["warehouses", "active"],
+    queryFn: () => getWarehouses(),
+  });
+
+  const { data: inboundReceipts = [], refetch: refetchInbound } = useQuery({
+    queryKey: ["inbound-receipts"],
+    queryFn: () => getInboundReceipts(),
+  });
+
+  const feasibilityQ = useQuery({
+    queryKey: ["order-feasibility", feasibilityOrderId],
+    queryFn: () => (feasibilityOrderId ? checkOrderMaterialsFeasibility(feasibilityOrderId) : null),
+    enabled: !!feasibilityOrderId,
+  });
+
   React.useEffect(() => {
     if (productionOrders.length > 0 && !selectedOrderId) {
       setSelectedOrderId(productionOrders[0].id);
     }
   }, [productionOrders, selectedOrderId]);
+
+  React.useEffect(() => {
+    if (warehouses.length > 0 && !newInbound.warehouseId) {
+      setNewInbound((prev) => ({ ...prev, warehouseId: warehouses[0].id }));
+    }
+  }, [warehouses, newInbound.warehouseId]);
 
   const { data: cuttingItems = [], isLoading: isLoadingCutting } = useQuery({
     queryKey: ["cutting-list", selectedOrderId],
@@ -197,6 +297,77 @@ export default function WoodIndustryPage() {
   const { data: installations = [], isLoading: isLoadingInstallations, refetch: refetchInstallations } = useQuery({
     queryKey: ["wood-installations"],
     queryFn: getInstallationOrders,
+  });
+
+  // میوتیشن‌ها
+  const createOrderMutation = useMutation({
+    mutationFn: (body: any) => createWoodProductionOrder(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["production-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["production-matrix"] });
+      setIsAddOrderOpen(false);
+      toast({
+        title: "سفارش با موفقیت ثبت شد",
+        description: "سفارش صنایع چوب در سامانه ایجاد و به خط تولید کاردو متصل شد.",
+      });
+      setNewOrder({
+        customerType: "B2B",
+        customerName: "",
+        endClientName: "",
+        projectTitle: "",
+        assignedInstaller: "",
+        installerPhone: "",
+        productId: "",
+        targetQuantity: 1,
+        priority: 1,
+        dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0],
+        notes: "",
+      });
+    },
+    onError: (err: any) => {
+      toast({ title: "خطا در ثبت سفارش", description: err?.message, variant: "destructive" });
+    },
+  });
+
+  const advanceStageMutation = useMutation({
+    mutationFn: (body: { orderId: string; stage: string; operatorName: string; notes?: string }) =>
+      advanceOrderStage(body.orderId, { stage: body.stage, operatorName: body.operatorName, notes: body.notes }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["production-matrix"] });
+      queryClient.invalidateQueries({ queryKey: ["production-orders"] });
+      setAdvanceOrderId(null);
+      toast({ title: "مرحله کارگاه ارتقا یافت", description: "پیشرفت مرحله سفارش ثبت و به ایستگاه بعد منتقل شد." });
+    },
+    onError: (err: any) => {
+      toast({ title: "خطا در تغییر مرحله", description: err?.message, variant: "destructive" });
+    },
+  });
+
+  const createInboundMutation = useMutation({
+    mutationFn: (body: any) => createInboundReceipt(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inbound-receipts"] });
+      setIsAddInboundOpen(false);
+      toast({ title: "رسید ورود بار ثبت شد", description: "بارنامه با موفقیت در گیت ورودی انبار ثبت شد." });
+      setNewInbound({
+        supplierName: "",
+        driverName: "",
+        truckPlate: "",
+        waybillNumber: "",
+        warehouseId: warehouses[0]?.id || "",
+        notes: "",
+      });
+    },
+  });
+
+  const verifyInboundMutation = useMutation({
+    mutationFn: (body: { id: string; status: "VERIFIED" | "REJECTED"; verifiedBy: string }) =>
+      verifyInboundReceipt(body.id, { status: body.status, verifiedBy: body.verifiedBy }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inbound-receipts"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      toast({ title: "تأییدیه بارنامه ثبت شد", description: "اقلام محموله ورودی تایید و در انبار ثبت گردید." });
+    },
   });
 
   // میوتیشن افزودن قطعه برش
@@ -283,12 +454,33 @@ export default function WoodIndustryPage() {
               onClick={() => {
                 refetchMatrix();
                 refetchInstallations();
+                refetchInbound();
               }}
               className="gap-2 text-xs h-8"
             >
               <RefreshCw className="size-3.5" />
               به‌روزرسانی
             </Button>
+            {activeTab === "matrix" && (
+              <Button
+                size="sm"
+                onClick={() => setIsAddOrderOpen(true)}
+                className="gap-2 text-xs h-8 shadow-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Plus className="size-3.5" />
+                ثبت سفارش صنایع چوب (B2B / B2C)
+              </Button>
+            )}
+            {activeTab === "inbound" && (
+              <Button
+                size="sm"
+                onClick={() => setIsAddInboundOpen(true)}
+                className="gap-2 text-xs h-8 shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                <Plus className="size-3.5" />
+                ثبت ورود بار به انبار
+              </Button>
+            )}
             {activeTab === "cutting" && (
               <Button size="sm" onClick={() => setIsAddCuttingOpen(true)} className="gap-2 text-xs h-8 shadow-xs">
                 <Plus className="size-3.5" />
@@ -393,6 +585,20 @@ export default function WoodIndustryPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
         <div className="flex items-center gap-1.5 rounded-lg bg-muted/70 p-1 border border-border/60">
           <button
+            onClick={() => setActiveTab("matrix")}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
+              activeTab === "matrix"
+                ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Factory className="size-3.5 text-emerald-600" />
+            جریان سفارشات B2B/B2C و ماتریس تولید
+            <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-mono">{toFa(matrix.length)}</Badge>
+          </button>
+
+          <button
             onClick={() => setActiveTab("cutting")}
             className={cn(
               "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
@@ -421,16 +627,17 @@ export default function WoodIndustryPage() {
           </button>
 
           <button
-            onClick={() => setActiveTab("matrix")}
+            onClick={() => setActiveTab("inbound")}
             className={cn(
               "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all duration-150 select-none",
-              activeTab === "matrix"
+              activeTab === "inbound"
                 ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <FileSpreadsheet className="size-3.5 text-blue-600" />
-            گزارش جامع تولید (FlexERP Matrix)
+            <Boxes className="size-3.5 text-teal-600" />
+            ورود و بازرسی بار انبار (GRN)
+            <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-mono">{toFa(inboundReceipts.length)}</Badge>
           </button>
 
           <button
@@ -443,7 +650,7 @@ export default function WoodIndustryPage() {
             )}
           >
             <Truck className="size-3.5 text-indigo-600" />
-            بارگیری و نصب
+            بارگیری و نصاب‌ها
             <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-mono">{toFa(installations.length)}</Badge>
           </button>
         </div>
@@ -688,81 +895,336 @@ export default function WoodIndustryPage() {
         </Card>
       )}
 
-      {/* محتوای تب ۳: گزارش جامع تولید (FlexERP Matrix) */}
+      {/* محتوای تب ۳: جریان سفارشات B2B / B2C و ماتریس جامع تولید */}
       {activeTab === "matrix" && (
         <Card className="p-0 overflow-hidden border border-border shadow-xs">
-          <div className="flex items-center justify-between border-b border-border bg-muted/40 p-3">
+          <div className="flex flex-wrap items-center justify-between border-b border-border bg-muted/40 p-3 gap-2">
             <div className="flex items-center gap-2">
-              <FileSpreadsheet className="size-4 text-blue-600" />
-              <span className="text-xs font-bold text-foreground">ماتریس چندبعدی ردیابی سفارشات در خطوط تولید کارخانه (FlexERP Matrix)</span>
+              <Factory className="size-4 text-emerald-600" />
+              <span className="text-xs font-bold text-foreground">
+                جریان ردیابی سفارشات B2B/B2C، استعلام انبار WMS و ارتقای مرحله کارگاه
+              </span>
+              <Badge variant="outline" className="text-[10px] font-mono">{toFa(matrix.length)} سفارش</Badge>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refetchMatrix()}
-              className="gap-1.5 text-xs h-7"
-            >
-              <RefreshCw className="size-3" />
-              تازه‌سازی ماتریس
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetchMatrix()}
+                className="gap-1.5 text-xs h-7"
+              >
+                <RefreshCw className="size-3" />
+                تازه‌سازی
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setIsAddOrderOpen(true)}
+                className="gap-1.5 text-xs h-7 bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Plus className="size-3" />
+                ثبت سفارش جدید
+              </Button>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
               <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border select-none">
                 <tr>
-                  <th className="py-2.5 px-3">کد سفارش</th>
-                  <th className="py-2.5 px-3">محصول نهایی</th>
-                  <th className="py-2.5 px-3 text-center">تیراژ</th>
-                  <th className="py-2.5 px-3 text-center">کل قطعات</th>
-                  <th className="py-2.5 px-3 text-center">اره (SAW)</th>
-                  <th className="py-2.5 px-3 text-center">لبه‌چسبان (EDGE)</th>
-                  <th className="py-2.5 px-3 text-center">ماشین‌کاری (CNC)</th>
-                  <th className="py-2.5 px-3 text-center">مونتاژ (ASSM)</th>
-                  <th className="py-2.5 px-3 text-center">پیشرفت نهایی</th>
+                  <th className="py-2.5 px-3">کد و مدل سفارش</th>
+                  <th className="py-2.5 px-3">مشتری و کارفرمای نهایی (B2B/B2C)</th>
+                  <th className="py-2.5 px-3 text-center">تیراژ و قطعات</th>
+                  <th className="py-2.5 px-3 text-center">مرحله جاری کارگاه</th>
+                  <th className="py-2.5 px-3 text-center">ایستگاه‌های خط (اره / لبه / CNC / مونتاژ)</th>
+                  <th className="py-2.5 px-3">نصاب و پروژه</th>
+                  <th className="py-2.5 px-3 text-center">پیشرفت</th>
+                  <th className="py-2.5 px-3 text-center">عملیات هوشمند کارگاه</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border font-medium">
                 {matrix.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-12 text-center text-muted-foreground">
-                      هیچ سفارش تولید فعالی در خط وجود ندارد.
+                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
+                      هیچ سفارش تولید فعالی در خط وجود ندارد. برای ثبت سفارش، روی «ثبت سفارش جدید» کلیک کنید.
                     </td>
                   </tr>
                 ) : (
-                  matrix.map((row) => (
-                    <tr key={row.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="py-2.5 px-3">
-                        <span className="font-mono font-bold text-primary">{row.code}</span>
-                      </td>
-                      <td className="py-2.5 px-3 font-bold text-foreground">{row.productName}</td>
-                      <td className="py-2.5 px-3 text-center font-mono">{toFa(row.targetQuantity)} عدد</td>
-                      <td className="py-2.5 px-3 text-center font-bold text-amber-600 font-mono">{toFa(row.totalParts)} قطعه</td>
-                      <td className="py-2.5 px-3 text-center font-mono">
-                        {toFa(row.cutCount)} / {toFa(row.totalParts)}
-                      </td>
-                      <td className="py-2.5 px-3 text-center font-mono">
-                        {toFa(row.edgeCount)} / {toFa(row.totalParts)}
-                      </td>
-                      <td className="py-2.5 px-3 text-center font-mono">
-                        {toFa(row.cncCount)} / {toFa(row.totalParts)}
-                      </td>
-                      <td className="py-2.5 px-3 text-center font-mono">
-                        {toFa(row.assembledCount)} / {toFa(row.totalParts)}
-                      </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-20 bg-muted rounded-full h-2 overflow-hidden">
-                            <div
-                              className="bg-primary h-2 rounded-full transition-all"
-                              style={{ width: `${row.progressPercent}%` }}
-                            />
+                  matrix.map((row) => {
+                    const stageConf = STAGE_CONFIG[row.currentStage || "CUTTING"] || STAGE_CONFIG.CUTTING;
+                    const isB2B = row.customerType === "B2B";
+
+                    return (
+                      <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-2.5 px-3">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-mono font-bold text-primary">{row.code}</span>
+                            <span className="text-[11px] font-semibold text-foreground">{row.productName}</span>
+                            <div className="mt-0.5">
+                              {isB2B ? (
+                                <Badge variant="outline" className="text-[9px] h-4 px-1 border-indigo-500/40 text-indigo-700 bg-indigo-500/10">
+                                  همکار عمده (B2B)
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-[9px] h-4 px-1 border-emerald-500/40 text-emerald-700 bg-emerald-500/10">
+                                  مشتری نهایی (B2C)
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <span className="font-mono text-[11px] font-bold">{toFa(row.progressPercent)}٪</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+
+                        <td className="py-2.5 px-3">
+                          <div className="flex flex-col gap-0.5">
+                            <div className="font-bold text-foreground">
+                              {row.customerName || "—"}
+                            </div>
+                            {row.endClientName && (
+                              <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+                                <span className="text-muted-foreground/70">کارفرمای نهایی:</span>
+                                <strong className="text-foreground">{row.endClientName}</strong>
+                              </div>
+                            )}
+                            {row.projectTitle && (
+                              <div className="text-[10px] text-indigo-600 font-semibold truncate max-w-[200px]">
+                                {row.projectTitle}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        <td className="py-2.5 px-3 text-center">
+                          <div className="font-mono font-bold text-foreground">{toFa(row.targetQuantity)} عدد</div>
+                          <div className="text-[11px] font-mono text-amber-600 font-semibold">{toFa(row.totalParts)} قطعه برگه</div>
+                        </td>
+
+                        <td className="py-2.5 px-3 text-center">
+                          <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border", stageConf.badgeClass)}>
+                            {stageConf.label}
+                          </span>
+                        </td>
+
+                        <td className="py-2.5 px-3 text-center">
+                          <div className="flex items-center justify-center gap-1 font-mono text-[10px]">
+                            <span className={cn("px-1.5 py-0.5 rounded font-bold", row.cutCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 text-emerald-700" : "bg-muted text-muted-foreground")} title="اره برش">
+                              اره: {toFa(row.cutCount)}
+                            </span>
+                            <span className={cn("px-1.5 py-0.5 rounded font-bold", row.edgeCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 text-emerald-700" : "bg-muted text-muted-foreground")} title="لبه‌چسبان">
+                              لبه: {toFa(row.edgeCount)}
+                            </span>
+                            <span className={cn("px-1.5 py-0.5 rounded font-bold", row.cncCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 text-emerald-700" : "bg-muted text-muted-foreground")} title="ماشین‌کاری CNC">
+                              CNC: {toFa(row.cncCount)}
+                            </span>
+                            <span className={cn("px-1.5 py-0.5 rounded font-bold", row.assembledCount >= row.totalParts && row.totalParts > 0 ? "bg-emerald-500/15 text-emerald-700" : "bg-muted text-muted-foreground")} title="مونتاژ نهایی">
+                              مونتاژ: {toFa(row.assembledCount)}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="py-2.5 px-3">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-bold text-foreground text-[11px]">
+                              {row.assignedInstaller || "بدون نصاب"}
+                            </span>
+                            {row.installerPhone && (
+                              <span className="font-mono text-[10px] text-muted-foreground">
+                                {row.installerPhone}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        <td className="py-2.5 px-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <div className="w-16 bg-muted rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className="bg-primary h-1.5 rounded-full transition-all"
+                                style={{ width: `${row.progressPercent}%` }}
+                              />
+                            </div>
+                            <span className="font-mono text-[10px] font-bold">{toFa(row.progressPercent)}٪</span>
+                          </div>
+                        </td>
+
+                        <td className="py-2.5 px-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setFeasibilityOrderId(row.id)}
+                              className="h-7 text-[10px] px-2 gap-1 border-blue-500/30 text-blue-700 hover:bg-blue-500/10"
+                              title="استعلام موجودی ورق، روکش و نوارهای PVC در انبار"
+                            >
+                              <Boxes className="size-3 text-blue-600" />
+                              استعلام انبار
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setAdvanceOrderId(row.id);
+                                setAdvanceStage(row.currentStage || "EDGE_BANDING");
+                              }}
+                              className="h-7 text-[10px] px-2 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                              title="ثبت تأییدیه مرحله کارگاهی و انتقال به مرحله بعد"
+                            >
+                              <CheckCircle2 className="size-3" />
+                              ارتقای مرحله
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* محتوای تب گیت ورود و بازرسی بار انبار (GRN) */}
+      {activeTab === "inbound" && (
+        <Card className="p-0 overflow-hidden border border-border shadow-xs">
+          <div className="flex flex-wrap items-center justify-between border-b border-border bg-muted/40 p-3 gap-2">
+            <div className="flex items-center gap-2">
+              <Boxes className="size-4 text-teal-600" />
+              <span className="text-xs font-bold text-foreground">
+                گیت بازرسی و رسید ورود بار انبار (GRN — Goods Receipt Note)
+              </span>
+              <Badge variant="outline" className="text-[10px] font-mono">{toFa(inboundReceipts.length)} محموله</Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetchInbound()}
+                className="gap-1.5 text-xs h-7"
+              >
+                <RefreshCw className="size-3" />
+                تازه‌سازی
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setIsAddInboundOpen(true)}
+                className="gap-1.5 text-xs h-7 shadow-xs bg-teal-600 hover:bg-teal-700 text-white"
+              >
+                <Plus className="size-3" />
+                ثبت ورود بار جدید
+              </Button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead className="bg-muted/60 text-muted-foreground font-semibold border-b border-border select-none">
+                <tr>
+                  <th className="py-2.5 px-3">شماره رسید GRN</th>
+                  <th className="py-2.5 px-3">تأمین‌کننده / شرکت فروشنده</th>
+                  <th className="py-2.5 px-3">بارنامه و خودروی حمل</th>
+                  <th className="py-2.5 px-3">انبار مقصد</th>
+                  <th className="py-2.5 px-3 text-center">تاریخ ورود</th>
+                  <th className="py-2.5 px-3 text-center">وضعیت تأییدیه</th>
+                  <th className="py-2.5 px-3">تأییدکننده</th>
+                  <th className="py-2.5 px-3 text-center">عملیات انباردار</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border font-medium">
+                {inboundReceipts.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
+                      هیچ محموله ورودی ثبت نشده است. برای ثبت ورود بار جدید روی دکمه بالا کلیک کنید.
+                    </td>
+                  </tr>
+                ) : (
+                  inboundReceipts.map((r) => {
+                    const wh = warehouses.find((w) => w.id === r.warehouseId);
+                    return (
+                      <tr key={r.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-2.5 px-3">
+                          <span className="font-mono font-bold text-teal-700 bg-teal-500/10 px-1.5 py-0.5 rounded">
+                            {r.receiptNumber}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 font-bold text-foreground">
+                          {r.supplierName}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-mono text-[11px] text-foreground">
+                              بارنامه: {r.waybillNumber || "—"}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              راننده: {r.driverName || "—"} {r.truckPlate ? `(${r.truckPlate})` : ""}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-muted-foreground">
+                          {wh?.name || "انبار مرکزی"}
+                        </td>
+                        <td className="py-2.5 px-3 text-center font-mono">
+                          {faDate(r.createdAt)}
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          {r.status === "VERIFIED" ? (
+                            <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/30 text-[10px]">
+                              تأیید و انبارش شد
+                            </Badge>
+                          ) : r.status === "REJECTED" ? (
+                            <Badge className="bg-rose-500/15 text-rose-700 border-rose-500/30 text-[10px]">
+                              رد شده / نامنطبق
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/30 text-[10px]">
+                              در انتظار تأیید گیت
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 text-muted-foreground text-[11px]">
+                          {r.verifiedBy || "—"}
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          {r.status === "PENDING_VERIFICATION" ? (
+                            <div className="flex items-center justify-center gap-1">
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  verifyInboundMutation.mutate({
+                                    id: r.id,
+                                    status: "VERIFIED",
+                                    verifiedBy: "مدیر انبار",
+                                  })
+                                }
+                                disabled={verifyInboundMutation.isPending}
+                                className="h-6 text-[10px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                              >
+                                <CheckCircle2 className="size-2.5" />
+                                تأیید بار
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  verifyInboundMutation.mutate({
+                                    id: r.id,
+                                    status: "REJECTED",
+                                    verifiedBy: "مدیر انبار",
+                                  })
+                                }
+                                disabled={verifyInboundMutation.isPending}
+                                className="h-6 text-[10px] px-2 border-rose-500/30 text-rose-700 hover:bg-rose-500/10"
+                              >
+                                رد
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+                              <CheckCircle className="size-3 text-emerald-600" />
+                              ثبت نهایی
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -1234,6 +1696,542 @@ export default function WoodIndustryPage() {
               }
             >
               ثبت حواله و زمان‌بندی
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ۱. مودال ثبت سفارش جدید صنایع چوب (B2B / B2C) */}
+      <Dialog open={isAddOrderOpen} onOpenChange={setIsAddOrderOpen}>
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Factory className="size-5 text-emerald-600" />
+              ثبت سفارش جدید صنایع چوب و کابینت (B2B / B2C)
+            </DialogTitle>
+            <DialogDescription>
+              سفارش با تفکیک مشتری مستقیم و همکاران، تعریف کارفرمای نهایی و تخصیص نصاب
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3 py-2 text-xs">
+            {/* نوع مشتری */}
+            <div>
+              <label className="text-[11px] font-bold text-foreground">نوع مشتری و ساختار سفارش</label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setNewOrder({ ...newOrder, customerType: "B2B" })}
+                  className={cn(
+                    "flex flex-col items-start p-2.5 rounded-lg border text-right transition-all",
+                    newOrder.customerType === "B2B"
+                      ? "border-indigo-600 bg-indigo-500/10 text-indigo-900 dark:text-indigo-200 ring-1 ring-indigo-600"
+                      : "border-border hover:bg-muted/50"
+                  )}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-xs">
+                    <Building2 className="size-3.5 text-indigo-600" />
+                    همکار / پیمانکار (B2B)
+                  </div>
+                  <span className="text-[10px] text-muted-foreground mt-0.5">
+                    فروش به همکار یا دکوراتور با ثبت مشخصات کارفرمای نهایی
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setNewOrder({ ...newOrder, customerType: "B2C" })}
+                  className={cn(
+                    "flex flex-col items-start p-2.5 rounded-lg border text-right transition-all",
+                    newOrder.customerType === "B2C"
+                      ? "border-emerald-600 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 ring-1 ring-emerald-600"
+                      : "border-border hover:bg-muted/50"
+                  )}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-xs">
+                    <UserCheck className="size-3.5 text-emerald-600" />
+                    مشتری مصرف‌کننده (B2C)
+                  </div>
+                  <span className="text-[10px] text-muted-foreground mt-0.5">
+                    سفارش مستقیم بدون واسطه برای منزل یا پروژه شخصی
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* نام مشتری یا همکار */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground">
+                  {newOrder.customerType === "B2B" ? "نام شرکت یا همکار خریدار *" : "نام مشتری خریدار *"}
+                </label>
+                <Input
+                  placeholder={newOrder.customerType === "B2B" ? "مثلاً استودیو معماری کیان، مهندس عباسی" : "مثلاً آقای حسینی"}
+                  value={newOrder.customerName}
+                  onChange={(e) => setNewOrder({ ...newOrder, customerName: e.target.value })}
+                  className="mt-1 h-8 text-xs"
+                />
+              </div>
+
+              {newOrder.customerType === "B2B" ? (
+                <div>
+                  <label className="text-[11px] font-semibold text-indigo-600 flex items-center gap-1">
+                    نام کارفرمای نهایی همکار *
+                    <span className="text-[10px] font-normal text-muted-foreground">(بدانیم برای چه کسی ساخته می‌شود)</span>
+                  </label>
+                  <Input
+                    placeholder="مثلاً خانم دکتر فرهمند"
+                    value={newOrder.endClientName}
+                    onChange={(e) => setNewOrder({ ...newOrder, endClientName: e.target.value })}
+                    className="mt-1 h-8 text-xs border-indigo-400/50"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="text-[11px] font-semibold text-muted-foreground">شماره تماس مشتری</label>
+                  <Input
+                    placeholder="۰۹۱۲..."
+                    value={newOrder.notes}
+                    onChange={(e) => setNewOrder({ ...newOrder, notes: e.target.value })}
+                    className="mt-1 h-8 text-xs font-mono"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* عنوان پروژه */}
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground">عنوان سفارش و موقعیت پروژه</label>
+              <Input
+                placeholder="مثلاً کابینت مدرن هایگلاس و پلی‌اورتان — پروژه ولنجک برج آناهید"
+                value={newOrder.projectTitle}
+                onChange={(e) => setNewOrder({ ...newOrder, projectTitle: e.target.value })}
+                className="mt-1 h-8 text-xs"
+              />
+            </div>
+
+            {/* محصول کاتالوگ (اختیاری) */}
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground">انتخاب محصول کاتالوگ کاردو (اختیاری)</label>
+              <div className="mt-1">
+                <ProductSearchSelect
+                  value={newOrder.productId}
+                  onChange={(p) => setNewOrder({ ...newOrder, productId: p?.id || "" })}
+                  placeholder="جستجو یا انتخاب از محصولات پایه..."
+                />
+              </div>
+            </div>
+
+            {/* تیراژ، تاریخ تحویل و اولویت */}
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground">تیراژ (تعداد)</label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={newOrder.targetQuantity}
+                  onChange={(e) => setNewOrder({ ...newOrder, targetQuantity: Number(e.target.value) || 1 })}
+                  className="mt-1 h-8 text-xs font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground">موعد تحویل</label>
+                <Input
+                  type="date"
+                  value={newOrder.dueDate}
+                  onChange={(e) => setNewOrder({ ...newOrder, dueDate: e.target.value })}
+                  className="mt-1 h-8 text-xs font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground">اولویت تولید</label>
+                <select
+                  value={newOrder.priority}
+                  onChange={(e) => setNewOrder({ ...newOrder, priority: Number(e.target.value) })}
+                  className="mt-1 h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
+                >
+                  <option value={1}>عادی</option>
+                  <option value={2}>فوری</option>
+                  <option value={3}>خیلی فوری / VIP</option>
+                </select>
+              </div>
+            </div>
+
+            {/* نصاب اختصاصی */}
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                  <HardHat className="size-3 text-amber-600" />
+                  نصاب اختصاصی کاردو
+                </label>
+                <Input
+                  placeholder="مثلاً استاد بهرامی"
+                  value={newOrder.assignedInstaller}
+                  onChange={(e) => setNewOrder({ ...newOrder, assignedInstaller: e.target.value })}
+                  className="mt-1 h-8 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground">شماره تماس نصاب</label>
+                <Input
+                  placeholder="۰۹۱۲..."
+                  value={newOrder.installerPhone}
+                  onChange={(e) => setNewOrder({ ...newOrder, installerPhone: e.target.value })}
+                  className="mt-1 h-8 text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            {/* توضیحات */}
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground">توضیحات فنی سفارش</label>
+              <Textarea
+                rows={2}
+                placeholder="رنگ روکش، نوع دستگیره، ریل آرام‌بند، الزامات بسته‌بندی و..."
+                value={newOrder.notes}
+                onChange={(e) => setNewOrder({ ...newOrder, notes: e.target.value })}
+                className="mt-1 text-xs resize-none"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setIsAddOrderOpen(false)}>
+              انصراف
+            </Button>
+            <Button
+              size="sm"
+              disabled={!newOrder.customerName || createOrderMutation.isPending}
+              onClick={() => createOrderMutation.mutate(newOrder)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+            >
+              <CheckCircle2 className="size-3.5" />
+              {createOrderMutation.isPending ? "در حال ثبت..." : "ثبت نهایی سفارش"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ۲. مودال ثبت گیت ورود بار به انبار (محموله جدید GRN) */}
+      <Dialog open={isAddInboundOpen} onOpenChange={setIsAddInboundOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Boxes className="size-5 text-teal-600" />
+              ثبت گیت ورود بار به انبار (محموله جدید تأمین‌کننده)
+            </DialogTitle>
+            <DialogDescription>
+              ثبت بارنامه و اطلاعات خودروی حامل ورق‌های MDF، نوار لبه یا یراق‌آلات قبل از تخلیه
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3 py-2 text-xs">
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground">نام تأمین‌کننده / فروشنده کالا *</label>
+              <Input
+                placeholder="مثلاً شرکت پارس نئوپان، بازرگانی چوب آسیا، یراق‌آلات بلوم"
+                value={newInbound.supplierName}
+                onChange={(e) => setNewInbound({ ...newInbound, supplierName: e.target.value })}
+                className="mt-1 h-8 text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground">شماره بارنامه رسمی یا فاکتور ورودی</label>
+              <Input
+                placeholder="مثلاً BL-984210"
+                value={newInbound.waybillNumber}
+                onChange={(e) => setNewInbound({ ...newInbound, waybillNumber: e.target.value })}
+                className="mt-1 h-8 text-xs font-mono"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground">نام راننده خودروی حمل</label>
+                <Input
+                  placeholder="محمد رستمی"
+                  value={newInbound.driverName}
+                  onChange={(e) => setNewInbound({ ...newInbound, driverName: e.target.value })}
+                  className="mt-1 h-8 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground">شماره پلاک خودرو</label>
+                <Input
+                  placeholder="ایران ۳۳ - ۱۲۳ ج ۴۵"
+                  value={newInbound.truckPlate}
+                  onChange={(e) => setNewInbound({ ...newInbound, truckPlate: e.target.value })}
+                  className="mt-1 h-8 text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground">انبار مقصد تخلیه</label>
+              <select
+                value={newInbound.warehouseId}
+                onChange={(e) => setNewInbound({ ...newInbound, warehouseId: e.target.value })}
+                className="mt-1 h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
+              >
+                {warehouses.map((wh) => (
+                  <option key={wh.id} value={wh.id}>
+                    {wh.name} ({wh.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground">توضیحات و اقلام بارنامه</label>
+              <Textarea
+                rows={2}
+                placeholder="مثلاً ۱۲۰ برگ هایگلاس کد ۷۰۲ + ۵ کارتن ریل آرام‌بند ۵۰ سانت"
+                value={newInbound.notes}
+                onChange={(e) => setNewInbound({ ...newInbound, notes: e.target.value })}
+                className="mt-1 text-xs resize-none"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setIsAddInboundOpen(false)}>
+              انصراف
+            </Button>
+            <Button
+              size="sm"
+              disabled={!newInbound.supplierName || createInboundMutation.isPending}
+              onClick={() => createInboundMutation.mutate(newInbound)}
+              className="bg-teal-600 hover:bg-teal-700 text-white gap-1.5"
+            >
+              <CheckCircle2 className="size-3.5" />
+              {createInboundMutation.isPending ? "در حال ثبت..." : "ثبت ورود بار و صدور رسید"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ۳. مودال استعلام متریال و موجودی انبار WMS (MTO Feasibility Check) */}
+      <Dialog open={!!feasibilityOrderId} onOpenChange={() => setFeasibilityOrderId(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Boxes className="size-5 text-blue-600" />
+              استعلام امکان‌سنجی متریال و موجودی انبار WMS
+            </DialogTitle>
+            <DialogDescription>
+              تطبیق بلادرنگ قطعات برگه برش سفارش با کالاهای موجود در انبار جهت شروع تولید
+            </DialogDescription>
+          </DialogHeader>
+
+          {feasibilityQ.isLoading ? (
+            <div className="py-12 text-center text-muted-foreground text-xs">
+              در حال استعلام موجودی از انبار...
+            </div>
+          ) : feasibilityQ.data ? (
+            <div className="flex flex-col gap-3 py-2 text-xs">
+              {/* خلاصه و وضعیت کلی تولید */}
+              <div
+                className={cn(
+                  "p-3 rounded-xl border flex items-center justify-between",
+                  !feasibilityQ.data.hasShortage
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200"
+                    : "bg-rose-500/10 border-rose-500/30 text-rose-900 dark:text-rose-200"
+                )}
+              >
+                <div className="flex items-center gap-2.5">
+                  {!feasibilityQ.data.hasShortage ? (
+                    <CheckCircle2 className="size-6 text-emerald-600" />
+                  ) : (
+                    <ShieldAlert className="size-6 text-rose-600" />
+                  )}
+                  <div>
+                    <div className="font-bold text-sm">
+                      {!feasibilityQ.data.hasShortage
+                        ? "امکان تولید بلافاصله وجود دارد"
+                        : "کسری متریال در انبار — نیاز به تأمین بار"}
+                    </div>
+                    <div className="text-[11px] opacity-90 mt-0.5">
+                      {!feasibilityQ.data.hasShortage
+                        ? "تمامی ورق‌ها و متریال‌های لازم در موجودی آزاد انبار موجود هستند."
+                        : "تعدادی از متریال‌ها با کسری مواجه هستند. لطفاً بارنامه ورود کالا ثبت نمایید."}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-left font-mono">
+                  <div className="text-[10px] opacity-75">کد سفارش</div>
+                  <div className="font-bold text-sm">{feasibilityQ.data.orderCode}</div>
+                </div>
+              </div>
+
+              {/* شاخص‌های ردیفی */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-2.5 rounded-lg border bg-muted/30 text-center">
+                  <div className="text-muted-foreground text-[10px]">کل اقلام موردنیاز</div>
+                  <div className="text-base font-bold font-mono mt-0.5">{toFa(feasibilityQ.data.materials.length)} قلم</div>
+                </div>
+                <div className="p-2.5 rounded-lg border bg-emerald-500/5 text-center border-emerald-500/20">
+                  <div className="text-emerald-700 text-[10px]">موجودی کافی</div>
+                  <div className="text-base font-bold font-mono text-emerald-700 mt-0.5">
+                    {toFa(feasibilityQ.data.materials.filter((m) => m.status === "AVAILABLE").length)} قلم
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-lg border bg-rose-500/5 text-center border-rose-500/20">
+                  <div className="text-rose-700 text-[10px]">اقلام دارای کسری</div>
+                  <div className="text-base font-bold font-mono text-rose-700 mt-0.5">
+                    {toFa(feasibilityQ.data.materials.filter((m) => m.status === "SHORTAGE").length)} قلم
+                  </div>
+                </div>
+              </div>
+
+              {/* جدول اقلام تفصیلی برگه برش */}
+              <div className="rounded-lg border overflow-hidden mt-1">
+                <table className="w-full text-right text-xs">
+                  <thead className="bg-muted/70 text-muted-foreground font-semibold border-b">
+                    <tr>
+                      <th className="p-2">نام متریال / ورق</th>
+                      <th className="p-2 text-center">نیاز سفارش</th>
+                      <th className="p-2 text-center">موجودی انبار</th>
+                      <th className="p-2 text-center">کسری</th>
+                      <th className="p-2 text-center">وضعیت</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y font-medium">
+                    {feasibilityQ.data.materials.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                          هیچ قطعه برشی برای این سفارش ثبت نشده است. ابتدا در تب «لیست ابعاد برش» قطعات را ثبت نمایید.
+                        </td>
+                      </tr>
+                    ) : (
+                      feasibilityQ.data.materials.map((it, idx) => (
+                        <tr key={idx} className="hover:bg-muted/30">
+                          <td className="p-2 font-bold text-foreground">{it.materialName}</td>
+                          <td className="p-2 text-center font-mono">
+                            {toFa(it.requiredQty)} <span className="text-[10px] text-muted-foreground">واحد</span>
+                          </td>
+                          <td className="p-2 text-center font-mono">
+                            {toFa(it.stockQty)} <span className="text-[10px] text-muted-foreground">واحد</span>
+                          </td>
+                          <td className="p-2 text-center font-mono font-bold text-rose-600">
+                            {it.shortageQty > 0 ? `${toFa(it.shortageQty)} واحد` : "—"}
+                          </td>
+                          <td className="p-2 text-center">
+                            {it.status === "AVAILABLE" ? (
+                              <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/30 text-[9px]">
+                                کافی
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-rose-500/15 text-rose-700 border-rose-500/30 text-[9px]">
+                                کسری در انبار
+                              </Badge>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : null}
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" size="sm" onClick={() => setFeasibilityOrderId(null)}>
+              بستن
+            </Button>
+            {feasibilityQ.data && feasibilityQ.data.hasShortage && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setFeasibilityOrderId(null);
+                  setIsAddInboundOpen(true);
+                }}
+                className="bg-teal-600 hover:bg-teal-700 text-white gap-1.5"
+              >
+                <Plus className="size-3.5" />
+                ثبت رسید ورود بار تأمین‌کننده
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ۴. مودال ارتقای مرحله کارگاه و تأییدیه */}
+      <Dialog open={!!advanceOrderId} onOpenChange={() => setAdvanceOrderId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="size-5 text-emerald-600" />
+              ارتقای مرحله سفارش در خط تولید
+            </DialogTitle>
+            <DialogDescription>
+              ثبت تأییدیه اپراتور و انتقال قطعات سفارش به ایستگاه کاری بعدی
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3 py-2 text-xs">
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground">انتخاب مرحله جدید در کارگاه</label>
+              <select
+                value={advanceStage}
+                onChange={(e) => setAdvanceStage(e.target.value)}
+                className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2.5 text-xs font-bold"
+              >
+                <option value="CUTTING">۱. برش و اره‌کاری (SAW)</option>
+                <option value="EDGE_BANDING">۲. لبه‌چسبان نوار PVC (EDGE)</option>
+                <option value="CNC">۳. ماشین‌کاری و سوراخ‌کاری CNC</option>
+                <option value="ASSEMBLY">۴. مونتاژ یونیت و یراق‌آلات (ASSM)</option>
+                <option value="PAINTING">۵. رنگ، سیلر، کیلر و فینیشینگ</option>
+                <option value="QC_PACKING">۶. کنترل کیفی و بسته‌بندی نهایی (QC)</option>
+                <option value="INSTALLATION">۷. تحویل به نصاب / اعزام به پروژه</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground">نام اپراتور یا سرپرست ایستگاه</label>
+              <Input
+                placeholder="مثلاً اپراتور اره‌کاری، استاد رحیمی"
+                value={advanceOperator}
+                onChange={(e) => setAdvanceOperator(e.target.value)}
+                className="mt-1 h-8 text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground">توضیحات و نکات کنترل کیفیت</label>
+              <Textarea
+                rows={2}
+                placeholder="تأیید ابعاد برش، تست لولا، بدون خط و خش و..."
+                value={advanceNotes}
+                onChange={(e) => setAdvanceNotes(e.target.value)}
+                className="mt-1 text-xs resize-none"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setAdvanceOrderId(null)}>
+              انصراف
+            </Button>
+            <Button
+              size="sm"
+              disabled={advanceStageMutation.isPending}
+              onClick={() => {
+                if (advanceOrderId) {
+                  advanceStageMutation.mutate({
+                    orderId: advanceOrderId,
+                    stage: advanceStage,
+                    operatorName: advanceOperator,
+                    notes: advanceNotes,
+                  });
+                }
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+            >
+              <CheckCircle2 className="size-3.5" />
+              {advanceStageMutation.isPending ? "در حال ثبت..." : "تأیید و ارتقای مرحله"}
             </Button>
           </DialogFooter>
         </DialogContent>

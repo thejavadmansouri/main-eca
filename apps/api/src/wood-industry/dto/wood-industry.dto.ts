@@ -41,3 +41,47 @@ export class CreateInstallationDto {
   installerLead?: string;
   scheduledDate: string;
 }
+
+export class CreateWoodOrderDto {
+  code?: string;
+  customerType?: string; // B2B | B2C
+  customerName?: string;
+  endClientName?: string;
+  projectTitle?: string;
+  assignedInstaller?: string;
+  installerPhone?: string;
+  productId?: string;
+  targetQuantity?: number;
+  priority?: number;
+  dueDate?: string;
+  notes?: string;
+}
+
+export class AdvanceStageDto {
+  stage: string;
+  operatorName: string;
+  notes?: string;
+}
+
+export class CreateInboundReceiptDto {
+  supplierName: string;
+  driverName?: string;
+  truckPlate?: string;
+  waybillNumber?: string;
+  warehouseId: string;
+  itemCount?: number;
+  notes?: string;
+  items?: Array<{
+    name: string;
+    quantity: number;
+    unit?: string;
+    thicknessMm?: number;
+    dimensions?: string;
+  }>;
+}
+
+export class VerifyInboundReceiptDto {
+  verifiedBy: string;
+  status: 'VERIFIED' | 'REJECTED';
+  notes?: string;
+}

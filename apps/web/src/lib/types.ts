@@ -3760,15 +3760,102 @@ export interface ProductionMatrixRow {
   code: string;
   productName: string;
   targetQuantity: number;
-  priority: string;
+  priority: string | number;
   status: string;
   dueDate?: string | null;
+  customerType?: "B2B" | "B2C" | string;
+  customerName?: string;
+  endClientName?: string | null;
+  projectTitle?: string;
+  assignedInstaller?: string;
+  installerPhone?: string | null;
+  currentStage?: string;
   totalParts: number;
   cutCount: number;
   edgeCount: number;
   cncCount: number;
   assembledCount: number;
   progressPercent: number;
+}
+
+export interface CreateWoodOrderDto {
+  code?: string;
+  customerType?: "B2B" | "B2C";
+  customerName?: string;
+  endClientName?: string;
+  projectTitle?: string;
+  assignedInstaller?: string;
+  installerPhone?: string;
+  productId?: string;
+  targetQuantity?: number;
+  priority?: number;
+  dueDate?: string;
+  notes?: string;
+}
+
+export interface AdvanceStageDto {
+  stage: string;
+  operatorName: string;
+  notes?: string;
+}
+
+export interface MaterialsFeasibilityResult {
+  productionOrderId: string;
+  orderCode: string;
+  hasShortage: boolean;
+  feasibilityStatus: "READY_FOR_PRODUCTION" | "REQUIRES_PURCHASE";
+  materials: Array<{
+    materialName: string;
+    requiredQty: number;
+    stockQty: number;
+    shortageQty: number;
+    status: "AVAILABLE" | "SHORTAGE";
+  }>;
+}
+
+export interface InboundReceiptRow {
+  id: string;
+  receiptNumber: string;
+  supplierName: string;
+  driverName?: string | null;
+  truckPlate?: string | null;
+  waybillNumber?: string | null;
+  warehouseId: string;
+  status: "PENDING_VERIFICATION" | "VERIFIED" | "REJECTED";
+  verifiedBy?: string | null;
+  verifiedAt?: string | null;
+  notes?: string | null;
+  itemCount: number;
+  itemsJson?: Array<{
+    name: string;
+    quantity: number;
+    unit?: string;
+    dimensions?: string;
+  }> | null;
+  createdAt: string;
+  warehouse?: { id: string; name: string; code: string };
+}
+
+export interface CreateInboundReceiptDto {
+  supplierName: string;
+  driverName?: string;
+  truckPlate?: string;
+  waybillNumber?: string;
+  warehouseId: string;
+  itemCount?: number;
+  notes?: string;
+  items?: Array<{
+    name: string;
+    quantity: number;
+    unit?: string;
+    dimensions?: string;
+  }>;
+}
+
+export interface VerifyInboundReceiptDto {
+  verifiedBy: string;
+  status: "VERIFIED" | "REJECTED";
+  notes?: string;
 }
 
 export interface InstallationOrderRow {

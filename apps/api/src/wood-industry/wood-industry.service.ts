@@ -5,6 +5,10 @@ import {
   AddProfileGlassDto,
   CreateInstallationDto,
   ProcessScanDto,
+  CreateWoodOrderDto,
+  AdvanceStageDto,
+  CreateInboundReceiptDto,
+  VerifyInboundReceiptDto,
 } from './dto/wood-industry.dto';
 
 @Injectable()
@@ -250,6 +254,13 @@ export class WoodIndustryService {
         priority: ord.priority,
         status: ord.status,
         dueDate: ord.dueDate,
+        customerType: ord.customerType || 'B2C',
+        customerName: ord.customerName || 'مشتری مستقیم',
+        endClientName: ord.endClientName || null,
+        projectTitle: ord.projectTitle || 'پروژه کابینت / دکوراسیون',
+        assignedInstaller: ord.assignedInstaller || 'نصاب تخصیص‌نیافته',
+        installerPhone: ord.installerPhone || null,
+        currentStage: ord.currentStage || 'CUTTING',
         totalParts,
         cutCount,
         edgeCount,
@@ -257,6 +268,229 @@ export class WoodIndustryService {
         assembledCount,
         progressPercent,
       };
+    });
+  }
+
+  // ───────────────────────── ثبت سفارش صنایع چوب دوگانه B2B/B2C ─────────────────────────
+  async createWoodProductionOrder(dto: CreateWoodOrderDto) {
+    const count = await this.prisma.productionOrder.count();
+    const orderCode = dto.code || `WOOD-1404-${String(count + 1).padStart(4, '0')}`;
+
+    let pId = dto.productId;
+    if (!pId) {
+      const existingProduct = await this.prisma.product.findFirst();
+      if (existingProduct) {
+        pId = existingProduct.id;
+      } else {
+        const newProd = await this.prisma.product.create({
+          data: {
+            sku: `WOOD-${Date.now().toString().slice(-6)}`,
+            name: dto.projectTitle || 'یونیت دکوراسیون و کابینت سفارشی',
+            unit: 'دست',
+          },
+        });
+        pId = newProd.id;
+      }
+    }
+
+    // یافتن یا ایجاد BOM پیش‌فرض برای این محصول
+    let bom = await this.prisma.billOfMaterials.findFirst({
+      where: { productId: pId },
+    });
+
+    if (!bom) {
+      bom = await this.prisma.billOfMaterials.create({
+        data: {
+          code: `BOM-${orderCode}`,
+          productId: pId,
+          name: `ساختار محصول ${orderCode}`,
+          quantity: 1,
+        },
+      });
+    }
+
+    return this.prisma.productionOrder.create({
+      data: {
+        code: orderCode,
+        productId: pId,
+        bomId: bom.id,
+        targetQuantity: dto.targetQuantity ? Number(dto.targetQuantity) : 1,
+        priority: dto.priority || 1,
+        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+        status: 'IN_PROGRESS',
+        customerType: dto.customerType || 'B2C',
+        customerName: dto.customerName || 'مشتری مستقیم',
+        endClientName: dto.endClientName || null,
+        projectTitle: dto.projectTitle || 'پروژه دکوراسیون و کابینت',
+        assignedInstaller: dto.assignedInstaller || null,
+        installerPhone: dto.installerPhone || null,
+        currentStage: 'CUTTING',
+        notes: dto.notes,
+      },
+      include: {
+        product: true,
+      },
+    });
+  }
+
+  // ───────────────────────── ارتقای مرحله کارگاهی پرسنل (Shop-Floor Advance Stage) ─────────────────────────
+  async advanceOrderStage(productionOrderId: string, dto: AdvanceStageDto) {
+    const order = await this.prisma.productionOrder.findUnique({
+      where: { id: productionOrderId },
+    });
+    if (!order) throw new NotFoundException('سفارش تولید پیدا نشد.');
+
+    const newStage = dto.stage.toUpperCase();
+    const isFinished = newStage === 'COMPLETED' || newStage === 'INSTALLED';
+
+    const updatedOrder = await this.prisma.productionOrder.update({
+      where: { id: productionOrderId },
+      data: {
+        currentStage: newStage,
+        status: isFinished ? 'COMPLETED' : 'IN_PROGRESS',
+        actualEndDate: isFinished ? new Date() : undefined,
+      },
+    });
+
+    // ثبت لاگ ممیزی کارگاه
+    await this.prisma.productionScanLog.create({
+      data: {
+        productionOrderId,
+        barcode: order.code,
+        operatorName: dto.operatorName || 'اپراتور خط تولید',
+        stationCode: newStage,
+        action: `ارتقای وضعیت مرحله سفارش به ${newStage} توسط پرسنل`,
+        isSuccess: true,
+        message: dto.notes,
+      },
+    });
+
+    return updatedOrder;
+  }
+
+  // ───────────────────────── استعلام آنی موجودی متریال و کسری (MTO Feasibility) ─────────────────────────
+  async checkOrderMaterialsFeasibility(productionOrderId: string) {
+    const order = await this.prisma.productionOrder.findUnique({
+      where: { id: productionOrderId },
+      include: {
+        cuttingListItems: true,
+        product: true,
+      },
+    });
+    if (!order) throw new NotFoundException('سفارش تولید پیدا نشد.');
+
+    // تجمیع متریال‌های مورد نیاز بر اساس قطعات برش
+    const materialMap = new Map<string, number>();
+    for (const item of order.cuttingListItems) {
+      const key = item.materialType || 'ورق MDF خام/سفید ۱۶ میل';
+      const cur = materialMap.get(key) || 0;
+      materialMap.set(key, cur + (item.quantity || 1));
+    }
+
+    // اگر قطعه‌ای تعریف نشده، از نام محصول برای متریال نمونه استفاده شود
+    if (materialMap.size === 0) {
+      materialMap.set('ورق MDF سفید صابونی ۱۶ میل', 4);
+      materialMap.set('ورق هایگلاس طوسی سوپرمات', 2);
+      materialMap.set('لولا آرام‌بند ۴ پیچ پمپی', 24);
+      materialMap.set('ریل سه تکه ساچمه‌ای ۵۰ سانت', 6);
+    }
+
+    // استعلام از موجودی WMS انبار
+    const materialsResult: Array<{
+      materialName: string;
+      requiredQty: number;
+      stockQty: number;
+      shortageQty: number;
+      status: 'AVAILABLE' | 'SHORTAGE';
+    }> = [];
+
+    let hasShortage = false;
+
+    for (const [materialName, requiredQty] of materialMap.entries()) {
+      // جستجوی کالا در موجودی انبار
+      const inv = await this.prisma.inventory.findFirst({
+        where: {
+          product: {
+            name: { contains: materialName.split(' ')[0], mode: 'insensitive' },
+          },
+          quantity: { gt: 0 },
+        },
+      });
+
+      const stockQty = inv?.quantity || 0;
+      const shortageQty = Math.max(0, requiredQty - stockQty);
+      if (shortageQty > 0) hasShortage = true;
+
+      materialsResult.push({
+        materialName,
+        requiredQty,
+        stockQty,
+        shortageQty,
+        status: shortageQty === 0 ? 'AVAILABLE' : 'SHORTAGE',
+      });
+    }
+
+    return {
+      productionOrderId,
+      orderCode: order.code,
+      hasShortage,
+      feasibilityStatus: hasShortage ? 'REQUIRES_PURCHASE' : 'READY_FOR_PRODUCTION',
+      materials: materialsResult,
+    };
+  }
+
+  // ───────────────────────── رسید ورود و بازرسی بار انبار (Inbound Goods Receipt) ─────────────────────────
+  async getInboundReceipts(warehouseId?: string) {
+    const where: any = {};
+    if (warehouseId) where.warehouseId = warehouseId;
+
+    return this.prisma.inboundReceipt.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        warehouse: { select: { id: true, name: true, code: true } },
+      },
+    });
+  }
+
+  async createInboundReceipt(dto: CreateInboundReceiptDto) {
+    const count = await this.prisma.inboundReceipt.count();
+    const receiptNumber = `GRN-1404-${String(count + 1).padStart(4, '0')}`;
+
+    return this.prisma.inboundReceipt.create({
+      data: {
+        receiptNumber,
+        supplierName: dto.supplierName,
+        driverName: dto.driverName,
+        truckPlate: dto.truckPlate,
+        waybillNumber: dto.waybillNumber,
+        warehouseId: dto.warehouseId,
+        status: 'PENDING_VERIFICATION',
+        itemCount: dto.itemCount || (dto.items?.length ?? 0),
+        itemsJson: dto.items as any,
+        notes: dto.notes,
+      },
+      include: {
+        warehouse: true,
+      },
+    });
+  }
+
+  async verifyInboundReceipt(id: string, dto: VerifyInboundReceiptDto) {
+    const receipt = await this.prisma.inboundReceipt.findUnique({ where: { id } });
+    if (!receipt) throw new NotFoundException('رسید ورود بار یافت نشد.');
+
+    return this.prisma.inboundReceipt.update({
+      where: { id },
+      data: {
+        status: dto.status,
+        verifiedBy: dto.verifiedBy,
+        verifiedAt: new Date(),
+        notes: dto.notes ? `${receipt.notes || ''}\n${dto.notes}`.trim() : receipt.notes,
+      },
+      include: {
+        warehouse: true,
+      },
     });
   }
 
