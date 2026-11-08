@@ -23,7 +23,9 @@ import {
   Trash2,
   Eye,
   StickyNote,
+  Box,
 } from "lucide-react";
+import { Cabinet3DExplodedViewer } from "@/components/wood/cabinet-3d-exploded-viewer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +73,9 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
 
   // لایت‌باکس عکس تمام‌صفحه
   const [activePreviewImage, setActivePreviewImage] = React.useState<string | null>(null);
+
+  // دوقلوی سه‌بعدی و نمای انفجاری
+  const [viewer3DOrder, setViewer3DOrder] = React.useState<WoodProductionOrderSummary | null>(null);
 
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -268,6 +273,16 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
 
                   {/* دکمه‌های عملیاتی */}
                   <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setViewer3DOrder(order)}
+                      className="gap-1.5 text-xs font-bold bg-primary/5 hover:bg-primary/10 text-primary border-primary/30 shadow-2xs"
+                    >
+                      <Box className="h-3.5 w-3.5" />
+                      دوقلوی سه‌بعدی ۳D
+                    </Button>
+
                     <Button
                       size="sm"
                       variant="outline"
@@ -685,6 +700,18 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* دیالوگ نمایش دوقلوی سه‌بعدی و نمای انفجاری ۳D */}
+      <Dialog open={Boolean(viewer3DOrder)} onOpenChange={(open) => !open && setViewer3DOrder(null)}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden font-sans border-0 shadow-2xl bg-transparent">
+          {viewer3DOrder && (
+            <Cabinet3DExplodedViewer
+              projectTitle={viewer3DOrder.projectTitle || "پروژه صنایع چوب"}
+              orderCode={viewer3DOrder.code}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

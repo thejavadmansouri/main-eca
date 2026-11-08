@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { getPublicTracking } from "@/lib/api";
 import { faDate, toFa } from "@/lib/format";
+import { Cabinet3DExplodedViewer } from "@/components/wood/cabinet-3d-exploded-viewer";
 
 const STAGES = [
   { key: "CUTTING", label: "ایستگاه برش", icon: Scissors, desc: "برش دقیق ورق‌های MDF بر اساس نقشه بهینه‌ساز" },
@@ -289,6 +290,14 @@ export default function PublicProjectTrackingPage() {
               );
             })}
           </div>
+        </div>
+
+        {/* دوقلوی دیجیتال سه‌بعدی و نمای انفجاری تعاملی */}
+        <div className="mt-6">
+          <Cabinet3DExplodedViewer
+            projectTitle={order.projectTitle || "پروژه ساخت کابینت و دکوراسیون چوبی"}
+            orderCode={order.code}
+          />
         </div>
 
         {/* گالری کلی تصاویر اختصاصی پروژه */}
