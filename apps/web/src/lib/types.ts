@@ -1716,6 +1716,7 @@ export interface WorkTaskItem {
     name: string;
     sku?: string | null;
     unit?: string | null;
+    internalBarcode?: string | null;
   } | null;
   location?: {
     id: string;
@@ -1734,6 +1735,9 @@ export interface WorkTaskItem {
 export interface WorkTask {
   id: string;
   status: WorkTaskStatus;
+  kind?: "PICK" | "PUTAWAY";
+  priority?: "NORMAL" | "URGENT";
+  ageHours?: number;
   warehouseId: string;
   invoiceId?: string | null;
   quotationId?: string | null;

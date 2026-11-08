@@ -83,6 +83,27 @@ export class WorkTasksController {
     return this.service.cancel(id, body?.reason);
   }
 
+  @Roles(Role.ADMIN, Role.MANAGER, Role.SALES)
+  @Post(':id/complete')
+  complete(@Param('id') id: string, @Req() req: any) {
+    return this.service.complete(id, req.user?.userId);
+  }
+
+  @Roles(Role.ADMIN, Role.MANAGER, Role.SALES)
+  @Post(':id/reassign')
+  reassign(@Param('id') id: string, @Body() body: { assigneeIds: string[] }) {
+    return this.service.reassign(id, body?.assigneeIds ?? []);
+  }
+
+  @Roles(Role.ADMIN, Role.MANAGER, Role.SALES)
+  @Post(':id/priority')
+  updatePriority(
+    @Param('id') id: string,
+    @Body() body: { priority: 'NORMAL' | 'URGENT' },
+  ) {
+    return this.service.updatePriority(id, body?.priority as any);
+  }
+
   private isWorkTaskStatus(v: unknown): v is WorkTaskStatus {
     return (
       typeof v === 'string' &&

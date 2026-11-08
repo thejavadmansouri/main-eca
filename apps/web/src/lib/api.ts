@@ -2111,12 +2111,16 @@ export function getWorkers(): Promise<T.Worker[]> {
 export function createWorkTask(body: {
   warehouseId: string;
   invoiceId?: string | null;
+  quotationId?: string | null;
+  purchaseId?: string | null;
   /** چند گیرنده؛ خالی/نبود = هر کارگری. */
   assignedToIds?: string[];
   /** سازگاری قدیم: یک نفر. */
   assignedToId?: string | null;
   note?: string;
-  idempotencyKey: string;
+  kind?: "PICK" | "PUTAWAY";
+  priority?: "NORMAL" | "URGENT";
+  idempotencyKey?: string;
   lines: {
     productId: string;
     /** نبودنش یعنی کالا در سیستم ثبت نشده — کارگر خودش پیدایش می‌کند. */
@@ -2124,7 +2128,13 @@ export function createWorkTask(body: {
     quantity: number;
   }[];
 }): Promise<T.WorkTask> {
-  return apiFetch<T.WorkTask>("/work-tasks", { method: "POST", body });
+  const payload = {
+    ...body,
+    idempotencyKey:
+      body.idempotencyKey ||
+      `wt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+  };
+  return apiFetch<T.WorkTask>("/work-tasks", { method: "POST", body: payload });
 }
 
 /** GET /work-tasks — همه‌ی کارها با پیشرفت (نمای مدیر/فروشنده برای POS). */
@@ -2153,6 +2163,50 @@ export function cancelWorkTask(
   return apiFetch<T.WorkTask>(`/work-tasks/${encodeURIComponent(id)}/cancel`, {
     method: "POST",
     body: reason ? { reason } : undefined,
+  });
+}
+
+/** POST /work-tasks/:id/complete — تکمیل مستقیم کل آیتم‌های کار توسط مدیر. */
+export function completeWorkTask(id: string): Promise<T.WorkTask> {
+  return apiFetch<T.WorkTask>(`/work-tasks/${encodeURIComponent(id)}/complete`, {
+    method: "POST",
+  });
+}
+
+/** POST /work-tasks/:id/reassign — تخصیص مجدد کار به کارگر یا تیم دیگر. */
+export function reassignWorkTask(
+  id: string,
+  assigneeIds: string[],
+): Promise<T.WorkTask> {
+  return apiFetch<T.WorkTask>(`/work-tasks/${encodeURIComponent(id)}/reassign`, {
+    method: "POST",
+    body: { assigneeIds },
+  });
+}
+
+/** POST /work-tasks/:id/priority — تغییر اولویت کار به فوری یا عادی. */
+export function updateWorkTaskPriority(
+  id: string,
+  priority: "NORMAL" | "URGENT",
+): Promise<T.WorkTask> {
+  return apiFetch<T.WorkTask>(`/work-tasks/${encodeURIComponent(id)}/priority`, {
+    method: "POST",
+    body: { priority },
+  });
+}
+
+/** POST /work-tasks/sync — همگام‌سازی و تیک زدن آیتم‌های وظیفه. */
+export function syncWorkTaskMutations(
+  mutations: Array<{
+    clientMutationId: string;
+    taskId: string;
+    itemId: string;
+    toLocationBarcode?: string;
+  }>,
+): Promise<{ results: any[] }> {
+  return apiFetch<{ results: any[] }>("/work-tasks/sync", {
+    method: "POST",
+    body: { mutations },
   });
 }
 

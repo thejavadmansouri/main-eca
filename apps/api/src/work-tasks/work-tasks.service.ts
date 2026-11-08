@@ -507,6 +507,79 @@ export class WorkTasksService {
     return task;
   }
 
+  async complete(id: string, doneById?: string) {
+    const task = await this.prisma.workTask.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+    if (!task) {
+      throw new NotFoundException({
+        error: 'WORK_TASK_NOT_FOUND',
+        message: 'کار پیدا نشد',
+      });
+    }
+    if (task.status === WorkTaskStatus.COMPLETED) return this.findOne(id);
+    if (task.status === WorkTaskStatus.CANCELLED) {
+      throw new ConflictException({
+        error: 'TASK_CANCELLED',
+        message: 'این کار لغو شده است',
+      });
+    }
+
+    await this.prisma.workTaskItem.updateMany({
+      where: { taskId: id, status: WorkTaskItemStatus.PENDING },
+      data: {
+        status: WorkTaskItemStatus.DONE,
+        doneById: doneById || task.assignedToId || null,
+        doneAt: new Date(),
+      },
+    });
+
+    await this.prisma.workTask.update({
+      where: { id },
+      data: {
+        status: WorkTaskStatus.COMPLETED,
+      },
+    });
+
+    await this.refreshStatusAndNotify(id);
+    return this.findOne(id);
+  }
+
+  async reassign(id: string, assigneeIds: string[]) {
+    const task = await this.prisma.workTask.findUnique({ where: { id } });
+    if (!task) {
+      throw new NotFoundException({
+        error: 'WORK_TASK_NOT_FOUND',
+        message: 'کار پیدا نشد',
+      });
+    }
+
+    await this.prisma.workTaskAssignee.deleteMany({ where: { taskId: id } });
+    if (assigneeIds?.length) {
+      await this.prisma.workTaskAssignee.createMany({
+        data: assigneeIds.map((userId) => ({ taskId: id, userId })),
+      });
+    }
+    const primary = assigneeIds.length === 1 ? assigneeIds[0] : null;
+    await this.prisma.workTask.update({
+      where: { id },
+      data: { assignedToId: primary },
+    });
+
+    this.events.broadcast({ type: 'work-task.progress', taskId: id });
+    return this.findOne(id);
+  }
+
+  async updatePriority(id: string, priority: WorkTaskPriority) {
+    await this.prisma.workTask.update({
+      where: { id },
+      data: { priority },
+    });
+    this.events.broadcast({ type: 'work-task.progress', taskId: id });
+    return this.findOne(id);
+  }
+
   /** PENDING → IN_PROGRESS → COMPLETED بر اساس تیک‌ها + push پیشرفت به همه. */
   private async refreshStatusAndNotify(taskId: string) {
     const grouped = await this.prisma.workTaskItem.groupBy({
