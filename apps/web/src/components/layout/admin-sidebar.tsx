@@ -255,6 +255,8 @@ function SidebarSection({
     );
   }
 
+  const SectionIcon = section.icon;
+
   return (
     <div className="flex flex-col gap-0.5">
       <button
@@ -262,17 +264,20 @@ function SidebarSection({
         dir="ltr"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center justify-end gap-2 px-3 pb-1 pt-2"
+        className="flex w-full items-center justify-end gap-2 px-3 pb-1.5 pt-2.5 hover:text-sidebar-foreground transition-colors select-none"
       >
         <ChevronDown
           className={cn(
-            "size-3.5 shrink-0 text-sidebar-foreground/35 transition-transform duration-200 me-auto",
+            "size-3.5 shrink-0 text-sidebar-foreground/40 transition-transform duration-200 me-auto",
             !open && "-rotate-90",
           )}
         />
-        <span className="text-[11px] font-semibold tracking-wide text-sidebar-foreground/45">
+        <span className="text-[11px] font-bold tracking-wider text-sidebar-foreground/60">
           {section.title}
         </span>
+        {SectionIcon ? (
+          <SectionIcon className="size-3.5 text-sidebar-foreground/45 shrink-0" />
+        ) : null}
       </button>
       {open ? (
         <div className="flex flex-col gap-0.5">

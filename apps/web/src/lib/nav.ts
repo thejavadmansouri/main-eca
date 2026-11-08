@@ -1,32 +1,41 @@
-// پیکربندی ناوبری سایدبار — طبق پیوست نقش‌های مجاز هر endpoint
+// پیکربندی ناوبری سایدبار کاردو ERP — معماری کامل سیستم‌های سازمانی (Real ERP)
 import type { Role } from "./types";
 import {
-  LayoutDashboard,
-  LayoutGrid,
-  Package,
-  MapPin,
-  Boxes,
-  ClipboardList,
-  ClipboardCheck,
-  Users,
-  ShoppingCart,
+  AlertCircle,
+  ArrowLeftRight,
+  BadgePercent,
   BarChart3,
-  Store,
-  Files,
+  BookOpen,
+  Boxes,
+  Building2,
+  ClipboardCheck,
+  ClipboardList,
+  Factory,
   FileText,
+  Globe,
+  HardDrive,
+  Image,
+  Layers,
+  LayoutDashboard,
+  LibraryBig,
+  MapPin,
+  MessageSquare,
+  Package,
+  PackageCheck,
+  PackagePlus,
+  Receipt,
+  RotateCcw,
+  Scale,
+  ScrollText,
+  Settings,
+  ShieldAlert,
+  ShoppingCart,
+  SlidersHorizontal,
+  Tags,
+  Users,
   Wallet,
   Warehouse,
-  LibraryBig,
-  Settings,
-  PackagePlus,
-  PackageCheck,
-  Image,
-  Globe,
-  ScrollText,
-  Tags,
-  Building2,
-  Receipt,
-  Factory,
+  Wrench,
 } from "lucide-react";
 
 export interface NavItem {
@@ -35,140 +44,254 @@ export interface NavItem {
   href?: string;
   icon: typeof LayoutDashboard;
   roles: Role[] | "ALL";
-  /**
-   * فقط برای صاحبانِ پرچمِ `canManageSite` — مستقل از نقش. صندوقِ مغازه
-   * (SALES بدون پرچم) هرگز این آیتم را نمی‌بیند.
-   */
+  /** فقط برای کاربرانی که پرچم canManageSite دارند */
   site?: boolean;
-  /** زیرمجموعه‌ها — اگر باشد، این آیتم یک هابِ جمع‌شونده است. */
+  /** زیرمجموعه‌ها */
   children?: NavItem[];
 }
 
 export interface NavSection {
-  /** خالی یعنی بدون سرتیتر — فقط برای بخشِ سنجاق‌شده. */
   title: string;
-  /** آیکنِ سرتیترِ بخش — تا سرتیتر هم‌زبانِ بقیه‌ی ردیف‌ها باشد، نه یک برچسبِ ریز. */
   icon: typeof LayoutDashboard;
-  /** بدونِ سرتیتر و همیشه باز — ردیف‌هایش مستقیم بالای سایدبار می‌نشینند. */
   pinned?: boolean;
   items: NavItem[];
 }
 
-// نقش‌های مجاز برای دیدن هر منو (بر اساس حداقل عملیات خواندن)
+/**
+ * پیکربندی ماژولار سایدبار کاردو مطابق با استانداردهای بین‌المللی ERP (Odoo, ERPNext, SAP B1, Dynamics 365)
+ */
 export const NAV_SECTIONS: NavSection[] = [
-  /*
-   * بخشِ سنجاق‌شده — بدون سرتیتر، همیشه باز.
-   *
-   * فقط کاری که هر روز انجام می‌شود: فروختن، دیدنِ مشتری، دیدنِ فاکتور، و
-   * نگاهِ روزانه به اعداد. بقیه‌ی پنل (کاتالوگ، انبار، ابزارها) یک بار در ماه
-   * لازم می‌شود و نباید هر روز جلوی چشم باشد و ارتفاع بگیرد.
-   *
-   * انباردار هیچ‌کدام از این چهار تا را نمی‌بیند، پس میان‌برهای خودش اینجا
-   * سنجاق شده‌اند — وگرنه این بخش برایش خالی می‌ماند و همه‌چیزش می‌رفت زیرِ
-   * «بیشتر».
-   */
+  // ───────────────────────── بخش ۱: میز کار و پیشخوان اجرایی ─────────────────────────
   {
     title: "",
-    icon: Store,
+    icon: LayoutDashboard,
     pinned: true,
     items: [
       {
-        title: "صندوق فروش",
-        href: "/admin/pos",
-        icon: ShoppingCart,
-        roles: ["ADMIN", "MANAGER", "SALES"],
-      },
-      {
-        title: "مشتریان",
-        href: "/admin/customers",
-        icon: Users,
-        roles: ["ADMIN", "MANAGER", "SALES"],
-      },
-      {
-        /*
-         * اسناد — فروش (فاکتور/پیش‌فاکتور/…) و خرید از تأمین‌کننده.
-         * قبلاً فاکتور خرید زیرِ انبار بود؛ الان کنار بقیه‌ی اسناد می‌نشیند
-         * تا «طرف حساب → فاکتور → اقلام» یک مسیر باشد.
-         */
-        title: "اسناد",
-        icon: Files,
-        roles: ["ADMIN", "MANAGER", "SALES"],
-        children: [
-          {
-            title: "فروش",
-            href: "/admin/documents",
-            icon: Receipt,
-            roles: ["ADMIN", "MANAGER", "SALES"],
-          },
-          {
-            title: "فاکتور خرید",
-            href: "/admin/purchases",
-            icon: PackagePlus,
-            roles: ["ADMIN", "MANAGER"],
-          },
-          {
-            title: "تأمین‌کنندگان",
-            href: "/admin/suppliers",
-            icon: Building2,
-            roles: ["ADMIN", "MANAGER"],
-          },
-        ],
-      },
-      {
-        title: "گزارش‌ها",
-        href: "/admin/reports",
-        icon: BarChart3,
-        roles: ["ADMIN", "MANAGER"],
-      },
-
-      // ---- میان‌برهای انباردار ----
-      {
-        title: "موجودی",
-        href: "/admin/inventory",
-        icon: Boxes,
-        roles: ["STAFF"],
-      },
-      {
-        title: "انبارگردانی",
-        href: "/admin/inventory-count",
-        icon: ClipboardList,
-        roles: ["STAFF"],
-      },
-    ],
-  },
-
-  {
-    title: "بیشتر",
-    icon: LayoutGrid,
-    items: [
-      {
-        /*
-         * داشبورد تا دیروز داخلِ هابِ «اسناد فروش» دفن بود — جایی که هیچ‌کس
-         * دنبالِ نمای کلی نمی‌گردد.
-         *
-         * سنجاق هم نمی‌شود: صفحه‌ی فرودِ ادمین صندوق است نه داشبورد
-         * (`landingPathForRole`)، و پنج تا از شش کارتش در گزارش‌ها › «یک نگاه»
-         * تکرار شده‌اند. تا وقتی آن دوگانگی حل نشده، ردیفِ دائمی در بالای منو
-         * نمی‌گیرد.
-         */
-        title: "داشبورد",
+        title: "داشبورد مدیریت",
         href: "/admin",
         icon: LayoutDashboard,
         roles: ["ADMIN", "MANAGER"],
       },
       {
-        /*
-         * محصولات دیگر هابِ چندشاخه نیست: صفحه‌ی کالا خودش مشخصات، موجودی،
-         * کاردکس و تاریخچه‌ی قیمت را دارد، و قیمت‌گذاریِ گروهی از نوارِ ابزارِ
-         * همین فهرست باز می‌شود. «کار» آیتمِ منو نمی‌شود.
-         */
-        title: "محصولات",
+        title: "کارتابل وظایف",
+        href: "/admin/inbox",
+        icon: ClipboardCheck,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "گزارش‌های تحلیلی و مالی",
+        href: "/admin/reports",
+        icon: BarChart3,
+        roles: ["ADMIN", "MANAGER"],
+      },
+    ],
+  },
+
+  // ───────────────────────── بخش ۲: بازرگانی و فروش (Sales & CRM) ─────────────────────────
+  {
+    title: "بازرگانی و فروش",
+    icon: Receipt,
+    items: [
+      {
+        title: "صندوق فروشگاهی (POS)",
+        href: "/admin/pos",
+        icon: ShoppingCart,
+        roles: ["ADMIN", "MANAGER", "SALES"],
+      },
+      {
+        title: "مشتریان و پرونده اعتباری",
+        href: "/admin/customers",
+        icon: Users,
+        roles: ["ADMIN", "MANAGER", "SALES"],
+      },
+      {
+        title: "اسناد و فاکتورهای فروش",
+        href: "/admin/documents",
+        icon: Receipt,
+        roles: ["ADMIN", "MANAGER", "SALES"],
+      },
+      {
+        title: "پیش‌فاکتورها و استعلام‌ها",
+        href: "/admin/quotations",
+        icon: FileText,
+        roles: ["ADMIN", "MANAGER", "SALES"],
+      },
+      {
+        title: "مرجوعی‌ها و خدمات فروش",
+        href: "/admin/returns",
+        icon: RotateCcw,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "سفارش‌های آنلاین پرتال",
+        href: "/admin/online-orders",
+        icon: Globe,
+        roles: ["ADMIN", "MANAGER"],
+        site: true,
+      },
+    ],
+  },
+
+  // ───────────────────────── بخش ۳: خرید و تدارکات (Procurement) ─────────────────────────
+  {
+    title: "خرید و تأمین کالا",
+    icon: PackagePlus,
+    items: [
+      {
+        title: "فاکتورهای خرید",
+        href: "/admin/purchases",
+        icon: PackagePlus,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "حساب تأمین‌کنندگان",
+        href: "/admin/suppliers",
+        icon: Building2,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "کسری انبار و سفارش خرید",
+        href: "/admin/shortages",
+        icon: AlertCircle,
+        roles: ["ADMIN", "MANAGER", "STAFF"],
+      },
+    ],
+  },
+
+  // ───────────────────────── بخش ۴: مدیریت انبار و لجستیک (WMS) ─────────────────────────
+  {
+    title: "انبار و لجستیک (WMS)",
+    icon: Warehouse,
+    items: [
+      {
+        title: "موجودی و کاردکس کالا",
+        href: "/admin/inventory",
+        icon: Boxes,
+        roles: ["ADMIN", "MANAGER", "STAFF"],
+      },
+      {
+        title: "قفسه‌بندی و موقعیت‌ها",
+        href: "/admin/locations",
+        icon: MapPin,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "انتقال بین‌انباری",
+        href: "/admin/inventory-transfer",
+        icon: ArrowLeftRight,
+        roles: ["ADMIN", "MANAGER", "STAFF"],
+      },
+      {
+        title: "انبارگردانی و شمارش",
+        href: "/admin/inventory-count",
+        icon: ClipboardList,
+        roles: ["ADMIN", "MANAGER", "STAFF"],
+      },
+      {
+        title: "لیبل‌ها و چاپ بارکد",
+        href: "/admin/labels",
+        icon: Tags,
+        roles: ["ADMIN", "MANAGER", "STAFF"],
+      },
+    ],
+  },
+
+  // ───────────────────────── بخش ۵: مدیریت تولید و مهندسی ساخت (MRP) ─────────────────────────
+  {
+    title: "مدیریت تولید و ساخت",
+    icon: Factory,
+    items: [
+      {
+        title: "سفارشات تولید (Job Cards)",
+        href: "/admin/manufacturing?tab=orders",
+        icon: Factory,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "درخت محصول و فرمول ساخت (BOM)",
+        href: "/admin/manufacturing?tab=bom",
+        icon: Layers,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "ایستگاه‌های کاری و ماشین‌آلات",
+        href: "/admin/manufacturing?tab=workstations",
+        icon: Wrench,
+        roles: ["ADMIN", "MANAGER"],
+      },
+    ],
+  },
+
+  // ───────────────────────── بخش ۶: مالی، حسابداری دوبل و خزانه‌داری ─────────────────────────
+  {
+    title: "حسابداری و دفاتر مالی",
+    icon: Scale,
+    items: [
+      {
+        title: "دفتر روزنامه و اسناد مالی",
+        href: "/admin/vouchers",
+        icon: ScrollText,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "تراز آزمایشی (۴ و ۸ ستونی)",
+        href: "/admin/vouchers?tab=trial-balance",
+        icon: Scale,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "دفتر کل و معین (مانده شناور)",
+        href: "/admin/vouchers?tab=ledger",
+        icon: BookOpen,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "ساختار کدینگ حساب‌ها",
+        href: "/admin/vouchers?tab=chart",
+        icon: Layers,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "خزانه‌داری و دریافت‌ها",
+        href: "/admin/receipts",
+        icon: Wallet,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "پرداخت‌ها و چک‌های صیادی",
+        href: "/admin/payouts",
+        icon: Receipt,
+        roles: ["ADMIN", "MANAGER"],
+      },
+    ],
+  },
+
+  // ───────────────────────── بخش ۷: کاتالوگ و مدیریت اقلام ─────────────────────────
+  {
+    title: "کاتالوگ و محصولات",
+    icon: Package,
+    items: [
+      {
+        title: "فهرست کالاها و خدمات",
         href: "/admin/products",
         icon: Package,
         roles: ["ADMIN", "MANAGER", "STAFF"],
       },
       {
-        title: "تصاویر محصولات",
+        title: "مدیریت قیمت‌ها و لیست قیمت",
+        href: "/admin/pricing",
+        icon: BadgePercent,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "دسته‌بندی‌ها و مشخصات فنی",
+        href: "/admin/base-data",
+        icon: LibraryBig,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "تصاویر و آلبوم کالاها",
         href: "/admin/product-images",
         icon: Image,
         roles: ["ADMIN", "MANAGER"],
@@ -179,107 +302,43 @@ export const NAV_SECTIONS: NavSection[] = [
         icon: Globe,
         roles: ["ADMIN", "MANAGER"],
       },
-      {
-        // چهار جدولِ مرجع که ماهی یک بار باز می‌شوند، یک ردیف بس است.
-        title: "داده‌های پایه",
-        href: "/admin/base-data",
-        icon: LibraryBig,
-        roles: ["ADMIN", "MANAGER"],
-      },
-      {
-        title: "انبار",
-        icon: Warehouse,
-        roles: ["ADMIN", "MANAGER", "STAFF"],
-        children: [
-          {
-            title: "موجودی",
-            href: "/admin/inventory",
-            icon: Boxes,
-            roles: ["ADMIN", "MANAGER"],
-          },
-          {
-            title: "انبارگردانی",
-            href: "/admin/inventory-count",
-            icon: ClipboardList,
-            roles: ["ADMIN", "MANAGER"],
-          },
-          {
-            title: "موقعیت‌ها / قفسه‌ها",
-            href: "/admin/locations",
-            icon: MapPin,
-            roles: ["ADMIN", "MANAGER"],
-          },
-        ],
-      },
-      {
-        /*
-         * حسابداری و دفاتر مالی — دفتر روزنامه، تراز آزمایشی، دفتر معین و کدینگ
-         */
-        title: "حسابداری و دفاتر مالی",
-        href: "/admin/vouchers",
-        icon: ScrollText,
-        roles: ["ADMIN", "MANAGER"],
-      },
-      {
-        /*
-         * مدیریت تولید و ساخت — سفارشات کارگاهی، فرمول ساخت (BOM)، ایستگاه‌ها و بهای تمام‌شده
-         */
-        title: "مدیریت تولید و ساخت",
-        href: "/admin/manufacturing",
-        icon: Factory,
-        roles: ["ADMIN", "MANAGER"],
-      },
-      {
-        /*
-         * کارتابل — هر چیزی که منتظرِ تصمیمِ مدیر است، یک‌جا و با شمارنده.
-         * قبلاً سه صفحه‌ی جدا بود و صفِ هیچ‌کدام دیده نمی‌شد مگر بازش می‌کردی.
-         * مسیرهای قدیمی هنوز کار می‌کنند، فقط از منو برداشته شده‌اند.
-         */
-        title: "کارتابل",
-        href: "/admin/inbox",
-        icon: ClipboardCheck,
-        roles: ["ADMIN", "MANAGER"],
-      },
-      {
-        /*
-         * لیبل‌ها / بارکدها — صف تأیید چاپ روی PC، کالاهای چاپ‌نشده،
-         * و پوشش لیبل به تفکیک انبار و قفسه.
-         */
-        title: "لیبل‌ها / بارکدها",
-        href: "/admin/labels",
-        icon: Tags,
-        roles: ["ADMIN", "MANAGER"],
-      },
-      {
-        // پنج صفحه‌ی تنظیمات، یک ردیف. نقش‌ها روی تب‌ها اعمال می‌شوند.
-        title: "تنظیمات",
-        href: "/admin/settings",
-        icon: Settings,
-        roles: ["ADMIN", "MANAGER"],
-      },
     ],
   },
 
+  // ───────────────────────── بخش ۸: تنظیمات و مدیریت سیستم ─────────────────────────
   {
-    /*
-     * صفِ تحویلِ سفارش‌های سایت — کارِ انبار است، نه مدیریتِ محتوا.
-     *
-     * سفارشِ سایت روی سرورِ سایت ثبت می‌شود، ایجنتِ سینک آن را به دیتابیسِ
-     * انبار می‌کشد و همین‌جا فاکتورِ داخلی صادر می‌شود؛ پس «جلو بردنِ مرحله‌ی
-     * تحویل» (آماده‌سازی → ارسال → تحویل) وظیفه‌ی پنلِ مغازه است. مدیریتِ
-     * محتوای سایت (کوپن، بنر، …) به اپِ جداگانه‌ی `apps/site` منتقل شده.
-     * عنوانش عمداً «بیشتر» نیست: کنارِ بخشِ اصلیِ «بیشتر» دو گروهِ هم‌نام
-     * نقشِ یک‌سان بازی می‌کردند و کاربر نمی‌دانست کدام را باز کند.
-     */
-    title: "فروشگاه اینترنتی",
-    icon: Store,
+    title: "تنظیمات و امنیت",
+    icon: Settings,
     items: [
       {
-        title: "سفارش‌های آنلاین",
-        href: "/admin/online-orders",
-        icon: PackageCheck,
+        title: "تنظیمات عمومی سازمان",
+        href: "/admin/settings",
+        icon: Building2,
         roles: ["ADMIN", "MANAGER"],
-        site: true,
+      },
+      {
+        title: "کاربران و سطوح دسترسی",
+        href: "/admin/users",
+        icon: ShieldAlert,
+        roles: ["ADMIN"],
+      },
+      {
+        title: "پشتیبان‌گیری از پایگاه‌داده",
+        href: "/admin/backups",
+        icon: HardDrive,
+        roles: ["ADMIN"],
+      },
+      {
+        title: "پیکربندی فروشگاه و انبارها",
+        href: "/admin/shop-settings",
+        icon: SlidersHorizontal,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "قالب‌های پیامک و اعلانات",
+        href: "/admin/sms-templates",
+        icon: MessageSquare,
+        roles: ["ADMIN", "MANAGER"],
       },
     ],
   },
@@ -298,14 +357,20 @@ function itemForRole(
     const kids = item.children
       .map((c) => itemForRole(c, role, canManageSite))
       .filter((c): c is NavItem => c !== null);
-    // هابِ بدون فرزندِ مجاز اصلاً نشان داده نمی‌شود.
-    return kids.length ? { ...item, children: kids } : null;
+    if (!kids.length) return null;
+    return { ...item, children: kids };
   }
-  if (item.roles !== "ALL" && !item.roles.includes(role)) return null;
+
   if (item.site && !canManageSite) return null;
-  return item;
+  if (item.roles === "ALL") return item;
+  if (item.roles.includes(role)) return item;
+  return null;
 }
 
+/**
+ * فیلتر منو بر اساس نقش و پرچم سایت.
+ * بخش‌های خالی بعد از فیلتر، حذف می‌شوند.
+ */
 export function filterNavByRole(
   sections: NavSection[],
   role: Role | undefined,
@@ -316,29 +381,18 @@ export function filterNavByRole(
     .map((s) => ({
       ...s,
       items: s.items
-        .map((i) => itemForRole(i, role, canManageSite))
-        .filter((i): i is NavItem => i !== null),
+        .map((it) => itemForRole(it, role, canManageSite))
+        .filter((it): it is NavItem => it !== null),
     }))
     .filter((s) => s.items.length > 0);
 }
 
-/**
- * صفحه‌ای که هر نقش بعد از ورود روی آن فرود می‌آید.
- *
- * فروشنده باید مستقیم پشت صندوق بنشیند، نه اینکه از داشبورد رد شود — روی
- * ویندوزِ پیشخوان، هر کلیک اضافه یعنی تأخیر در فروش.
- *
- * مدیر کل هم فعلاً روی صندوق فرود می‌آید چون خودش فروشنده است؛ دسترسی‌اش به
- * بقیه‌ی پنل کامل می‌ماند و فقط نقطه‌ی شروع عوض می‌شود.
- */
 export function landingPathForRole(role: Role | undefined): string {
   switch (role) {
     case "SALES":
     case "ADMIN":
     case "MANAGER":
       return "/admin/pos";
-    // انباردار کارش روی گوشی است؛ اگر از وب وارد شد، «یافتن کالا» تنها چیزی
-    // است که واقعاً به کارش می‌آید.
     case "STAFF":
       return "/admin/inventory";
     default:
@@ -346,10 +400,7 @@ export function landingPathForRole(role: Role | undefined): string {
   }
 }
 
-/**
- * نقش‌هایی که پنل برایشان یک ابزار فروش است، نه یک پنل مدیریت.
- * برای اینها پوسته‌ی ادمین جمع می‌شود تا تمرکز روی فروش بماند.
- */
 export function isSalesFocused(role: Role | undefined): boolean {
   return role === "SALES";
 }
+

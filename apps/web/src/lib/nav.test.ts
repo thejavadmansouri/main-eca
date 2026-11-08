@@ -4,6 +4,7 @@ import {
   NAV_SECTIONS,
   filterNavByRole,
   landingPathForRole,
+  isSalesFocused,
   type NavItem,
   type NavSection,
 } from "./nav";
@@ -24,50 +25,43 @@ function leaves(sections: NavSection[]): NavItem[] {
   return out;
 }
 
-function pinnedOf(sections: NavSection[]): NavItem[] {
-  return sections.find((s) => s.pinned)?.items ?? [];
-}
+describe("ساختار ماژولار کاردو ERP", () => {
+  it("مدیر کل به تمام ۸ دامنه عملیاتی ERP دسترسی دارد", () => {
+    const sections = filterNavByRole(NAV_SECTIONS, "ADMIN");
+    // ۱ پیشخوان سنجاق‌شده + ۷ ماژول تخصصی سازمانی
+    expect(sections).toHaveLength(8);
 
-describe("ساختار منو", () => {
-  it("هر نقش دستِ‌کم یک میان‌برِ سنجاق‌شده دارد", () => {
-    // اگر بخشِ سنجاق‌شده برای نقشی خالی شود، همه‌ی کارش می‌رود زیر «بیشتر» و
-    // منو برای او یعنی یک دکمه‌ی تنها.
-    for (const role of ROLES) {
-      const pinned = pinnedOf(filterNavByRole(NAV_SECTIONS, role));
-      expect(pinned.length, `نقش ${role}`).toBeGreaterThan(0);
-    }
+    const titles = sections.map((s) => s.title);
+    expect(titles).toContain("بازرگانی و فروش");
+    expect(titles).toContain("خرید و تأمین کالا");
+    expect(titles).toContain("انبار و لجستیک (WMS)");
+    expect(titles).toContain("مدیریت تولید و ساخت");
+    expect(titles).toContain("حسابداری و دفاتر مالی");
+    expect(titles).toContain("کاتالوگ و محصولات");
+    expect(titles).toContain("تنظیمات و امنیت");
   });
 
-  it("کارهای هرروزه‌ی فروش بالا سنجاق‌اند", () => {
-    // «اسناد» حالا یک هابِ بدون href است؛ مقصدها برگ‌های داخلش‌اند، پس
-    // برگ‌های بخشِ سنجاق‌شده را چک می‌کنیم نه ردیف‌های سطحِ اول را.
-    const pinnedLeaves = leaves(
-      filterNavByRole(NAV_SECTIONS, "SALES").filter((s) => s.pinned)
-    ).map((i) => i.href);
-    expect(pinnedLeaves).toContain("/admin/pos");
-    expect(pinnedLeaves).toContain("/admin/customers");
-    // فاکتور حالا یک تب داخلِ «اسناد» است، نه یک مقصدِ جدا.
-    expect(pinnedLeaves).toContain("/admin/documents");
-    // گزارش برای فروشنده نیست.
-    expect(pinnedLeaves).not.toContain("/admin/reports");
+  it("فروشنده دسترسی به بخش‌های بازرگانی و فروش دارد", () => {
+    const salesLeaves = leaves(filterNavByRole(NAV_SECTIONS, "SALES")).map((i) => i.href);
+    expect(salesLeaves).toContain("/admin/pos");
+    expect(salesLeaves).toContain("/admin/customers");
+    expect(salesLeaves).toContain("/admin/documents");
+    expect(salesLeaves).toContain("/admin/quotations");
+    // گزارش‌ها و تنظیمات نباید برای فروشنده باشد
+    expect(salesLeaves).not.toContain("/admin/reports");
+    expect(salesLeaves).not.toContain("/admin/settings");
   });
 
-  it("انباردار میان‌برهای خودش را می‌بیند، نه صندوق را", () => {
-    const pinned = pinnedOf(filterNavByRole(NAV_SECTIONS, "STAFF")).map((i) => i.href);
-    expect(pinned).toContain("/admin/inventory");
-    expect(pinned).not.toContain("/admin/pos");
+  it("انباردار به کاردکس، قفسه‌بندی و انبارگردانی دسترسی دارد", () => {
+    const staffLeaves = leaves(filterNavByRole(NAV_SECTIONS, "STAFF")).map((i) => i.href);
+    expect(staffLeaves).toContain("/admin/inventory");
+    expect(staffLeaves).toContain("/admin/inventory-count");
+    expect(staffLeaves).toContain("/admin/inventory-transfer");
+    expect(staffLeaves).not.toContain("/admin/pos");
+    expect(staffLeaves).not.toContain("/admin/vouchers");
   });
 
-  it("مدیر گزارش‌ها را بالا دارد", () => {
-    const pinned = pinnedOf(filterNavByRole(NAV_SECTIONS, "MANAGER")).map((i) => i.href);
-    expect(pinned).toContain("/admin/reports");
-  });
-
-  it("هیچ صفحه‌ای برای یک نقش دو بار در منو نمی‌آید", () => {
-    /*
-     * تکرارِ یک مقصد در دو جای منو یعنی کاربر نمی‌داند کدام «خانه»‌ی آن صفحه
-     * است — و وقتی میان‌برِ سنجاق‌شده اضافه شد، دقیقاً همین خطر پیش آمد.
-     */
+  it("هیچ صفحه‌ای برای یک نقش دو بار در منو تکرار نمی‌شود", () => {
     for (const role of ROLES) {
       const hrefs = leaves(filterNavByRole(NAV_SECTIONS, role))
         .map((i) => i.href)
@@ -87,17 +81,11 @@ describe("ساختار منو", () => {
     NAV_SECTIONS.forEach((s) => walk(s.items));
   });
 
-  it("منوی سطحِ اول کوتاه می‌ماند", () => {
-    // چهار میان‌بر + «بیشتر». اگر روزی پنجمی اضافه شد، این تست عمداً می‌شکند تا
-    // تصمیمش آگاهانه باشد، نه با اضافه‌کردنِ بی‌صدای یک ردیف.
-    const sections = filterNavByRole(NAV_SECTIONS, "ADMIN");
-    expect(pinnedOf(sections)).toHaveLength(4);
-    expect(sections.filter((s) => !s.pinned)).toHaveLength(1);
-  });
-
-  it("فروشنده و مدیر مستقیم پشتِ صندوق فرود می‌آیند", () => {
+  it("فرود هر نقش متناسب با مسئولیت‌های عملیاتی است", () => {
     expect(landingPathForRole("SALES")).toBe("/admin/pos");
     expect(landingPathForRole("ADMIN")).toBe("/admin/pos");
     expect(landingPathForRole("STAFF")).toBe("/admin/inventory");
+    expect(isSalesFocused("SALES")).toBe(true);
+    expect(isSalesFocused("ADMIN")).toBe(false);
   });
 });
