@@ -629,6 +629,18 @@ export class WoodIndustryService {
             driverName: true,
           },
         },
+        stageUpdates: {
+          orderBy: { createdAt: 'asc' },
+          select: {
+            id: true,
+            stationCode: true,
+            title: true,
+            notes: true,
+            photos: true,
+            operatorName: true,
+            createdAt: true,
+          },
+        },
       },
     });
 
@@ -678,12 +690,70 @@ export class WoodIndustryService {
         product: true,
         cuttingListItems: true,
         scanLogs: { orderBy: { scannedAt: 'desc' } },
+        stageUpdates: { orderBy: { createdAt: 'desc' } },
         installationOrders: true,
         contract: { include: { milestones: true, payments: true } },
       },
     });
     if (!order) throw new NotFoundException('سفارش تولید مورد نظر یافت نشد.');
     return order;
+  }
+
+  /** ثبت عکس‌ها و یادداشت‌های مرحله پیشرفت تولید */
+  async addStageUpdate(orderId: string, dto: {
+    stationCode: string;
+    title: string;
+    notes?: string;
+    photos?: string[];
+    operatorName?: string;
+    advanceStage?: boolean;
+  }) {
+    const order = await this.prisma.productionOrder.findUnique({
+      where: { id: orderId },
+    });
+    if (!order) throw new NotFoundException('سفارش تولید مورد نظر یافت نشد.');
+
+    const update = await this.prisma.productionStageUpdate.create({
+      data: {
+        productionOrderId: orderId,
+        stationCode: dto.stationCode,
+        title: dto.title,
+        notes: dto.notes,
+        photos: dto.photos || [],
+        operatorName: dto.operatorName || 'سرپرست کارگاه',
+      },
+    });
+
+    // ثبت در لاگ اسکن خط جهت همگامی تاریخچه
+    await this.prisma.productionScanLog.create({
+      data: {
+        productionOrderId: orderId,
+        barcode: order.code,
+        operatorName: dto.operatorName || 'سرپرست خط',
+        stationCode: dto.stationCode,
+        action: dto.title,
+        message: dto.notes,
+        isSuccess: true,
+      },
+    });
+
+    // در صورت انتخاب ارتقای خودکار مرحله
+    if (dto.advanceStage) {
+      await this.prisma.productionOrder.update({
+        where: { id: orderId },
+        data: { currentStage: dto.stationCode },
+      });
+    }
+
+    return update;
+  }
+
+  /** دریافت تمام یادداشت‌ها و عکس‌های مراحل یک سفارش */
+  async getStageUpdates(orderId: string) {
+    return this.prisma.productionStageUpdate.findMany({
+      where: { productionOrderId: orderId },
+      orderBy: { createdAt: 'asc' },
+    });
   }
 
   // ───────────────────────── قرارداد پروژه‌ها و پرداخت‌های مرحله‌ای (Project Contracts & Milestones) ─────────────────────────

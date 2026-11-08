@@ -84,8 +84,8 @@ describe("ساختار ماژولار کاردو ERP", () => {
   });
 
   it("فرود هر نقش متناسب با مسئولیت‌های عملیاتی است", () => {
-    expect(landingPathForRole("SALES")).toBe("/admin/pos");
-    expect(landingPathForRole("ADMIN")).toBe("/admin/pos");
+    expect(landingPathForRole("SALES")).toBe("/admin");
+    expect(landingPathForRole("ADMIN")).toBe("/admin");
     expect(landingPathForRole("STAFF")).toBe("/admin/inventory");
     expect(isSalesFocused("SALES")).toBe(true);
     expect(isSalesFocused("ADMIN")).toBe(false);

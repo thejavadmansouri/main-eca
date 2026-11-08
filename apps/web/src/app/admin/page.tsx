@@ -21,6 +21,10 @@ import {
   ArrowUpRight,
   Search,
   Sparkles,
+  Scissors,
+  Route,
+  Truck,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 
@@ -97,6 +101,34 @@ const TILES: Tile[] = [
     hint: "مکان‌یابی فیزیکی در راهرو و قفسه",
     href: "/admin/inventory",
     icon: Boxes,
+    roles: ["ADMIN", "MANAGER", "STAFF"],
+  },
+  {
+    title: "صنایع چوب و ابعاد برش (MDF)",
+    hint: "سفارشات ساخت، نقشه برش، نوار و CNC",
+    href: "/admin/wood-industry",
+    icon: Scissors,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    title: "پیگیری سفارشات و سیر تحویل",
+    hint: "سیر تحویل کالا، ناوگان و نصب نهایی",
+    href: "/admin/orders/tracking",
+    icon: Route,
+    roles: ["ADMIN", "MANAGER", "SALES"],
+  },
+  {
+    title: "پیام‌رسان و چت پرسنل",
+    hint: "ارتباطات داخلی، کانال‌ها و هماهنگی",
+    href: "/admin/chat",
+    icon: MessageSquare,
+    roles: ["ADMIN", "MANAGER", "SALES", "STAFF"],
+  },
+  {
+    title: "رانندگان و ناوگان حمل‌ونقل",
+    hint: "مشخصات رانندگان، پلاک خودرو و اعزام",
+    href: "/admin/logistics/drivers",
+    icon: Truck,
     roles: ["ADMIN", "MANAGER", "STAFF"],
   },
   {

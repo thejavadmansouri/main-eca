@@ -4430,6 +4430,17 @@ export function updateOrderProgress(
   });
 }
 
+export function addStageUpdate(orderId: string, body: T.CreateStageUpdateInput): Promise<T.ProductionStageUpdateRow> {
+  return apiFetch<T.ProductionStageUpdateRow>(`/wood-industry/orders/${encodeURIComponent(orderId)}/stage-updates`, {
+    method: 'POST',
+    body,
+  });
+}
+
+export function getStageUpdates(orderId: string): Promise<T.ProductionStageUpdateRow[]> {
+  return apiFetch<T.ProductionStageUpdateRow[]>(`/wood-industry/orders/${encodeURIComponent(orderId)}/stage-updates`);
+}
+
 export function getPublicTracking(token: string): Promise<any> {
   return apiFetch(`/wood-industry/public/track/${encodeURIComponent(token)}`);
 }

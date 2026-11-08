@@ -19,9 +19,13 @@ import {
   ShieldCheck,
   RefreshCw,
   Building,
+  Camera,
+  Eye,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { getPublicTracking } from "@/lib/api";
 import { faDate, toFa } from "@/lib/format";
 
@@ -39,6 +43,7 @@ const STAGES = [
 export default function PublicProjectTrackingPage() {
   const params = useParams();
   const token = params.token as string;
+  const [activePreviewImage, setActivePreviewImage] = React.useState<string | null>(null);
 
   const { data: order, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["public-tracking", token],
@@ -79,6 +84,18 @@ export default function PublicProjectTrackingPage() {
   const activeIndex = currentStageIndex === -1 ? 0 : currentStageIndex;
   const progressPercent = Math.min(100, Math.max(0, order.progressPercent || 0));
 
+  // استخراج تمام عکس‌های آپلود شده در پروژه
+  const allPhotos: { url: string; title: string; date: string }[] = [];
+  if (order.stageUpdates) {
+    order.stageUpdates.forEach((up: any) => {
+      if (up.photos && Array.isArray(up.photos)) {
+        up.photos.forEach((ph: string) => {
+          allPhotos.push({ url: ph, title: up.title, date: up.createdAt });
+        });
+      }
+    });
+  }
+
   return (
     <div className="min-h-screen bg-slate-50/70 pb-12 pt-6 text-foreground antialiased dark:bg-slate-950">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
@@ -92,7 +109,7 @@ export default function PublicProjectTrackingPage() {
               <h1 className="text-base font-extrabold tracking-tight sm:text-lg">
                 سامانه هوشمند رهگیری پروژه کاردو
               </h1>
-              <p className="text-xs text-muted-foreground">رهگیری شفاف روند ساخت، تولید و نصب در محل</p>
+              <p className="text-xs text-muted-foreground">رهگیری شفاف روند ساخت، تولید کارگاهی و نصب در محل</p>
             </div>
           </div>
           <Button
@@ -159,20 +176,23 @@ export default function PublicProjectTrackingPage() {
           </div>
         </Card>
 
-        {/* خط سیر مراحل کارگاهی (Stepper) */}
+        {/* خط سیر مراحل کارگاهی با عکس‌ها و یادداشت‌های واقعی (Stepper) */}
         <div className="mt-6 space-y-3">
           <h3 className="text-sm font-bold text-foreground">مراحل فرایند تولید و اجرا:</h3>
 
-          <div className="grid gap-2.5">
+          <div className="grid gap-3">
             {STAGES.map((st, index) => {
               const Icon = st.icon;
               const isDone = index < activeIndex || order.currentStage === "INSTALLED";
               const isCurrent = index === activeIndex && order.currentStage !== "INSTALLED";
 
+              // استخراج گزارشات و عکس‌های مربوط به این مرحله
+              const stageUpdates = order.stageUpdates?.filter((u: any) => u.stationCode === st.key) || [];
+
               return (
                 <div
                   key={st.key}
-                  className={`flex items-center gap-3.5 rounded-xl border p-3.5 transition-all ${
+                  className={`flex flex-col gap-2 rounded-xl border p-4 transition-all ${
                     isCurrent
                       ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
                       : isDone
@@ -180,51 +200,126 @@ export default function PublicProjectTrackingPage() {
                       : "border-border/60 bg-card/60 opacity-60"
                   }`}
                 >
-                  <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold ${
-                      isDone
-                        ? "bg-emerald-500 text-white shadow-sm"
-                        : isCurrent
-                        ? "animate-pulse bg-primary text-white shadow"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {isDone ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                  <div className="flex items-center gap-3.5">
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold ${
+                        isDone
+                          ? "bg-emerald-500 text-white shadow-sm"
+                          : isCurrent
+                          ? "animate-pulse bg-primary text-white shadow"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {isDone ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4
+                          className={`text-sm font-bold ${
+                            isCurrent
+                              ? "text-primary"
+                              : isDone
+                              ? "text-emerald-700 dark:text-emerald-400"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {st.label}
+                        </h4>
+                        {isCurrent && (
+                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                            مرحله جاری
+                          </span>
+                        )}
+                        {isDone && (
+                          <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                            تکمیل شده
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                        {st.desc}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <h4
-                        className={`text-sm font-bold ${
-                          isCurrent
-                            ? "text-primary"
-                            : isDone
-                            ? "text-emerald-700 dark:text-emerald-400"
-                            : "text-foreground"
-                        }`}
-                      >
-                        {st.label}
-                      </h4>
-                      {isCurrent && (
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-                          مرحله جاری
-                        </span>
-                      )}
-                      {isDone && (
-                        <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                          تکمیل شده
-                        </span>
-                      )}
+                  {/* عکس‌ها و یادداشت‌های واقعی این ایستگاه */}
+                  {stageUpdates.length > 0 && (
+                    <div className="mt-2 space-y-2 rounded-lg bg-background/80 p-3 border border-border/70">
+                      {stageUpdates.map((up: any) => (
+                        <div key={up.id} className="space-y-1.5 text-xs">
+                          <div className="flex items-center justify-between font-semibold text-primary">
+                            <span>{up.title}</span>
+                            <span className="text-[11px] text-muted-foreground">{faDate(up.createdAt)}</span>
+                          </div>
+
+                          {up.notes && (
+                            <p className="text-muted-foreground leading-relaxed text-[11px]">
+                              {up.notes}
+                            </p>
+                          )}
+
+                          {up.photos && up.photos.length > 0 && (
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {up.photos.map((ph: string, pIdx: number) => (
+                                <button
+                                  key={pIdx}
+                                  type="button"
+                                  onClick={() => setActivePreviewImage(ph)}
+                                  className="group relative h-16 w-16 overflow-hidden rounded-lg border bg-slate-100 hover:ring-2 hover:ring-primary dark:bg-slate-800"
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={ph}
+                                    alt="عکس واقعی کارگاه"
+                                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                                  />
+                                  <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Eye className="h-4 w-4 text-white" />
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
-                      {st.desc}
-                    </p>
-                  </div>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
+
+        {/* گالری کلی تصاویر اختصاصی پروژه */}
+        {allPhotos.length > 0 && (
+          <Card className="mt-6 border p-5 shadow-sm">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
+              <Camera className="h-4 w-4 text-primary" />
+              آلبوم تصویری تولید اختصاصی پروژه شما ({toFa(allPhotos.length)} تصویر)
+            </h3>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+              {allPhotos.map((item, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setActivePreviewImage(item.url)}
+                  className="group relative aspect-square overflow-hidden rounded-xl border bg-slate-100 hover:ring-2 hover:ring-primary dark:bg-slate-800"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.url}
+                    alt={item.title}
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 via-black/20 to-transparent p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[10px] font-bold text-white truncate">{item.title}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {/* کارت تیم اعزامی و نصاب */}
         {(order.assignedInstaller || order.installationOrders?.length > 0) && (
@@ -270,6 +365,22 @@ export default function PublicProjectTrackingPage() {
           <p className="mt-1">اطلاعات این صفحه به‌صورت لحظه‌ای با خطوط تولید کارخانه هماهنگ می‌شود.</p>
         </footer>
       </div>
+
+      {/* لایت‌باکس بزرگنمایی عکس تمام صفحه */}
+      <Dialog open={Boolean(activePreviewImage)} onOpenChange={() => setActivePreviewImage(null)}>
+        <DialogContent className="max-w-3xl p-2 bg-black/95 border-none">
+          {activePreviewImage && (
+            <div className="flex items-center justify-center p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={activePreviewImage}
+                alt="تصویر بزرگنمایی کارگاهی"
+                className="max-h-[85vh] w-auto rounded-lg object-contain"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

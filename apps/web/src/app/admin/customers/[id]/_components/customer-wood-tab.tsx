@@ -17,12 +17,18 @@ import {
   Wrench,
   AlertCircle,
   Percent,
+  Camera,
+  Image as ImageIcon,
+  Plus,
+  Trash2,
+  Eye,
+  StickyNote,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getWoodOrders, generateTrackingToken, updateOrderProgress } from "@/lib/api";
+import { getWoodOrders, generateTrackingToken, updateOrderProgress, addStageUpdate } from "@/lib/api";
 import { faDate, toFa } from "@/lib/format";
 import type { WoodProductionOrderSummary } from "@/lib/types";
 
@@ -54,6 +60,20 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
   const [newProgress, setNewProgress] = React.useState<number>(0);
   const [newEstimatedDate, setNewEstimatedDate] = React.useState<string>("");
 
+  // دیالوگ ثبت عکس و نوت مرحله
+  const [stagePhotoModalOpen, setStagePhotoModalOpen] = React.useState(false);
+  const [targetOrderForStage, setTargetOrderForStage] = React.useState<WoodProductionOrderSummary | null>(null);
+  const [stageStationCode, setStageStationCode] = React.useState("CUTTING");
+  const [stageTitle, setStageTitle] = React.useState("");
+  const [stageNotes, setStageNotes] = React.useState("");
+  const [stagePhotos, setStagePhotos] = React.useState<string[]>([]);
+  const [advanceStageCheck, setAdvanceStageCheck] = React.useState(false);
+
+  // لایت‌باکس عکس تمام‌صفحه
+  const [activePreviewImage, setActivePreviewImage] = React.useState<string | null>(null);
+
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["customer-wood-orders", customerName],
     queryFn: () => getWoodOrders({ customerName }),
@@ -73,6 +93,20 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
     },
     onError: (err: any) => {
       toast.error(err?.message || "خطا در به‌روزرسانی پیشرفت پروژه");
+    },
+  });
+
+  const stageUpdateMutation = useMutation({
+    mutationFn: (data: { orderId: string; body: any }) =>
+      addStageUpdate(data.orderId, data.body),
+    onSuccess: () => {
+      toast.success("عکس‌ها و یادداشت مرحله با موفقیت ثبت شد.");
+      queryClient.invalidateQueries({ queryKey: ["customer-wood-orders"] });
+      setStagePhotoModalOpen(false);
+      resetStageForm();
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "خطا در ثبت یادداشت مرحله");
     },
   });
 
@@ -108,6 +142,41 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
     setEditProgressModalOpen(true);
   };
 
+  const openStagePhotoDialog = (order: WoodProductionOrderSummary) => {
+    setTargetOrderForStage(order);
+    setStageStationCode(order.currentStage || "CUTTING");
+    const defaultLabel = STAGE_LABELS[order.currentStage]?.label || "گزارش پیشرفت مرحله";
+    setStageTitle(`${defaultLabel} - ${order.code}`);
+    setStageNotes("");
+    setStagePhotos([]);
+    setAdvanceStageCheck(false);
+    setStagePhotoModalOpen(true);
+  };
+
+  const resetStageForm = () => {
+    setStageTitle("");
+    setStageNotes("");
+    setStagePhotos([]);
+    setAdvanceStageCheck(false);
+    setTargetOrderForStage(null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        const result = uploadEvent.target?.result as string;
+        if (result) {
+          setStagePhotos((prev) => [...prev, result]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
@@ -127,7 +196,7 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
           <div>
             <h3 className="text-base font-semibold">پروژه‌های چوب و ساخت MDF مشتری</h3>
             <p className="text-xs text-muted-foreground">
-              سفارشات طراحی، قطعه‌بندی، تولید کارگاهی و مانیتورینگ روند پیشرفت فیزیکی
+              سفارشات طراحی، قطعه‌بندی، ثبت عکس‌های پیشرفت کارگاهی و مانیتورینگ روند پروژه
             </p>
           </div>
         </div>
@@ -202,6 +271,16 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
                     <Button
                       size="sm"
                       variant="outline"
+                      onClick={() => openStagePhotoDialog(order)}
+                      className="gap-1.5 text-xs font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
+                    >
+                      <Camera className="h-3.5 w-3.5" />
+                      عکس و نوت مرحله
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => openProgressDialog(order)}
                       className="gap-1.5 text-xs"
                     >
@@ -234,11 +313,245 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
                     />
                   </div>
                 </div>
+
+                {/* گالری عکس‌ها و یادداشت‌های ثبت‌شده برای این پروژه */}
+                {order.stageUpdates && order.stageUpdates.length > 0 && (
+                  <div className="mt-4 space-y-2.5 border-t pt-3">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                      <ImageIcon className="h-4 w-4 text-primary" />
+                      عکس‌ها و گزارشات کارگاهی ثبت‌شده ({toFa(order.stageUpdates.length)} گزارش):
+                    </div>
+
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {order.stageUpdates.map((update) => (
+                        <div
+                          key={update.id}
+                          className="rounded-lg border bg-card/60 p-2.5 text-xs space-y-2"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-primary">{update.title}</span>
+                            <span className="text-[11px] text-muted-foreground">{faDate(update.createdAt)}</span>
+                          </div>
+
+                          {update.notes && (
+                            <p className="text-muted-foreground leading-relaxed text-[11px]">
+                              {update.notes}
+                            </p>
+                          )}
+
+                          {update.photos && update.photos.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {update.photos.map((ph, pIdx) => (
+                                <button
+                                  key={pIdx}
+                                  type="button"
+                                  onClick={() => setActivePreviewImage(ph)}
+                                  className="group relative h-14 w-14 overflow-hidden rounded-md border bg-slate-100 hover:ring-2 hover:ring-primary dark:bg-slate-800"
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={ph}
+                                    alt="عکس مرحله"
+                                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                                  />
+                                  <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Eye className="h-4 w-4 text-white" />
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </Card>
             );
           })}
         </div>
       )}
+
+      {/* مودال ثبت عکس و نوت مرحله توسط اپراتور / سرپرست */}
+      <Dialog open={stagePhotoModalOpen} onOpenChange={setStagePhotoModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold">
+              <Camera className="h-5 w-5 text-emerald-600" />
+              ثبت عکس و یادداشت مرحله کارگاهی
+            </DialogTitle>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!targetOrderForStage) return;
+              if (!stageTitle.trim()) {
+                toast.error("عنوان مرحله یا اقدام الزامی است.");
+                return;
+              }
+
+              stageUpdateMutation.mutate({
+                orderId: targetOrderForStage.id,
+                body: {
+                  stationCode: stageStationCode,
+                  title: stageTitle,
+                  notes: stageNotes || undefined,
+                  photos: stagePhotos,
+                  advanceStage: advanceStageCheck,
+                },
+              });
+            }}
+            className="space-y-3.5 pt-2 text-xs"
+          >
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">
+                پروژه: <strong className="text-foreground">{targetOrderForStage?.projectTitle}</strong> (
+                {targetOrderForStage?.code})
+              </label>
+            </div>
+
+            <div>
+              <label className="mb-1 block font-medium">ایستگاه و مرحله کارگاهی:</label>
+              <select
+                value={stageStationCode}
+                onChange={(e) => setStageStationCode(e.target.value)}
+                className="w-full rounded-md border bg-background p-2 text-xs"
+              >
+                {Object.entries(STAGE_LABELS).map(([code, meta]) => (
+                  <option key={code} value={code}>
+                    {meta.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block font-medium">عنوان اقدام / عنوان مرحله:</label>
+              <Input
+                value={stageTitle}
+                onChange={(e) => setStageTitle(e.target.value)}
+                placeholder="مثال: اتمام برش ورق‌ها و بازرسی ابعادی"
+                className="text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block font-medium">توضیحات و یادداشت فنی:</label>
+              <textarea
+                rows={3}
+                value={stageNotes}
+                onChange={(e) => setStageNotes(e.target.value)}
+                placeholder="توضیحاتی در مورد کیفیت اجرای کار، نوارکاری، یراق‌آلات، کسری احتمالی و ..."
+                className="w-full rounded-md border bg-background p-2 text-xs"
+              />
+            </div>
+
+            {/* بخش آپلود و پیوست عکس */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="font-medium">تصاویر کارگاهی / عکس از محل پروژه:</label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-7 gap-1 text-[11px]"
+                >
+                  <Plus className="h-3 w-3" />
+                  انتخاب عکس از دستگاه
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+
+              {stagePhotos.length === 0 ? (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex h-20 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed text-muted-foreground hover:bg-muted/30 transition-colors"
+                >
+                  <Camera className="h-5 w-5 opacity-40 mb-1" />
+                  <span className="text-[11px]">برای افزودن عکس کلیک کنید (چندگانه)</span>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {stagePhotos.map((ph, idx) => (
+                    <div key={idx} className="relative h-16 w-16 overflow-hidden rounded-md border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={ph} alt="پیش‌نمایش" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setStagePhotos((prev) => prev.filter((_, i) => i !== idx))}
+                        className="absolute right-0.5 top-0.5 rounded-full bg-rose-600 p-1 text-white shadow hover:bg-rose-700"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                id="advanceStage"
+                checked={advanceStageCheck}
+                onChange={(e) => setAdvanceStageCheck(e.target.checked)}
+                className="h-4 w-4 rounded accent-primary cursor-pointer"
+              />
+              <label htmlFor="advanceStage" className="text-xs cursor-pointer select-none">
+                وضعیت کلی سفارش هم به این مرحله ارتقا یابد
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setStagePhotoModalOpen(false);
+                  resetStageForm();
+                }}
+                className="text-xs"
+              >
+                انصراف
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={stageUpdateMutation.isPending}
+                className="text-xs"
+              >
+                {stageUpdateMutation.isPending ? "در حال ثبت..." : "ثبت عکس و یادداشت"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* لایت‌باکس بزرگنمایی عکس */}
+      <Dialog open={Boolean(activePreviewImage)} onOpenChange={() => setActivePreviewImage(null)}>
+        <DialogContent className="max-w-2xl p-2 bg-black/95 border-none">
+          {activePreviewImage && (
+            <div className="flex items-center justify-center p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={activePreviewImage}
+                alt="تصویر بزرگنمایی کارگاهی"
+                className="max-h-[80vh] w-auto rounded-lg object-contain"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* مودال لینک رهگیری کارفرما */}
       <Dialog open={trackingModalOpen} onOpenChange={setTrackingModalOpen}>
@@ -252,7 +565,7 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
 
           <div className="space-y-4 pt-2">
             <p className="text-xs leading-relaxed text-muted-foreground">
-              با ارسال این لینک به مشتری، او می‌تواند در هر لحظه درصد پیشرفت، وضعیت ایستگاه‌های کارگاهی (برش، نوار، CNC، مونتاژ، رنگ) و تاریخ تحویل پروژه را بدون نیاز به ورود به سیستم مشاهده کند:
+              با ارسال این لینک به مشتری، او می‌تواند در هر لحظه درصد پیشرفت، عکس‌های واقعی کارگاه و مراحل نصب را بدون نیاز به ورود به سیستم مشاهده کند:
             </p>
 
             <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-2.5">

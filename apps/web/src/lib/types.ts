@@ -4182,7 +4182,29 @@ export interface WoodProductionOrderSummary {
   createdAt: string;
   product?: { name: string; sku: string };
   installationOrders?: InstallationOrderRow[];
+  stageUpdates?: ProductionStageUpdateRow[];
 }
+
+export interface ProductionStageUpdateRow {
+  id: string;
+  productionOrderId: string;
+  stationCode: string;
+  title: string;
+  notes?: string | null;
+  photos: string[];
+  operatorName?: string | null;
+  createdAt: string;
+}
+
+export interface CreateStageUpdateInput {
+  stationCode: string;
+  title: string;
+  notes?: string;
+  photos?: string[];
+  operatorName?: string;
+  advanceStage?: boolean;
+}
+
 
 
 

@@ -3,7 +3,22 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, Moon, Sun, LogOut, Search, UserCircle } from "lucide-react";
+import {
+  Menu,
+  Moon,
+  Sun,
+  LogOut,
+  Search,
+  UserCircle,
+  LayoutDashboard,
+  ShoppingCart,
+  Route,
+  MessageSquare,
+  Plus,
+  UserPlus,
+  Scissors,
+  Truck,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { KardoCommandPalette } from "./kardo-command-palette";
 import { Button } from "@/components/ui/button";
@@ -153,11 +168,118 @@ export function AdminTopbar({
         title="جستجوی سریع در کاردو (Ctrl+K)"
       >
         <Search className="size-3.5 text-muted-foreground/80" />
-        <span className="hidden sm:inline-block">جستجوی سریع در کاردو...</span>
-        <kbd className="hidden sm:inline-flex h-4 items-center gap-0.5 rounded border border-border bg-background px-1 text-[10px] font-medium text-muted-foreground">
+        <span className="hidden lg:inline-block">جستجوی سریع...</span>
+        <kbd className="hidden lg:inline-flex h-4 items-center gap-0.5 rounded border border-border bg-background px-1 text-[10px] font-medium text-muted-foreground">
           <span className="text-[9px]">Ctrl</span> K
         </kbd>
       </button>
+
+      {/* دکمه‌های دسترسی مستقیم و فوق‌العاده سریع */}
+      <div className="hidden md:flex items-center gap-1 ms-1">
+        <Link
+          href="/admin"
+          className={cn(
+            "flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors",
+            pathname === "/admin"
+              ? "bg-primary/10 text-primary font-bold"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}
+          title="داشبورد و گزارشات مدیریتی"
+        >
+          <LayoutDashboard className="size-3.5" />
+          <span>داشبورد</span>
+        </Link>
+
+        <Link
+          href="/admin/pos"
+          className={cn(
+            "flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors",
+            pathname === "/admin/pos"
+              ? "bg-primary text-primary-foreground font-bold shadow-xs"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}
+          title="صندوق فروشگاهی POS (F2)"
+        >
+          <ShoppingCart className="size-3.5" />
+          <span>صندوق (F2)</span>
+        </Link>
+
+        <Link
+          href="/admin/orders/tracking"
+          className={cn(
+            "flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors",
+            pathname === "/admin/orders/tracking"
+              ? "bg-primary/10 text-primary font-bold"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}
+          title="مرکز پیگیری سفارشات و سیر تحویل"
+        >
+          <Route className="size-3.5" />
+          <span>سیر سفارشات</span>
+        </Link>
+
+        <Link
+          href="/admin/chat"
+          className={cn(
+            "flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors",
+            pathname === "/admin/chat"
+              ? "bg-primary/10 text-primary font-bold"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}
+          title="پیام‌رسان و چت سازمانی"
+        >
+          <MessageSquare className="size-3.5" />
+          <span>پیام‌رسان</span>
+        </Link>
+      </div>
+
+      {/* منوی اقدام سریع (+) */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1 px-2 text-xs font-bold text-primary hover:bg-primary/10 hover:text-primary"
+            title="ایجاد سریع سند یا عملیات جدید"
+          >
+            <Plus className="size-3.5 stroke-[2.5]" />
+            <span className="hidden sm:inline">ایجاد سریع</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-48 text-xs">
+          <DropdownMenuItem asChild>
+            <Link href="/admin/pos" className="flex items-center gap-2 cursor-pointer">
+              <ShoppingCart className="size-3.5 text-primary" />
+              <span>فاکتور فروش جدید</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/admin/customers" className="flex items-center gap-2 cursor-pointer">
+              <UserPlus className="size-3.5 text-emerald-600" />
+              <span>ثبت مشتری جدید</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/admin/wood-industry" className="flex items-center gap-2 cursor-pointer">
+              <Scissors className="size-3.5 text-amber-600" />
+              <span>سفارش ساخت چوب / MDF</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/admin/logistics/drivers" className="flex items-center gap-2 cursor-pointer">
+              <Truck className="size-3.5 text-blue-600" />
+              <span>ثبت راننده و ناوگان</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/admin/chat" className="flex items-center gap-2 cursor-pointer">
+              <MessageSquare className="size-3.5 text-purple-600" />
+              <span>ارسال پیام سازمانی</span>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <div className="flex-1" />
 

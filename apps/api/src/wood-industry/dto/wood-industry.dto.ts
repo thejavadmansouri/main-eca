@@ -125,3 +125,13 @@ export class RecordProjectPaymentDto {
   notes?: string;
 }
 
+export class CreateStageUpdateDto {
+  stationCode: string;
+  title: string;
+  notes?: string;
+  photos?: string[];
+  operatorName?: string;
+  advanceStage?: boolean;
+}
+
+

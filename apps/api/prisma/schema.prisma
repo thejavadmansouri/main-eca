@@ -3107,6 +3107,7 @@ model ProductionOrder {
   qualityChecks      QualityCheck[]
   cuttingListItems   CuttingListItem[]
   scanLogs           ProductionScanLog[]
+  stageUpdates       ProductionStageUpdate[]
   installationOrders InstallationOrder[]
   contract           ProjectContract?
 
@@ -3770,6 +3771,23 @@ model Driver {
   @@index([plateNumber])
   @@index([mobile])
   @@index([isActive])
+}
+
+model ProductionStageUpdate {
+  id                String          @id @default(uuid())
+  productionOrderId String
+  stationCode       String          // CUTTING, EDGE_BANDING, CNC, ASSEMBLY, FINISHING, QC_PACKING, READY_TO_INSTALL, INSTALLED
+  title             String          // عنوان رویداد مرحله
+  notes             String?         // توضیحات کارگاهی و یادداشت
+  photos            String[]        // تصاویر آپلود شده مرحله
+  operatorName      String?         // نام تکنسین یا سرپرست کارگاه
+  createdAt         DateTime        @default(now())
+
+  productionOrder   ProductionOrder @relation(fields: [productionOrderId], references: [id], onDelete: Cascade)
+
+  @@index([productionOrderId])
+  @@index([stationCode])
+  @@index([createdAt])
 }
 
 

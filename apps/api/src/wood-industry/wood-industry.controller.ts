@@ -23,6 +23,7 @@ import {
   VerifyInboundReceiptDto,
   CreateProjectContractDto,
   RecordProjectPaymentDto,
+  CreateStageUpdateDto,
 } from './dto/wood-industry.dto';
 import { WoodIndustryService } from './wood-industry.service';
 
@@ -66,6 +67,19 @@ export class WoodIndustryController {
     @Body() dto: { progressPercent: number; estimatedCompletionDate?: string },
   ) {
     return this.woodService.updateOrderProgress(id, dto);
+  }
+
+  @Get('orders/:id/stage-updates')
+  async getStageUpdates(@Param('id') orderId: string) {
+    return this.woodService.getStageUpdates(orderId);
+  }
+
+  @Post('orders/:id/stage-updates')
+  async addStageUpdate(
+    @Param('id') orderId: string,
+    @Body() dto: CreateStageUpdateDto,
+  ) {
+    return this.woodService.addStageUpdate(orderId, dto);
   }
 
   @Public()

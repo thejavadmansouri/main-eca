@@ -474,10 +474,10 @@ export function filterNavByRole(
 
 export function landingPathForRole(role: Role | undefined): string {
   switch (role) {
-    case "SALES":
     case "ADMIN":
     case "MANAGER":
-      return "/admin/pos";
+    case "SALES":
+      return "/admin";
     case "STAFF":
       return "/admin/inventory";
     default:
