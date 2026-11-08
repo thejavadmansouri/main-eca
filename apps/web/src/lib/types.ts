@@ -3490,6 +3490,10 @@ export interface EmployeeRow {
   fatherName?: string | null;
   birthDate?: string | null;
   mobile: string;
+  emergencyPhone?: string | null;
+  bloodType?: string | null;
+  gender?: 'MALE' | 'FEMALE' | null;
+  militaryStatus?: string | null;
   address?: string | null;
   insuranceNumber?: string | null;
   bankAccount?: string | null;
@@ -3503,6 +3507,8 @@ export interface EmployeeRow {
   departmentId?: string | null;
   department?: DepartmentRow | null;
   contracts?: EmployeeContractRow[];
+  notes?: string | null;
+  _count?: { contracts: number; payrollSlips: number };
   createdAt: string;
 }
 
@@ -3511,17 +3517,36 @@ export interface EmployeeContractRow {
   contractNumber: string;
   employeeId: string;
   contractType: string;
+  decreeType?: string;
+  decreeTitle?: string | null;
   startDate: string;
   endDate?: string | null;
+  issueDate?: string;
   baseDailySalary: number;
   baseMonthlySalary: number;
   housingAllowance: number;
   groceryAllowance: number;
   childAllowancePerChild: number;
   maritalAllowance: number;
+  seniorityAllowance?: number;
+  responsibilityAllowance?: number;
   specialAllowance: number;
+  educationDegree?: string | null;
+  notes?: string | null;
   isActive: boolean;
+  employee?: EmployeeRow;
   createdAt: string;
+}
+
+export interface HrStatsRow {
+  totalActiveEmployees: number;
+  totalInactiveEmployees: number;
+  totalDepartments: number;
+  totalActiveContracts: number;
+  insuredCount: number;
+  totalMonthlyPayrollCost: number;
+  averageSalary: number;
+  departmentBreakdown: { id: string; name: string; count: number }[];
 }
 
 export interface PayrollPeriodRow {

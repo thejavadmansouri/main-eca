@@ -3185,6 +3185,10 @@ model Employee {
   fatherName       String?
   birthDate        String?
   mobile           String
+  emergencyPhone   String?            // شماره تماس اضطراری
+  bloodType        String?            // گروه خونی
+  gender           String?            @default("MALE") // MALE, FEMALE
+  militaryStatus   String?            // EXEMPT, COMPLETED, ONGOING, NOT_APPLICABLE
   address          String?
   insuranceNumber  String?
   bankAccount      String?
@@ -3197,6 +3201,7 @@ model Employee {
   jobTitle         String
   departmentId     String?
   userId           String?            @unique
+  notes            String?            // توضیحات و ملاحظات پرونده کارگزینی
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
@@ -3216,15 +3221,22 @@ model EmployeeContract {
   contractNumber         String    @unique
   employeeId             String
   contractType           String    @default("FIXED_TERM") // PERMANENT, FIXED_TERM, PROBATION, CONTRACTOR
+  decreeType             String    @default("INITIAL") // INITIAL, ANNUAL_INCREASE, PROMOTION, TITLE_CHANGE, TRANSFER, RENEWAL, TERMINATION
+  decreeTitle            String?   // عنوان حکم (مثلاً: حکم کارگزینی برقراری حقوق سالانه ۱۴۰۴)
   startDate              DateTime
   endDate                DateTime?
+  issueDate              DateTime  @default(now()) // تاریخ صدور حکم
   baseDailySalary        Float     // دستمزد پایه روزانه (قانون کار)
   baseMonthlySalary      Float     // دستمزد پایه ماهانه (۳۰ روزه)
   housingAllowance       Float     @default(9000000) // حق مسکن (مصوب شورای عالی کار ۹ میلیون ریال)
   groceryAllowance       Float     @default(14000000) // بن خواربار (مصوب ۱۴ میلیون ریال)
   childAllowancePerChild Float     @default(7166184) // حق اولاد ماهانه به ازای هر فرزند مشمول
   maritalAllowance       Float     @default(5000000) // حق عائله‌مندی
+  seniorityAllowance     Float     @default(0) // پایه سنوات روزانه/ماهانه
+  responsibilityAllowance Float    @default(0) // حق مسئولیت و سرپرستی
   specialAllowance       Float     @default(0) // فوق‌العاده شغل و تخصص
+  educationDegree        String?   // مدرک تحصیلی (دیپلم، فوق‌دیپلم، لیسانس، فوق‌لیسانس، دکتری)
+  notes                  String?   // شرایط و بندهای حکم کارگزینی
   isActive               Boolean   @default(true)
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt

@@ -3615,9 +3615,14 @@ export function createDepartment(body: {
   });
 }
 
+export function getHrStats(): Promise<T.HrStatsRow> {
+  return apiFetch<T.HrStatsRow>('/hr/stats');
+}
+
 export function getEmployees(params?: {
   departmentId?: string;
   search?: string;
+  isActive?: boolean;
 }): Promise<T.EmployeeRow[]> {
   const qs = params ? `?${reportQs(params as any)}` : '';
   return apiFetch<T.EmployeeRow[]>(`/hr/employees${qs}`);
@@ -3637,6 +3642,19 @@ export function createEmployee(body: {
   departmentId?: string;
   maritalStatus?: string;
   childrenCount?: number;
+  emergencyPhone?: string;
+  bloodType?: string;
+  gender?: string;
+  militaryStatus?: string;
+  address?: string;
+  insuranceNumber?: string;
+  bankAccount?: string;
+  iban?: string;
+  birthDate?: string;
+  fatherName?: string;
+  birthCertificate?: string;
+  hireDate?: string;
+  notes?: string;
 }): Promise<T.EmployeeRow> {
   return apiFetch<T.EmployeeRow>('/hr/employees', {
     method: 'POST',
@@ -3644,22 +3662,83 @@ export function createEmployee(body: {
   });
 }
 
+export function updateEmployee(
+  id: string,
+  body: Partial<T.EmployeeRow>,
+): Promise<T.EmployeeRow> {
+  return apiFetch<T.EmployeeRow>(`/hr/employees/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body,
+  });
+}
+
+export function deleteEmployee(id: string): Promise<{ id: string; isActive?: boolean }> {
+  return apiFetch<{ id: string; isActive?: boolean }>(`/hr/employees/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function getContracts(params?: {
+  employeeId?: string;
+  isActive?: boolean;
+}): Promise<T.EmployeeContractRow[]> {
+  const qs = params ? `?${reportQs(params as any)}` : '';
+  return apiFetch<T.EmployeeContractRow[]>(`/hr/contracts${qs}`);
+}
+
+export function getContractById(id: string): Promise<T.EmployeeContractRow> {
+  return apiFetch<T.EmployeeContractRow>(`/hr/contracts/${encodeURIComponent(id)}`);
+}
+
 export function createContract(body: {
   contractNumber: string;
   employeeId: string;
   contractType?: string;
+  decreeType?: string;
+  decreeTitle?: string;
   startDate: string;
   endDate?: string;
+  issueDate?: string;
   baseDailySalary: number;
   baseMonthlySalary: number;
   housingAllowance?: number;
   groceryAllowance?: number;
   childAllowancePerChild?: number;
   maritalAllowance?: number;
+  seniorityAllowance?: number;
+  responsibilityAllowance?: number;
   specialAllowance?: number;
+  educationDegree?: string;
+  notes?: string;
 }): Promise<T.EmployeeContractRow> {
   return apiFetch<T.EmployeeContractRow>('/hr/contracts', {
     method: 'POST',
+    body,
+  });
+}
+
+export function updateContract(
+  id: string,
+  body: Partial<T.EmployeeContractRow>,
+): Promise<T.EmployeeContractRow> {
+  return apiFetch<T.EmployeeContractRow>(`/hr/contracts/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body,
+  });
+}
+
+export function deleteContract(id: string): Promise<{ id: string }> {
+  return apiFetch<{ id: string }>(`/hr/contracts/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function updateDepartment(
+  id: string,
+  body: { name?: string; code?: string; description?: string; managerName?: string },
+): Promise<T.DepartmentRow> {
+  return apiFetch<T.DepartmentRow>(`/hr/departments/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
     body,
   });
 }
@@ -3695,6 +3774,16 @@ export function calculatePayrollSlip(body: {
   otherDeductions?: number;
 }): Promise<T.PayrollSlipRow> {
   return apiFetch<T.PayrollSlipRow>('/hr/payroll-slips/calculate', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function batchCalculatePayrollSlips(body: {
+  periodId: string;
+  defaultWorkingDays?: number;
+}): Promise<{ message: string; count: number }> {
+  return apiFetch<{ message: string; count: number }>('/hr/payroll-slips/batch', {
     method: 'POST',
     body,
   });

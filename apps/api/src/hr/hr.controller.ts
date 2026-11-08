@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -10,11 +12,15 @@ import { Role } from '@prisma/client';
 
 import { Roles } from '../auth/roles.decorator';
 import {
+  BatchCalculateSlipsDto,
   CalculateSlipDto,
   CreateContractDto,
   CreateDepartmentDto,
   CreateEmployeeDto,
   CreatePayrollPeriodDto,
+  UpdateContractDto,
+  UpdateDepartmentDto,
+  UpdateEmployeeDto,
 } from './dto/hr.dto';
 import { HrService } from './hr.service';
 
@@ -22,6 +28,12 @@ import { HrService } from './hr.service';
 @Roles(Role.ADMIN, Role.MANAGER)
 export class HrController {
   constructor(private readonly hrService: HrService) {}
+
+  // ───────────────────────── آمار و شاخص‌های کلیدی ─────────────────────────
+  @Get('stats')
+  async getHrStats() {
+    return this.hrService.getHrSummaryStats();
+  }
 
   // ───────────────────────── واحدهای سازمانی ─────────────────────────
   @Get('departments')
@@ -34,13 +46,20 @@ export class HrController {
     return this.hrService.createDepartment(dto);
   }
 
-  // ───────────────────────── پرسنل و کارگزینی ─────────────────────────
+  @Patch('departments/:id')
+  async updateDepartment(@Param('id') id: string, @Body() dto: UpdateDepartmentDto) {
+    return this.hrService.updateDepartment(id, dto);
+  }
+
+  // ───────────────────────── پرسنل و پرونده کارگزینی ─────────────────────────
   @Get('employees')
   async getEmployees(
     @Query('departmentId') departmentId?: string,
     @Query('search') search?: string,
+    @Query('isActive') isActive?: string,
   ) {
-    return this.hrService.getEmployees(departmentId, search);
+    const activeBool = isActive === 'true' ? true : isActive === 'false' ? false : undefined;
+    return this.hrService.getEmployees(departmentId, search, activeBool);
   }
 
   @Get('employees/:id')
@@ -53,9 +72,44 @@ export class HrController {
     return this.hrService.createEmployee(dto);
   }
 
+  @Patch('employees/:id')
+  async updateEmployee(@Param('id') id: string, @Body() dto: UpdateEmployeeDto) {
+    return this.hrService.updateEmployee(id, dto);
+  }
+
+  @Delete('employees/:id')
+  async deleteEmployee(@Param('id') id: string) {
+    return this.hrService.deleteEmployee(id);
+  }
+
+  // ───────────────────────── احکام کارگزینی (Staff Decrees) ─────────────────────────
+  @Get('contracts')
+  async getContracts(
+    @Query('employeeId') employeeId?: string,
+    @Query('isActive') isActive?: string,
+  ) {
+    const activeBool = isActive === 'true' ? true : isActive === 'false' ? false : undefined;
+    return this.hrService.getContracts(employeeId, activeBool);
+  }
+
+  @Get('contracts/:id')
+  async getContractById(@Param('id') id: string) {
+    return this.hrService.getContractById(id);
+  }
+
   @Post('contracts')
   async createContract(@Body() dto: CreateContractDto) {
     return this.hrService.createContract(dto);
+  }
+
+  @Patch('contracts/:id')
+  async updateContract(@Param('id') id: string, @Body() dto: UpdateContractDto) {
+    return this.hrService.updateContract(id, dto);
+  }
+
+  @Delete('contracts/:id')
+  async deleteContract(@Param('id') id: string) {
+    return this.hrService.deleteContract(id);
   }
 
   // ───────────────────────── دوره‌ها و فیش‌های حقوقی ─────────────────────────
@@ -65,9 +119,7 @@ export class HrController {
   }
 
   @Post('payroll-periods')
-  async createPayrollPeriod(
-    @Body() body: CreatePayrollPeriodDto,
-  ) {
+  async createPayrollPeriod(@Body() body: CreatePayrollPeriodDto) {
     return this.hrService.createPayrollPeriod(body.year, body.month, body.title);
   }
 
@@ -79,5 +131,10 @@ export class HrController {
   @Post('payroll-slips/calculate')
   async calculatePayrollSlip(@Body() dto: CalculateSlipDto) {
     return this.hrService.calculatePayrollSlip(dto);
+  }
+
+  @Post('payroll-slips/batch')
+  async batchCalculatePayrollSlip(@Body() dto: BatchCalculateSlipsDto) {
+    return this.hrService.batchCalculatePayroll(dto.periodId, dto.defaultWorkingDays);
   }
 }
