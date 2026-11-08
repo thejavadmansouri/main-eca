@@ -56,6 +56,7 @@ import { CustomFieldsModule } from './custom-fields/custom-fields.module';
 import { ManufacturingModule } from './manufacturing/manufacturing.module';
 import { HrModule } from './hr/hr.module';
 import { RepairsModule } from './repairs/repairs.module';
+import { IntegrationsModule } from './integrations/integrations.module';
 
 /*
  * ماژول‌هایی که **فقط روی سرور انبار** لود می‌شوند.
@@ -109,6 +110,7 @@ const WAREHOUSE_ONLY = [
   ManufacturingModule,
   HrModule,
   RepairsModule,
+  IntegrationsModule,
 ];
 
 /**

@@ -3717,3 +3717,77 @@ export function settleRepairOrder(
   });
 }
 
+// =====================================================
+// توابع یکپارچه‌سازی، وب‌هوک‌ها و هوش تجاری (Integrations & BI API)
+// =====================================================
+
+export function getIntegrations(): Promise<T.IntegrationConfigRow[]> {
+  return apiFetch<T.IntegrationConfigRow[]>('/integrations');
+}
+
+export function saveIntegration(body: {
+  type: string;
+  name: string;
+  apiUrl: string;
+  apiKey?: string;
+  apiSecret?: string;
+  syncInventory?: boolean;
+  syncPrices?: boolean;
+  autoCreateInvoice?: boolean;
+  isActive?: boolean;
+}): Promise<T.IntegrationConfigRow> {
+  return apiFetch<T.IntegrationConfigRow>('/integrations', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function syncWooCommerce(id: string): Promise<{
+  syncedProductsCount: number;
+  syncedAt: string;
+  status: string;
+  message: string;
+}> {
+  return apiFetch(`/integrations/${encodeURIComponent(id)}/sync`, {
+    method: 'POST',
+    body: {},
+  });
+}
+
+export function getWebhooks(): Promise<T.WebhookEndpointRow[]> {
+  return apiFetch<T.WebhookEndpointRow[]>('/integrations/webhooks');
+}
+
+export function createWebhook(body: {
+  name: string;
+  targetUrl: string;
+  secret: string;
+  events: string[];
+}): Promise<T.WebhookEndpointRow> {
+  return apiFetch<T.WebhookEndpointRow>('/integrations/webhooks', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function getWebhookLogs(endpointId?: string): Promise<T.WebhookLogRow[]> {
+  const qs = endpointId ? `?endpointId=${encodeURIComponent(endpointId)}` : '';
+  return apiFetch<T.WebhookLogRow[]>(`/integrations/webhooks/logs${qs}`);
+}
+
+export function triggerWebhookTest(body: {
+  endpointId: string;
+  event: string;
+  payload?: any;
+}): Promise<any> {
+  return apiFetch('/integrations/webhooks/test', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function getBiExecutiveMetrics(): Promise<T.BiExecutiveMetrics> {
+  return apiFetch<T.BiExecutiveMetrics>('/integrations/bi/metrics');
+}
+
+

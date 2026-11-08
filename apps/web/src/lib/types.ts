@@ -3608,5 +3608,68 @@ export interface RepairItemRow {
   createdAt: string;
 }
 
+// =====================================================
+// ماژول یکپارچه‌سازی، وب‌هوک‌ها و هوش تجاری (Integrations, Webhooks & BI)
+// =====================================================
+
+export interface IntegrationConfigRow {
+  id: string;
+  type: string;
+  name: string;
+  apiUrl: string;
+  apiKey?: string | null;
+  apiSecret?: string | null;
+  syncInventory: boolean;
+  syncPrices: boolean;
+  autoCreateInvoice: boolean;
+  isActive: boolean;
+  lastSyncAt?: string | null;
+  status: 'CONNECTED' | 'ERROR' | 'DISABLED';
+  lastError?: string | null;
+  createdAt: string;
+}
+
+export interface WebhookEndpointRow {
+  id: string;
+  name: string;
+  targetUrl: string;
+  secret: string;
+  events: string[];
+  isActive: boolean;
+  createdAt: string;
+  _count?: { logs: number };
+}
+
+export interface WebhookLogRow {
+  id: string;
+  endpointId: string;
+  endpoint?: { name: string; targetUrl: string };
+  event: string;
+  payload: any;
+  statusCode?: number | null;
+  responseBody?: string | null;
+  durationMs?: number | null;
+  isSuccess: boolean;
+  createdAt: string;
+}
+
+export interface BiExecutiveMetrics {
+  totalRevenue: number;
+  averageOrderValue: number;
+  invoiceCount: number;
+  productsCount: number;
+  categoriesCount: number;
+  prodOrdersCount: number;
+  productionFulfillmentRate: number;
+  repairOrdersCount: number;
+  repairRevenue: number;
+  payrollExpense: number;
+  grossProfit: number;
+  grossProfitMargin: number;
+  inventoryTurnoverRatio: number;
+  customerRetentionRate: number;
+}
+
+
 
 // =====================================================

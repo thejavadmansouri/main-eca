@@ -3332,3 +3332,62 @@ model RepairItem {
   @@index([productId])
 }
 
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+// ماژول یکپارچه‌سازی، وب‌هوک‌ها و پل‌های ارتباطی (Integrations & Webhooks)
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+model IntegrationConfig {
+  id                String    @id @default(uuid())
+  type              String    // WOOCOMMERCE, MOADIAN_TAX, BANK_GATEWAY, CUSTOM_API
+  name              String    // نام نمایشی مثلاً «فروشگاه آنلاین چوب و ابزار»
+  apiUrl            String    // آدرس وب‌سرویس / فروشگاه
+  apiKey            String?   // Consumer Key / API Token
+  apiSecret         String?   // Consumer Secret
+  syncInventory     Boolean   @default(true)
+  syncPrices        Boolean   @default(true)
+  autoCreateInvoice Boolean   @default(true)
+  isActive          Boolean   @default(true)
+  lastSyncAt        DateTime?
+  status            String    @default("CONNECTED") // CONNECTED, ERROR, DISABLED
+  lastError         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([type])
+  @@index([isActive])
+}
+
+model WebhookEndpoint {
+  id          String       @id @default(uuid())
+  name        String       // عنوان وب‌هوک مثلاً «سامانه پیامک رویدادها» یا «CRM خارجی»
+  targetUrl   String       // آدرس وب‌هوک مقصد
+  secret      String       // کلید مشترک برای امضای دیجیتال HMAC
+  events      String[]     @default([]) // مثلاً ["invoice.created", "inventory.low_stock", "payment.received"]
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  logs        WebhookLog[]
+
+  @@index([isActive])
+}
+
+model WebhookLog {
+  id           String          @id @default(uuid())
+  endpointId   String
+  event        String
+  payload      Json
+  statusCode   Int?
+  responseBody String?
+  durationMs   Int?
+  isSuccess    Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+
+  endpoint     WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([endpointId])
+  @@index([event])
+  @@index([createdAt])
+}
+
+

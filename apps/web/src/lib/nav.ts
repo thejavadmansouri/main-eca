@@ -32,6 +32,7 @@ import {
   ShoppingCart,
   SlidersHorizontal,
   Tags,
+  TrendingUp,
   Users,
   Wallet,
   Warehouse,
@@ -83,6 +84,12 @@ export const NAV_SECTIONS: NavSection[] = [
         title: "گزارش‌های تحلیلی و مالی",
         href: "/admin/reports",
         icon: BarChart3,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "هوش تجاری و تصمیم‌گیری (BI)",
+        href: "/admin/bi",
+        icon: TrendingUp,
         roles: ["ADMIN", "MANAGER"],
       },
     ],
@@ -352,6 +359,12 @@ export const NAV_SECTIONS: NavSection[] = [
         title: "کاربران و سطوح دسترسی",
         href: "/admin/users",
         icon: ShieldAlert,
+        roles: ["ADMIN"],
+      },
+      {
+        title: "یکپارچه‌سازی و وب‌هوک‌ها",
+        href: "/admin/integrations",
+        icon: Globe,
         roles: ["ADMIN"],
       },
       {
