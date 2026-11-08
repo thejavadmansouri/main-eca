@@ -1,22 +1,37 @@
 "use client";
 
-// طبق بخش ب سند افزونه — صفحه‌ی اصلی پنل کارگر
-// شروع شیفت (سشن صوتی) + دو دکمه‌ی بزرگ: ثبت ورود کالا / انبارگردانی
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Package,
-  ClipboardList,
-  LogOut,
-  RefreshCw,
-  Loader2,
   AlertCircle,
+  ArrowRight,
+  Boxes,
+  CheckCircle2,
+  ChevronLeft,
+  ClipboardList,
+  Factory,
+  HardHat,
+  Loader2,
+  LogOut,
+  Package,
+  QrCode,
+  Radio,
+  RefreshCw,
+  ScanLine,
+  ShieldCheck,
+  Sparkles,
+  Truck,
+  User,
+  Wrench,
 } from "lucide-react";
+
 import { useAuthStore } from "@/lib/auth-store";
 import { startVoiceSession } from "@/lib/api";
 import { ApiException } from "@/lib/api-error-messages";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkerSession } from "./_context/worker-session";
@@ -29,7 +44,6 @@ export default function WorkerHomePage() {
   const [starting, setStarting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // طبق بخش ب — POST /inventory-session/start
   async function handleStartShift() {
     setError(null);
     setStarting(true);
@@ -37,11 +51,11 @@ export default function WorkerHomePage() {
       const s = await startVoiceSession({});
       setSessionId(s.id);
       toast({
-        title: "شیفت شروع شد",
-        description: "آماده‌ی ثبت ورود کالا یا انبارگردانی",
+        title: "شیفت کاری فعال شد",
+        description: "جلسه کاری شما با موفقیت ثبت گردید.",
       });
     } catch (e) {
-      const msg = e instanceof ApiException ? e.message : "خطا در شروع شیفت";
+      const msg = e instanceof ApiException ? e.message : "خطا در ثبت شیفت";
       setError(msg);
       toast({ variant: "destructive", title: "خطا", description: msg });
     } finally {
@@ -57,103 +71,193 @@ export default function WorkerHomePage() {
   const shortId = sessionId ? sessionId.slice(0, 8) : null;
 
   return (
-    <div className="flex flex-1 flex-col">
-      {/* هدر ساده */}
-      <header className="flex items-center justify-between gap-2 border-b px-4 py-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold">
-            {user?.fullName ?? user?.username ?? "کاربر"}
-          </p>
-          <p className="text-xs text-muted-foreground">پنل کارگر انبار</p>
+    <div className="flex flex-1 flex-col min-h-screen bg-muted/20 font-sans pb-8">
+      {/* ───────────────────────── هدر مشخصات اپراتور ───────────────────────── */}
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur-md shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary font-black text-sm">
+            {user?.fullName?.charAt(0) || user?.username?.charAt(0) || "ک"}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-black text-foreground">
+              {user?.fullName ?? user?.username ?? "اپراتور انبار و کارگاه"}
+            </p>
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>پنل موبایل پرسنل کاردو</span>
+            </div>
+          </div>
         </div>
+
         <Button
           variant="ghost"
           size="icon"
-          className="h-11 w-11 shrink-0"
+          className="size-10 rounded-2xl text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
           onClick={handleLogout}
-          aria-label="خروج"
+          aria-label="خروج از حساب"
+          title="خروج از حساب"
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="size-5" />
         </Button>
       </header>
 
+      {/* ───────────────────────── بدنه اصلی و کاشی‌های لمسی ───────────────────────── */}
       <main className="flex flex-1 flex-col gap-4 p-4">
         {error ? (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+          <Alert variant="destructive" className="rounded-2xl">
+            <AlertCircle className="size-4" />
             <AlertTitle>خطا</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : null}
 
-        {!sessionId ? (
-          <Card className="mt-6 gap-4 p-6">
-            <div className="flex flex-col items-center gap-3 text-center">
-              <div className="rounded-full bg-accent/15 p-4">
-                <Package className="h-8 w-8 text-accent" />
-              </div>
-              <h2 className="text-2xl font-bold">شروع شیفت</h2>
-              <p className="text-sm text-muted-foreground">
-                برای ثبت ورود کالا یا انبارگردانی، ابتدا یک شیفت جدید شروع کنید.
-              </p>
-            </div>
+        {/* بنر وضعیت شیفت */}
+        <div className="flex items-center justify-between bg-card p-3 rounded-2xl border border-border/80 shadow-2xs">
+          <div className="flex items-center gap-2 text-xs">
+            <Radio className="size-4 text-emerald-600 animate-pulse" />
+            <span className="text-muted-foreground">وضعیت اپراتور:</span>
+            <span className="font-bold text-foreground">
+              {sessionId ? "شیفت کاری فعال" : "آماده به کار"}
+            </span>
+          </div>
+
+          {sessionId ? (
+            <Badge variant="outline" className="font-mono text-[10px] bg-muted/60">
+              {shortId}
+            </Badge>
+          ) : (
             <Button
-              className="h-16 w-full text-lg"
+              variant="outline"
+              size="sm"
               onClick={handleStartShift}
               disabled={starting}
+              className="h-7 text-[11px] font-bold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/10"
             >
-              {starting ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  در حال شروع...
-                </>
-              ) : (
-                "شروع شیفت"
-              )}
+              {starting ? <Loader2 className="size-3 animate-spin" /> : <RefreshCw className="size-3" />}
+              ثبت شروع شیفت
             </Button>
-          </Card>
-        ) : (
-          <>
-            <div className="mt-4 flex flex-col gap-3">
-              <Button
-                className="h-24 text-lg"
-                onClick={() => router.push("/worker/scan")}
-              >
-                <Package className="h-7 w-7" />
-                ثبت ورود کالا
-              </Button>
-              <Button
-                variant="secondary"
-                className="h-24 text-lg"
-                onClick={() => router.push("/worker/count")}
-              >
-                <ClipboardList className="h-7 w-7" />
-                انبارگردانی
-              </Button>
-            </div>
+          )}
+        </div>
 
-            <div className="mt-auto flex flex-col items-center gap-3 pb-2 pt-4 text-center">
-              <p className="text-xs text-muted-foreground">
-                شناسه‌ی شیفت:{" "}
-                <span className="font-mono" dir="ltr">
-                  {shortId}
-                </span>
-              </p>
-              <Button
-                variant="ghost"
-                className="h-12 text-sm"
-                onClick={handleStartShift}
-                disabled={starting}
-              >
-                {starting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-4 w-4" />
-                )}
-                شروع شیفت جدید
-              </Button>
+        <div className="space-y-1">
+          <h2 className="text-xs font-bold text-muted-foreground px-1">
+            عملیات اجرایی کارگاه و انبار:
+          </h2>
+        </div>
+
+        {/* کاشی ۱: تایید مراحل تولید و ایستگاه‌های کارگاه (کابینت / دکوراسیون) */}
+        <Link
+          href="/worker/production"
+          className="group relative overflow-hidden rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-card via-card to-emerald-500/[0.04] p-4 shadow-xs transition-all active:scale-[0.98] hover:border-emerald-500/60 hover:shadow-md"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3.5">
+              <div className="flex size-13 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 border border-emerald-500/30 shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-xs">
+                <Factory className="size-7" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black text-foreground">
+                    تایید مراحل تولید و کارگاه
+                  </h3>
+                  <Badge className="bg-emerald-600 text-white text-[10px] font-bold">
+                    ایستگاه‌ها
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  تایید مرحله‌به‌مرحله برش، لبه‌چسبانی، CNC، مونتاژ، رنگ، بسته‌بندی و نصاب‌ها
+                </p>
+              </div>
             </div>
-          </>
+            <ChevronLeft className="size-5 text-muted-foreground/60 group-hover:text-emerald-600 group-hover:-translate-x-1 transition-all shrink-0 mt-1" />
+          </div>
+        </Link>
+
+        {/* کاشی ۲: تاییدیه ورود بار و کنترل کیفی انبار */}
+        <Link
+          href="/worker/inbound"
+          className="group relative overflow-hidden rounded-2xl border-2 border-sky-500/30 bg-gradient-to-br from-card via-card to-sky-500/[0.04] p-4 shadow-xs transition-all active:scale-[0.98] hover:border-sky-500/60 hover:shadow-md"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3.5">
+              <div className="flex size-13 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 border border-sky-500/30 shrink-0 group-hover:bg-sky-600 group-hover:text-white transition-all shadow-xs">
+                <Truck className="size-7" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black text-foreground">
+                    تاییدیه و ترخیص ورود بار
+                  </h3>
+                  <Badge className="bg-sky-600 text-white text-[10px] font-bold">
+                    کنترل کیفی
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  بررسی بارنامه کامیون، بازرسی سلامت اقلام و تایید تخلیه به انبار
+                </p>
+              </div>
+            </div>
+            <ChevronLeft className="size-5 text-muted-foreground/60 group-hover:text-sky-600 group-hover:-translate-x-1 transition-all shrink-0 mt-1" />
+          </div>
+        </Link>
+
+        {/* کاشی ۳: ثبت ورود بارکدی کالا */}
+        <Link
+          href="/worker/scan"
+          className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-4 shadow-xs transition-all active:scale-[0.98] hover:border-primary/40 hover:shadow-sm"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3.5">
+              <div className="flex size-13 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-2xs">
+                <Package className="size-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-foreground">
+                  ثبت ورود بارکدی کالا (قفسه‌گذاری)
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  اسکن بارکد اقلام و تخصیص مستقیم به موقعیت‌های قفسه‌بندی
+                </p>
+              </div>
+            </div>
+            <ChevronLeft className="size-5 text-muted-foreground/50 group-hover:text-primary group-hover:-translate-x-1 transition-all shrink-0 mt-1" />
+          </div>
+        </Link>
+
+        {/* کاشی ۴: انبارگردانی و شمارش */}
+        <Link
+          href="/worker/count"
+          className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-4 shadow-xs transition-all active:scale-[0.98] hover:border-amber-500/40 hover:shadow-sm"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3.5">
+              <div className="flex size-13 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 border border-amber-500/20 shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-all shadow-2xs">
+                <ClipboardList className="size-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-foreground">
+                  شمارش و انبارگردانی دوره‌ای
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  شمارش فیزیکی موجودی قفسه‌ها و ثبت آنلاین مغایرت‌ها
+                </p>
+              </div>
+            </div>
+            <ChevronLeft className="size-5 text-muted-foreground/50 group-hover:text-amber-600 group-hover:-translate-x-1 transition-all shrink-0 mt-1" />
+          </div>
+        </Link>
+
+        {/* فوتر ناوبری سریع به پنل مدیریت در صورت ادمین بودن */}
+        {user && ["ADMIN", "MANAGER"].includes(user.role) && (
+          <div className="mt-auto pt-4 text-center">
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-semibold bg-muted/50 px-3 py-1.5 rounded-xl border border-border/60 transition-colors"
+            >
+              <span>رفتن به داشبورد مدیریتی (دسکتاپ)</span>
+              <ArrowRight className="size-3.5 rotate-180" />
+            </Link>
+          </div>
         )}
       </main>
     </div>
