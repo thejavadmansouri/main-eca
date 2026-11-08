@@ -137,4 +137,14 @@ export class HrController {
   async batchCalculatePayrollSlip(@Body() dto: BatchCalculateSlipsDto) {
     return this.hrService.batchCalculatePayroll(dto.periodId, dto.defaultWorkingDays);
   }
+
+  @Get('payroll-periods/:id/tamin-diskette')
+  async getTaminDiskette(@Param('id') periodId: string) {
+    return this.hrService.generateTaminDiskette(periodId);
+  }
+
+  @Get('payroll-periods/:id/paya-file')
+  async getPayaPaymentFile(@Param('id') periodId: string) {
+    return this.hrService.generatePayaPaymentFile(periodId);
+  }
 }

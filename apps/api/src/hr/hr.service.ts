@@ -647,4 +647,121 @@ export class HrService {
       orderBy: { employee: { personnelCode: 'asc' } },
     });
   }
+
+  // ───────────────────────── دیسکت بیمه تأمین اجتماعی (DSK) ─────────────────────────
+  async generateTaminDiskette(periodId: string) {
+    const period = await this.prisma.payrollPeriod.findUnique({
+      where: { id: periodId },
+      include: {
+        slips: {
+          include: {
+            employee: true,
+          },
+          orderBy: { employee: { personnelCode: 'asc' } },
+        },
+      },
+    });
+    if (!period) throw new NotFoundException('دوره حقوقی مورد نظر یافت نشد.');
+
+    // بیمه‌شدگان (کسانی که شماره بیمه دارند یا حق بیمه برایشان محاسبه شده)
+    const insuredSlips = period.slips.filter((s) => s.workerInsurance > 0 || Boolean(s.employee.insuranceNumber));
+
+    // ۱. ساخت فایل پرسنل (DSKWOR00)
+    const dskworRows = [
+      'DSK_ID,DSK_NAME,DSK_FATH,DSK_IDNO,DSK_NAT,DSK_NUMB,DSK_WORK,DSK_DWA,DSK_MWA,DSK_WARP,DSK_EAP',
+    ];
+
+    for (const slip of insuredSlips) {
+      const emp = slip.employee;
+      const insNum = emp.insuranceNumber || '0000000000';
+      const natId = emp.nationalId || '';
+      const dailyWage = Math.round(slip.baseSalaryEarned / (slip.workingDays || 30));
+      const monthlyWage = Math.round(slip.baseSalaryEarned);
+      const workerShare = Math.round(slip.workerInsurance);
+      const employerShare = Math.round(slip.employerInsurance);
+
+      dskworRows.push(
+        `${insNum},${emp.firstName},${emp.lastName},${emp.fatherName || '-'},${emp.birthCertificate || natId},${natId},${slip.workingDays},${dailyWage},${monthlyWage},${workerShare},${employerShare}`,
+      );
+    }
+
+    // ۲. ساخت فایل کارگاه (DSKKAR00)
+    const totalWage = insuredSlips.reduce((sum, s) => sum + s.baseSalaryEarned, 0);
+    const totalWorkerIns = insuredSlips.reduce((sum, s) => sum + s.workerInsurance, 0);
+    const totalEmployerIns = insuredSlips.reduce((sum, s) => sum + s.employerInsurance, 0);
+    const totalPayment = totalWorkerIns + totalEmployerIns;
+
+    const dskkarContent = [
+      'WORKSHOP_CODE,WORKSHOP_NAME,YEAR,MONTH,INSURED_COUNT,TOTAL_WAGE,WORKER_SHARE,EMPLOYER_SHARE,TOTAL_PAYMENT',
+      `0000000000,کاردو (سیستم انبارداری و تولید),${period.year},${period.month},${insuredSlips.length},${Math.round(totalWage)},${Math.round(totalWorkerIns)},${Math.round(totalEmployerIns)},${Math.round(totalPayment)}`,
+    ].join('\r\n');
+
+    return {
+      periodTitle: period.title,
+      year: period.year,
+      month: period.month,
+      insuredCount: insuredSlips.length,
+      totalWage,
+      totalWorkerIns,
+      totalEmployerIns,
+      totalPayment,
+      dskworFilename: `DSKWOR00_${period.year}_${String(period.month).padStart(2, '0')}.txt`,
+      dskworContent: dskworRows.join('\r\n'),
+      dskkarFilename: `DSKKAR00_${period.year}_${String(period.month).padStart(2, '0')}.txt`,
+      dskkarContent,
+    };
+  }
+
+  // ───────────────────────── فایل واریز گروهی شبا بانکی (پایا / ساتنا) ─────────────────────────
+  async generatePayaPaymentFile(periodId: string) {
+    const period = await this.prisma.payrollPeriod.findUnique({
+      where: { id: periodId },
+      include: {
+        slips: {
+          include: {
+            employee: true,
+          },
+          orderBy: { employee: { personnelCode: 'asc' } },
+        },
+      },
+    });
+    if (!period) throw new NotFoundException('دوره حقوقی مورد نظر یافت نشد.');
+
+    const payableSlips = period.slips.filter((s) => s.netPayable > 0);
+    const withIban = payableSlips.filter((s) => Boolean(s.employee.iban));
+    const missingIban = payableSlips.filter((s) => !s.employee.iban);
+
+    // فرمت استاندارد پایا بانکی با امضای یونیکد BOM
+    const rows = [
+      'ردیف,شماره شبا (IBAN),مبلغ خالص پرداختی (ریال),نام و نام خانوادگی ذینفع,کد پرسنلی,شرح و بابت واریز',
+    ];
+
+    let rowIdx = 1;
+    for (const slip of withIban) {
+      const emp = slip.employee;
+      const ibanClean = emp.iban ? emp.iban.replace(/\s+/g, '').toUpperCase() : '';
+      const fullName = `${emp.firstName} ${emp.lastName}`;
+      const amount = Math.round(slip.netPayable);
+      const desc = `حقوق و دستمزد ${period.title} - ${emp.personnelCode}`;
+
+      rows.push(`${rowIdx++},${ibanClean},${amount},"${fullName}",${emp.personnelCode},"${desc}"`);
+    }
+
+    const totalAmount = withIban.reduce((sum, s) => sum + s.netPayable, 0);
+
+    return {
+      periodTitle: period.title,
+      fileName: `PAYA_PAYROLL_${period.year}_${String(period.month).padStart(2, '0')}.csv`,
+      csvContent: '\uFEFF' + rows.join('\r\n'),
+      recordCount: withIban.length,
+      totalAmount,
+      missingIbanCount: missingIban.length,
+      missingIbanEmployees: missingIban.map((s) => ({
+        id: s.employee.id,
+        name: `${s.employee.firstName} ${s.employee.lastName}`,
+        personnelCode: s.employee.personnelCode,
+        netPayable: s.netPayable,
+      })),
+    };
+  }
 }

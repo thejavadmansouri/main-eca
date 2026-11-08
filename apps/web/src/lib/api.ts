@@ -3789,6 +3789,14 @@ export function batchCalculatePayrollSlips(body: {
   });
 }
 
+export function getTaminDiskette(periodId: string): Promise<T.TaminDisketteResult> {
+  return apiFetch<T.TaminDisketteResult>(`/hr/payroll-periods/${encodeURIComponent(periodId)}/tamin-diskette`);
+}
+
+export function getPayaPaymentFile(periodId: string): Promise<T.PayaPaymentFileResult> {
+  return apiFetch<T.PayaPaymentFileResult>(`/hr/payroll-periods/${encodeURIComponent(periodId)}/paya-file`);
+}
+
 // =====================================================
 // توابع ارتباط با ماژول خدمات پس از فروش و تعمیرگاه (Repairs API)
 // =====================================================

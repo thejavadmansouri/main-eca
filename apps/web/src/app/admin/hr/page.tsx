@@ -10,6 +10,8 @@ import {
   Calendar,
   CheckCircle2,
   ChevronRight,
+  CreditCard,
+  Download,
   FileCheck2,
   FileSpreadsheet,
   FileText,
@@ -47,6 +49,8 @@ import {
   getPayrollPeriods,
   getPayrollSlips,
   getHrStats,
+  getTaminDiskette,
+  getPayaPaymentFile,
   deleteEmployee,
   deleteContract,
 } from "@/lib/api";
@@ -120,6 +124,66 @@ export default function HrPage() {
   const [isNewDepartmentOpen, setIsNewDepartmentOpen] = React.useState(false);
   const [editingDepartment, setEditingDepartment] = React.useState<DepartmentRow | null>(null);
   const [isNewPeriodOpen, setIsNewPeriodOpen] = React.useState(false);
+  const [isDownloadingTamin, setIsDownloadingTamin] = React.useState(false);
+  const [isDownloadingPaya, setIsDownloadingPaya] = React.useState(false);
+
+  function triggerDownload(content: string, filename: string, mimeType: string) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleDownloadTaminDiskette() {
+    if (!selectedPeriodId) return;
+    setIsDownloadingTamin(true);
+    try {
+      const res = await getTaminDiskette(selectedPeriodId);
+      triggerDownload(res.dskworContent, res.dskworFilename, "text/plain;charset=utf-8");
+      setTimeout(() => {
+        triggerDownload(res.dskkarContent, res.dskkarFilename, "text/plain;charset=utf-8");
+      }, 500);
+      toast({
+        title: "دیسکت بیمه تأمین اجتماعی آماده شد",
+        description: `فایل‌های ${res.dskworFilename} و ${res.dskkarFilename} برای ${toFa(res.insuredCount)} نفر بیمه‌شده دانلود شدند.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "خطا در تولید دیسکت بیمه",
+        description: err?.message || "مشکلی در تولید فایل‌های بیمه رخ داد.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloadingTamin(false);
+    }
+  }
+
+  async function handleDownloadPayaFile() {
+    if (!selectedPeriodId) return;
+    setIsDownloadingPaya(true);
+    try {
+      const res = await getPayaPaymentFile(selectedPeriodId);
+      triggerDownload(res.csvContent, res.fileName, "text/csv;charset=utf-8");
+      toast({
+        title: "فایل واریز گروهی شبا (پایا) دانلود شد",
+        description: `شامل ${toFa(res.recordCount)} رکورد به مبلغ ${money(res.totalAmount)} ریال.` +
+          (res.missingIbanCount > 0 ? ` (توجه: ${toFa(res.missingIbanCount)} نفر فاقد شماره شبا بودند)` : ""),
+      });
+    } catch (err: any) {
+      toast({
+        title: "خطا در تولید فایل پایا",
+        description: err?.message || "مشکلی در تولید فایل بانکی رخ داد.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloadingPaya(false);
+    }
+  }
 
   // فرم‌های جانبی
   const [depForm, setDepForm] = React.useState({
@@ -1051,7 +1115,7 @@ export default function HrPage() {
             </div>
 
             {activePeriod && (
-              <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
+              <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
                 <div className="p-2 rounded-lg bg-muted/60 border border-border/60">
                   <span className="text-[10px] text-muted-foreground font-sans block">جمع ناخالص کل:</span>
                   <strong className="text-foreground text-xs">{money(activePeriod.totalGrossPay)}</strong>
@@ -1063,6 +1127,32 @@ export default function HrPage() {
                 <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
                   <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-sans block font-bold">خالص کل پرداختی:</span>
                   <strong className="text-emerald-700 dark:text-emerald-300 text-sm font-black">{money(activePeriod.totalNetPay)}</strong>
+                </div>
+
+                <div className="flex items-center gap-2 mr-auto font-sans">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleDownloadTaminDiskette}
+                    disabled={isDownloadingTamin || slips.length === 0}
+                    className="h-8.5 text-xs font-bold gap-1.5 border-blue-500/40 text-blue-700 hover:bg-blue-500/10 shadow-2xs"
+                    title="دانلود فایل‌های DSKWOR00 و DSKKAR00 برای سامانه بیمه تأمین اجتماعی"
+                  >
+                    <Download className="size-3.5" />
+                    {isDownloadingTamin ? "در حال ایجاد..." : "دیسکت بیمه (DSK)"}
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleDownloadPayaFile}
+                    disabled={isDownloadingPaya || slips.length === 0}
+                    className="h-8.5 text-xs font-bold gap-1.5 border-emerald-500/40 text-emerald-700 hover:bg-emerald-500/10 shadow-2xs"
+                    title="دانلود فایل CSV شبا جهت واریز گروهی بانک (پایا/ساتنا)"
+                  >
+                    <CreditCard className="size-3.5" />
+                    {isDownloadingPaya ? "در حال ایجاد..." : "فایل واریز شبا (پایا)"}
+                  </Button>
                 </div>
               </div>
             )}

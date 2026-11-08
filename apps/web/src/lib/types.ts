@@ -3613,6 +3613,36 @@ export interface PayrollSlipRow {
   createdAt: string;
 }
 
+export interface TaminDisketteResult {
+  periodTitle: string;
+  year: number;
+  month: number;
+  insuredCount: number;
+  totalWage: number;
+  totalWorkerIns: number;
+  totalEmployerIns: number;
+  totalPayment: number;
+  dskworFilename: string;
+  dskworContent: string;
+  dskkarFilename: string;
+  dskkarContent: string;
+}
+
+export interface PayaPaymentFileResult {
+  periodTitle: string;
+  fileName: string;
+  csvContent: string;
+  recordCount: number;
+  totalAmount: number;
+  missingIbanCount: number;
+  missingIbanEmployees: Array<{
+    id: string;
+    name: string;
+    personnelCode: string;
+    netPayable: number;
+  }>;
+}
+
 // =====================================================
 // ماژول خدمات پس از فروش و تعمیرگاه (After-Sales & Repairs)
 // =====================================================
