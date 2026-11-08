@@ -3518,3 +3518,202 @@ export function cancelOnlineOrder(
     { method: "POST", body: { reason } },
   );
 }
+
+// =====================================================
+// توابع ارتباط با ماژول منابع انسانی (HR & Payroll API)
+// =====================================================
+
+export function getDepartments(): Promise<T.DepartmentRow[]> {
+  return apiFetch<T.DepartmentRow[]>('/hr/departments');
+}
+
+export function createDepartment(body: {
+  name: string;
+  code: string;
+  description?: string;
+  managerName?: string;
+}): Promise<T.DepartmentRow> {
+  return apiFetch<T.DepartmentRow>('/hr/departments', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function getEmployees(params?: {
+  departmentId?: string;
+  search?: string;
+}): Promise<T.EmployeeRow[]> {
+  const qs = params ? `?${reportQs(params as any)}` : '';
+  return apiFetch<T.EmployeeRow[]>(`/hr/employees${qs}`);
+}
+
+export function getEmployeeById(id: string): Promise<T.EmployeeRow> {
+  return apiFetch<T.EmployeeRow>(`/hr/employees/${encodeURIComponent(id)}`);
+}
+
+export function createEmployee(body: {
+  personnelCode: string;
+  firstName: string;
+  lastName: string;
+  nationalId: string;
+  mobile: string;
+  jobTitle: string;
+  departmentId?: string;
+  maritalStatus?: string;
+  childrenCount?: number;
+}): Promise<T.EmployeeRow> {
+  return apiFetch<T.EmployeeRow>('/hr/employees', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function createContract(body: {
+  contractNumber: string;
+  employeeId: string;
+  contractType?: string;
+  startDate: string;
+  endDate?: string;
+  baseDailySalary: number;
+  baseMonthlySalary: number;
+  housingAllowance?: number;
+  groceryAllowance?: number;
+  childAllowancePerChild?: number;
+  maritalAllowance?: number;
+  specialAllowance?: number;
+}): Promise<T.EmployeeContractRow> {
+  return apiFetch<T.EmployeeContractRow>('/hr/contracts', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function getPayrollPeriods(): Promise<T.PayrollPeriodRow[]> {
+  return apiFetch<T.PayrollPeriodRow[]>('/hr/payroll-periods');
+}
+
+export function createPayrollPeriod(body: {
+  year: number;
+  month: number;
+  title?: string;
+}): Promise<T.PayrollPeriodRow> {
+  return apiFetch<T.PayrollPeriodRow>('/hr/payroll-periods', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function getPayrollSlips(periodId: string): Promise<T.PayrollSlipRow[]> {
+  return apiFetch<T.PayrollSlipRow[]>(`/hr/payroll-periods/${encodeURIComponent(periodId)}/slips`);
+}
+
+export function calculatePayrollSlip(body: {
+  periodId: string;
+  employeeId: string;
+  workingDays?: number;
+  overtimeHours?: number;
+  delayHours?: number;
+  leaveDays?: number;
+  absenceDays?: number;
+  loanDeductions?: number;
+  otherDeductions?: number;
+}): Promise<T.PayrollSlipRow> {
+  return apiFetch<T.PayrollSlipRow>('/hr/payroll-slips/calculate', {
+    method: 'POST',
+    body,
+  });
+}
+
+// =====================================================
+// توابع ارتباط با ماژول خدمات پس از فروش و تعمیرگاه (Repairs API)
+// =====================================================
+
+export function getRepairOrders(params?: {
+  status?: string;
+  search?: string;
+  customerId?: string;
+  technicianId?: string;
+}): Promise<T.RepairOrderRow[]> {
+  const qs = params ? `?${reportQs(params as any)}` : '';
+  return apiFetch<T.RepairOrderRow[]>(`/repairs${qs}`);
+}
+
+export function getRepairOrderById(id: string): Promise<T.RepairOrderRow> {
+  return apiFetch<T.RepairOrderRow>(`/repairs/${encodeURIComponent(id)}`);
+}
+
+export function createRepairOrder(body: {
+  customerId: string;
+  technicianId?: string;
+  deviceType: string;
+  brandAndModel: string;
+  serialNumber?: string;
+  accessories?: string;
+  customerProblem: string;
+  isUnderWarranty?: boolean;
+  laborCost?: number;
+  depositPaid?: number;
+  notes?: string;
+}): Promise<T.RepairOrderRow> {
+  return apiFetch<T.RepairOrderRow>('/repairs', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function updateRepairStatus(
+  id: string,
+  body: {
+    status: string;
+    technicalReport?: string;
+    laborCost?: number;
+    notes?: string;
+  },
+): Promise<T.RepairOrderRow> {
+  return apiFetch<T.RepairOrderRow>(`/repairs/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body,
+  });
+}
+
+export function addRepairItem(
+  id: string,
+  body: {
+    productId: string;
+    quantity: number;
+    unitPrice: number;
+    hasOldPart?: boolean;
+  },
+): Promise<T.RepairOrderRow> {
+  return apiFetch<T.RepairOrderRow>(`/repairs/${encodeURIComponent(id)}/items`, {
+    method: 'POST',
+    body,
+  });
+}
+
+export function removeRepairItem(
+  id: string,
+  itemId: string,
+): Promise<T.RepairOrderRow> {
+  return apiFetch<T.RepairOrderRow>(
+    `/repairs/${encodeURIComponent(id)}/items/${encodeURIComponent(itemId)}`,
+    {
+      method: 'DELETE',
+    },
+  );
+}
+
+export function settleRepairOrder(
+  id: string,
+  body: {
+    depositPaid?: number;
+    discountAmount?: number;
+    notes?: string;
+  },
+): Promise<T.RepairOrderRow> {
+  return apiFetch<T.RepairOrderRow>(`/repairs/${encodeURIComponent(id)}/settle`, {
+    method: 'PATCH',
+    body,
+  });
+}
+

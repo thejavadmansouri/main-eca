@@ -26,10 +26,10 @@ function leaves(sections: NavSection[]): NavItem[] {
 }
 
 describe("ساختار ماژولار کاردو ERP", () => {
-  it("مدیر کل به تمام ۸ دامنه عملیاتی ERP دسترسی دارد", () => {
+  it("مدیر کل به تمام دامنه‌های عملیاتی ERP دسترسی دارد", () => {
     const sections = filterNavByRole(NAV_SECTIONS, "ADMIN");
-    // ۱ پیشخوان سنجاق‌شده + ۷ ماژول تخصصی سازمانی
-    expect(sections).toHaveLength(8);
+    // ۱ پیشخوان سنجاق‌شده + ۸ ماژول تخصصی سازمانی
+    expect(sections).toHaveLength(9);
 
     const titles = sections.map((s) => s.title);
     expect(titles).toContain("بازرگانی و فروش");
@@ -38,6 +38,7 @@ describe("ساختار ماژولار کاردو ERP", () => {
     expect(titles).toContain("مدیریت تولید و ساخت");
     expect(titles).toContain("حسابداری و دفاتر مالی");
     expect(titles).toContain("کاتالوگ و محصولات");
+    expect(titles).toContain("منابع انسانی و حقوق");
     expect(titles).toContain("تنظیمات و امنیت");
   });
 
@@ -47,6 +48,7 @@ describe("ساختار ماژولار کاردو ERP", () => {
     expect(salesLeaves).toContain("/admin/customers");
     expect(salesLeaves).toContain("/admin/documents");
     expect(salesLeaves).toContain("/admin/quotations");
+    expect(salesLeaves).toContain("/admin/repairs");
     // گزارش‌ها و تنظیمات نباید برای فروشنده باشد
     expect(salesLeaves).not.toContain("/admin/reports");
     expect(salesLeaves).not.toContain("/admin/settings");

@@ -54,6 +54,8 @@ import { ProductImagesModule } from './product-images/product-images.module';
 import { CompaniesModule } from './companies/companies.module';
 import { CustomFieldsModule } from './custom-fields/custom-fields.module';
 import { ManufacturingModule } from './manufacturing/manufacturing.module';
+import { HrModule } from './hr/hr.module';
+import { RepairsModule } from './repairs/repairs.module';
 
 /*
  * ماژول‌هایی که **فقط روی سرور انبار** لود می‌شوند.
@@ -105,6 +107,8 @@ const WAREHOUSE_ONLY = [
   CompaniesModule,
   CustomFieldsModule,
   ManufacturingModule,
+  HrModule,
+  RepairsModule,
 ];
 
 /**

@@ -124,6 +124,12 @@ export const NAV_SECTIONS: NavSection[] = [
         roles: ["ADMIN", "MANAGER"],
       },
       {
+        title: "خدمات پس از فروش و تعمیرگاه",
+        href: "/admin/repairs",
+        icon: Wrench,
+        roles: ["ADMIN", "MANAGER", "SALES"],
+      },
+      {
         title: "سفارش‌های آنلاین پرتال",
         href: "/admin/online-orders",
         icon: Globe,
@@ -305,7 +311,33 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
 
-  // ───────────────────────── بخش ۸: تنظیمات و مدیریت سیستم ─────────────────────────
+  // ───────────────────────── بخش ۸: منابع انسانی، کارگزینی و حقوق و دستمزد (HR) ─────────────────────────
+  {
+    title: "منابع انسانی و حقوق",
+    icon: Users,
+    items: [
+      {
+        title: "پرسنل و احکام کارگزینی",
+        href: "/admin/hr",
+        icon: Users,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "ساختار و واحدهای سازمانی",
+        href: "/admin/hr?tab=departments",
+        icon: Building2,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "محاسبه حقوق و فیش (قانون کار)",
+        href: "/admin/hr?tab=payroll",
+        icon: Scale,
+        roles: ["ADMIN", "MANAGER"],
+      },
+    ],
+  },
+
+  // ───────────────────────── بخش ۹: تنظیمات و مدیریت سیستم ─────────────────────────
   {
     title: "تنظیمات و امنیت",
     icon: Settings,

@@ -3434,3 +3434,179 @@ export interface RecomposePaymentsDto {
 }
 
 // =====================================================
+// ماژول منابع انسانی، کارگزینی و حقوق و دستمزد (HR & Payroll)
+// =====================================================
+
+export interface DepartmentRow {
+  id: string;
+  name: string;
+  code: string;
+  description?: string | null;
+  managerName?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  _count?: { employees: number };
+}
+
+export interface EmployeeRow {
+  id: string;
+  personnelCode: string;
+  firstName: string;
+  lastName: string;
+  nationalId: string;
+  birthCertificate?: string | null;
+  fatherName?: string | null;
+  birthDate?: string | null;
+  mobile: string;
+  address?: string | null;
+  insuranceNumber?: string | null;
+  bankAccount?: string | null;
+  iban?: string | null;
+  maritalStatus: 'SINGLE' | 'MARRIED';
+  childrenCount: number;
+  hireDate: string;
+  terminationDate?: string | null;
+  isActive: boolean;
+  jobTitle: string;
+  departmentId?: string | null;
+  department?: DepartmentRow | null;
+  contracts?: EmployeeContractRow[];
+  createdAt: string;
+}
+
+export interface EmployeeContractRow {
+  id: string;
+  contractNumber: string;
+  employeeId: string;
+  contractType: string;
+  startDate: string;
+  endDate?: string | null;
+  baseDailySalary: number;
+  baseMonthlySalary: number;
+  housingAllowance: number;
+  groceryAllowance: number;
+  childAllowancePerChild: number;
+  maritalAllowance: number;
+  specialAllowance: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface PayrollPeriodRow {
+  id: string;
+  year: number;
+  month: number;
+  title: string;
+  status: 'DRAFT' | 'CALCULATED' | 'FINALIZED' | 'PAID';
+  totalGrossPay: number;
+  totalNetPay: number;
+  totalWorkerInsurance: number;
+  totalEmployerInsurance: number;
+  totalIncomeTax: number;
+  slipsCount: number;
+  createdAt: string;
+}
+
+export interface PayrollSlipRow {
+  id: string;
+  periodId: string;
+  employeeId: string;
+  employee: EmployeeRow;
+  workingDays: number;
+  overtimeHours: number;
+  delayHours: number;
+  leaveDays: number;
+  absenceDays: number;
+  baseSalaryEarned: number;
+  housingAllowance: number;
+  groceryAllowance: number;
+  childAllowance: number;
+  maritalAllowance: number;
+  overtimePay: number;
+  bonusAndPerks: number;
+  totalGrossSalary: number;
+  workerInsurance: number;
+  employerInsurance: number;
+  incomeTax: number;
+  loanDeductions: number;
+  otherDeductions: number;
+  totalDeductions: number;
+  netPayable: number;
+  totalEmployerCost: number;
+  status: string;
+  paidAt?: string | null;
+  paymentReference?: string | null;
+  createdAt: string;
+}
+
+// =====================================================
+// ماژول خدمات پس از فروش و تعمیرگاه (After-Sales & Repairs)
+// =====================================================
+
+export interface RepairOrderRow {
+  id: string;
+  orderNumber: string;
+  customerId: string;
+  customer: {
+    id: string;
+    firstName: string;
+    lastName?: string | null;
+    searchName: string;
+    address?: string | null;
+  };
+  technicianId?: string | null;
+  technician?: {
+    id: string;
+    fullName: string;
+  } | null;
+  deviceType: string;
+  brandAndModel: string;
+  serialNumber?: string | null;
+  accessories?: string | null;
+  customerProblem: string;
+  technicalReport?: string | null;
+  status:
+    | 'RECEIVED'
+    | 'DIAGNOSING'
+    | 'ESTIMATED'
+    | 'APPROVED'
+    | 'REPAIRING'
+    | 'QC_TESTING'
+    | 'READY'
+    | 'DELIVERED'
+    | 'CANCELLED';
+  isUnderWarranty: boolean;
+  warrantyExpireDate?: string | null;
+  laborCost: number;
+  partsCost: number;
+  discountAmount: number;
+  totalAmount: number;
+  depositPaid: number;
+  balanceDue: number;
+  receivedAt: string;
+  estimatedReadyAt?: string | null;
+  deliveredAt?: string | null;
+  notes?: string | null;
+  repairItems?: RepairItemRow[];
+  createdAt: string;
+}
+
+export interface RepairItemRow {
+  id: string;
+  repairOrderId: string;
+  productId: string;
+  product: {
+    id: string;
+    name: string;
+    sku: string;
+    unit: string;
+  };
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  hasOldPart: boolean;
+  createdAt: string;
+}
+
+
+// =====================================================

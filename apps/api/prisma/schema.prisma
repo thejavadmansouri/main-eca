@@ -67,6 +67,8 @@ model User {
   paymentReversals        PaymentReversal[]        @relation("ReversalActor")
   reviewedCandidates      ProductImageCandidate[]
   imagePublishLogs        ImagePublishLog[]
+  employee                Employee?
+  repairOrdersAssigned    RepairOrder[]            @relation("TechnicianRepairOrders")
 }
 
 model Warehouse {
@@ -371,6 +373,7 @@ model Product {
   bomItemsAsMaterial  BomItem[]                 @relation("MaterialBomItems")
   productionOrders    ProductionOrder[]         @relation("ProductProductionOrders")
   materialIssues      ProductionMaterialIssue[]  @relation("MaterialProductionIssues")
+  repairItems         RepairItem[]              @relation("ProductRepairItems")
 
   @@index([searchTokens], type: Gin)
   @@index([labelPrintedAt])
@@ -1104,6 +1107,7 @@ model Customer {
   addresses      CustomerAddress[]
   onlineOrders   OnlineOrder[]
   blankQuotations BlankQuotation[]
+  repairOrders    RepairOrder[]    @relation("CustomerRepairOrders")
 
   @@index([searchName])
   @@index([lastName])
@@ -3122,3 +3126,209 @@ model QualityCheck {
 
   @@index([productionOrderId])
 }
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+// ماژول منابع انسانی، کارگزینی و حقوق و دستمزد (Iranian Labor Law HR & Payroll)
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+model Department {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  code        String     @unique
+  description String?
+  managerName String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  employees   Employee[]
+
+  @@index([code])
+}
+
+model Employee {
+  id               String             @id @default(uuid())
+  personnelCode    String             @unique
+  firstName        String
+  lastName         String
+  nationalId       String             @unique
+  birthCertificate String?
+  fatherName       String?
+  birthDate        String?
+  mobile           String
+  address          String?
+  insuranceNumber  String?
+  bankAccount      String?
+  iban             String?
+  maritalStatus    String             @default("SINGLE") // SINGLE, MARRIED
+  childrenCount    Int                @default(0)
+  hireDate         DateTime           @default(now())
+  terminationDate  DateTime?
+  isActive         Boolean            @default(true)
+  jobTitle         String
+  departmentId     String?
+  userId           String?            @unique
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  department       Department?        @relation(fields: [departmentId], references: [id])
+  user             User?              @relation(fields: [userId], references: [id])
+  contracts        EmployeeContract[]
+  payrollSlips     PayrollSlip[]
+
+  @@index([personnelCode])
+  @@index([nationalId])
+  @@index([departmentId])
+  @@index([isActive])
+}
+
+model EmployeeContract {
+  id                     String    @id @default(uuid())
+  contractNumber         String    @unique
+  employeeId             String
+  contractType           String    @default("FIXED_TERM") // PERMANENT, FIXED_TERM, PROBATION, CONTRACTOR
+  startDate              DateTime
+  endDate                DateTime?
+  baseDailySalary        Float     // دستمزد پایه روزانه (قانون کار)
+  baseMonthlySalary      Float     // دستمزد پایه ماهانه (۳۰ روزه)
+  housingAllowance       Float     @default(9000000) // حق مسکن (مصوب شورای عالی کار ۹ میلیون ریال)
+  groceryAllowance       Float     @default(14000000) // بن خواربار (مصوب ۱۴ میلیون ریال)
+  childAllowancePerChild Float     @default(7166184) // حق اولاد ماهانه به ازای هر فرزند مشمول
+  maritalAllowance       Float     @default(5000000) // حق عائله‌مندی
+  specialAllowance       Float     @default(0) // فوق‌العاده شغل و تخصص
+  isActive               Boolean   @default(true)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  employee               Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([isActive])
+}
+
+model PayrollPeriod {
+  id                     String        @id @default(uuid())
+  year                   Int           // مثلاً ۱۴۰۳ یا ۱۴۰۴
+  month                  Int           // ۱ تا ۱۲ (فروردین تا اسفند)
+  title                  String        // مثلاً «حقوق آبان ۱۴۰۳»
+  status                 String        @default("DRAFT") // DRAFT, CALCULATED, FINALIZED, PAID
+  totalGrossPay          Float         @default(0)
+  totalNetPay            Float         @default(0)
+  totalWorkerInsurance   Float         @default(0)
+  totalEmployerInsurance Float         @default(0)
+  totalIncomeTax         Float         @default(0)
+  slipsCount             Int           @default(0)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  slips                  PayrollSlip[]
+
+  @@unique([year, month])
+  @@index([year, month])
+}
+
+model PayrollSlip {
+  id                 String        @id @default(uuid())
+  periodId           String
+  employeeId         String
+  workingDays        Int           @default(30)
+  overtimeHours      Float         @default(0)
+  delayHours         Float         @default(0) // کسر کار
+  leaveDays          Int           @default(0) // مرخصی
+  absenceDays        Int           @default(0) // غیبت
+
+  baseSalaryEarned   Float         @default(0)
+  housingAllowance   Float         @default(0)
+  groceryAllowance   Float         @default(0)
+  childAllowance     Float         @default(0)
+  maritalAllowance   Float         @default(0)
+  overtimePay        Float         @default(0)
+  bonusAndPerks      Float         @default(0)
+  totalGrossSalary   Float         @default(0) // جمع ناخالص
+
+  workerInsurance    Float         @default(0) // ۷٪ سهم کارگر
+  employerInsurance  Float         @default(0) // ۲۳٪ سهم کارفرما (۲۰٪ + ۳٪ بیکاری)
+  incomeTax          Float         @default(0) // مالیات حقوق
+  loanDeductions     Float         @default(0) // وام و مساعده
+  otherDeductions    Float         @default(0) // سایر کسورات
+  totalDeductions    Float         @default(0) // جمع کسورات
+
+  netPayable         Float         @default(0) // خالص پرداختی
+  totalEmployerCost  Float         @default(0) // هزینه کل برای کارفرما (ناخالص + ۲۳٪ بیمه)
+
+  status             String        @default("DRAFT") // DRAFT, CONFIRMED, PAID
+  paidAt             DateTime?
+  paymentReference   String?
+  voucherId          String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  period             PayrollPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  employee           Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([periodId, employeeId])
+  @@index([periodId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+// ماژول خدمات پس از فروش، گارانتی و مدیریت تعمیرگاه (After-Sales & Repair Services)
+// ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+model RepairOrder {
+  id                 String       @id @default(uuid())
+  orderNumber        String       @unique // REP-1404-0001
+  customerId         String
+  technicianId       String?
+  deviceType         String       // مثلاً: اره فارسی‌بر، پمپ باد، اورفرز، یونیت کابینت، پنل
+  brandAndModel      String       // برند و مدل دستگاه
+  serialNumber       String?      // شماره سریال یا پلاک
+  accessories        String?      // اقلام و متعلقات همراه (کابل، جعبه، تیغه و ...)
+  customerProblem    String       // ایراد اعلامی توسط مشتری
+  technicalReport    String?      // تشخیص و شرح خدمات فنی
+  status             String       @default("RECEIVED") // RECEIVED, DIAGNOSING, ESTIMATED, APPROVED, REPAIRING, QC_TESTING, READY, DELIVERED, CANCELLED
+  isUnderWarranty    Boolean      @default(false)
+  warrantyExpireDate DateTime?
+
+  laborCost          Float        @default(0) // هزینه اجرت خدمات
+  partsCost          Float        @default(0) // جمع هزینه قطعات یدکی
+  discountAmount     Float        @default(0) // تخفیف
+  totalAmount        Float        @default(0) // مبلغ نهایی
+  depositPaid        Float        @default(0) // بیعانه دریافتی
+  balanceDue         Float        @default(0) // مانده قابل پرداخت
+
+  receivedAt         DateTime     @default(now())
+  estimatedReadyAt   DateTime?
+  deliveredAt        DateTime?
+  notes              String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  customer           Customer     @relation("CustomerRepairOrders", fields: [customerId], references: [id])
+  technician         User?        @relation("TechnicianRepairOrders", fields: [technicianId], references: [id])
+  repairItems        RepairItem[]
+
+  @@index([orderNumber])
+  @@index([customerId])
+  @@index([technicianId])
+  @@index([status])
+  @@index([receivedAt])
+}
+
+model RepairItem {
+  id            String      @id @default(uuid())
+  repairOrderId String
+  productId     String
+  quantity      Float       @default(1)
+  unitPrice     Float       @default(0)
+  totalPrice    Float       @default(0)
+  hasOldPart    Boolean     @default(true) // آیا قطعه کهنه/داغی تحویل مشتری می‌شود؟
+  createdAt     DateTime    @default(now())
+
+  repairOrder   RepairOrder @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+  product       Product     @relation("ProductRepairItems", fields: [productId], references: [id])
+
+  @@index([repairOrderId])
+  @@index([productId])
+}
+
