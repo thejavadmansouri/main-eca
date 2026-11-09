@@ -280,7 +280,8 @@ export function CustomerWoodTab({ customerName, customerId }: CustomerWoodTabPro
                       className="gap-1.5 text-xs font-bold bg-primary/5 hover:bg-primary/10 text-primary border-primary/30 shadow-2xs"
                     >
                       <Box className="h-3.5 w-3.5" />
-                      دوقلوی سه‌بعدی ۳D
+                      <span>دوقلوی سه‌بعدی</span>
+                      <span className="font-mono text-[9px] bg-primary/20 px-1 py-0.2 rounded font-black">3D</span>
                     </Button>
 
                     <Button

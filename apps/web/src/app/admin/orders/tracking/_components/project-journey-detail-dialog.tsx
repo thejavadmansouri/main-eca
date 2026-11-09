@@ -326,32 +326,58 @@ export function ProjectJourneyDetailDialog({
         {/* ───────────────────────── تب‌های ناوبری داخلی پروژه ───────────────────────── */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-5 h-auto p-1 bg-muted/60 rounded-xl gap-1">
-              <TabsTrigger value="timeline" className="gap-1.5 py-2 text-xs font-bold">
-                <MessageSquare className="size-3.5 text-blue-600" />
-                یادداشت‌ها و خط زمانی ({toFa(stageUpdates.length)})
-              </TabsTrigger>
+            <div className="w-full overflow-x-auto pb-1.5 scroll-thin">
+              <TabsList className="flex items-center justify-start sm:justify-between w-full min-w-max h-auto p-1.5 bg-muted/70 rounded-2xl border border-border/70 gap-2">
+                <TabsTrigger
+                  value="timeline"
+                  className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-xs transition-all shrink-0 select-none cursor-pointer"
+                >
+                  <MessageSquare className="size-4 text-blue-600 shrink-0" />
+                  <span>خط زمانی و یادداشت‌ها</span>
+                  <span className="rounded-md bg-blue-500/15 px-1.5 py-0.5 text-[10px] font-bold font-mono text-blue-700 dark:text-blue-300">
+                    {toFa(stageUpdates.length)}
+                  </span>
+                </TabsTrigger>
 
-              <TabsTrigger value="photos" className="gap-1.5 py-2 text-xs font-bold">
-                <Camera className="size-3.5 text-emerald-600" />
-                آلبوم تصاویر ({toFa(allPhotos.length)})
-              </TabsTrigger>
+                <TabsTrigger
+                  value="photos"
+                  className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-xs transition-all shrink-0 select-none cursor-pointer"
+                >
+                  <Camera className="size-4 text-emerald-600 shrink-0" />
+                  <span>آلبوم عکس‌های کارگاه</span>
+                  <span className="rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold font-mono text-emerald-700 dark:text-emerald-300">
+                    {toFa(allPhotos.length)}
+                  </span>
+                </TabsTrigger>
 
-              <TabsTrigger value="control" className="gap-1.5 py-2 text-xs font-bold">
-                <Sliders className="size-3.5 text-purple-600" />
-                کنترل مراحل و پیشرفت
-              </TabsTrigger>
+                <TabsTrigger
+                  value="control"
+                  className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-xs transition-all shrink-0 select-none cursor-pointer"
+                >
+                  <Sliders className="size-4 text-purple-600 shrink-0" />
+                  <span>کنترل پیشرفت و مراحل</span>
+                </TabsTrigger>
 
-              <TabsTrigger value="finance" className="gap-1.5 py-2 text-xs font-bold">
-                <Coins className="size-3.5 text-amber-600" />
-                قرارداد و وضعیت مالی
-              </TabsTrigger>
+                <TabsTrigger
+                  value="finance"
+                  className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-xs transition-all shrink-0 select-none cursor-pointer"
+                >
+                  <Coins className="size-4 text-amber-600 shrink-0" />
+                  <span>وضعیت مالی و قرارداد</span>
+                </TabsTrigger>
 
-              <TabsTrigger value="twin" className="gap-1.5 py-2 text-xs font-bold">
-                <Boxes className="size-3.5 text-indigo-600" />
-                دوقلوی سه‌بعدی ۳D
-              </TabsTrigger>
-            </TabsList>
+                <TabsTrigger
+                  value="twin"
+                  className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-xs transition-all shrink-0 select-none cursor-pointer"
+                >
+                  <Boxes className="size-4 text-indigo-600 shrink-0" />
+                  <span>دوقلوی دیجیتال سه‌بعدی</span>
+                  <span className="rounded bg-indigo-500/15 px-1.5 py-0.5 text-[9px] font-black font-mono text-indigo-700 dark:text-indigo-300">
+                    3D
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             {/* ───────────────── تب ۱: خط زمانی یادداشت‌ها و عکس‌های کارگران ───────────────── */}
             <TabsContent value="timeline" className="mt-4 space-y-4">
@@ -681,36 +707,96 @@ export function ProjectJourneyDetailDialog({
             <TabsContent value="finance" className="mt-4 space-y-4">
               {contract ? (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-                    <div className="p-3.5 rounded-2xl bg-card border border-border/80 shadow-2xs">
-                      <p className="text-[11px] text-muted-foreground font-medium">مبلغ کل قرارداد</p>
-                      <p className="text-base font-black text-foreground mt-1 font-mono">
-                        {money(contract.totalAmount)} <span className="text-[10px]">ریال</span>
-                      </p>
-                      <p className="text-[10px] text-muted-foreground font-bold">
-                        ({money(Math.round(contract.totalAmount / 10))} تومان)
-                      </p>
-                    </div>
+                  {(() => {
+                    const totalAmt = contract.totalAmount || 0;
+                    const discountAmt = contract.discount || 0;
+                    const paidAmt = contract.paidAmount ?? (contract as any).downPayment ?? 0;
+                    const payableAmt = Math.max(0, totalAmt - discountAmt);
+                    const balanceAmt = Math.max(0, payableAmt - paidAmt);
+                    const paidPercentage = payableAmt > 0 ? Math.min(100, Math.round((paidAmt / payableAmt) * 100)) : 0;
 
-                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 shadow-2xs">
-                      <p className="text-[11px] font-medium">مجموع پرداخت‌شده (پیش‌پرداخت)</p>
-                      <p className="text-base font-black mt-1 font-mono">
-                        {money(contract.downPayment)} <span className="text-[10px]">ریال</span>
-                      </p>
-                    </div>
+                    return (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-right">
+                          <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-2xs flex flex-col justify-between">
+                            <span className="text-xs text-muted-foreground font-semibold">مبلغ کل قرارداد</span>
+                            <div className="mt-2 flex items-baseline justify-between">
+                              <span className="text-lg font-black text-foreground font-mono">
+                                {money(payableAmt)}
+                              </span>
+                              <span className="text-xs text-muted-foreground font-bold">تومان</span>
+                            </div>
+                            {discountAmt > 0 && (
+                              <span className="text-[10px] text-muted-foreground mt-1 block">
+                                تخفیف: {money(discountAmt)} تومان
+                              </span>
+                            )}
+                          </div>
 
-                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-800 shadow-2xs">
-                      <p className="text-[11px] font-medium">مانده تا تسویه نهایی</p>
-                      <p className="text-base font-black mt-1 font-mono">
-                        {money(contract.balanceDue)} <span className="text-[10px]">ریال</span>
-                      </p>
-                    </div>
-                  </div>
+                          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 shadow-2xs flex flex-col justify-between">
+                            <span className="text-xs font-semibold text-emerald-900 dark:text-emerald-300">
+                              مجموع پرداخت‌شده (پیش‌پرداخت و اقساط)
+                            </span>
+                            <div className="mt-2 flex items-baseline justify-between">
+                              <span className="text-lg font-black text-emerald-700 dark:text-emerald-400 font-mono">
+                                {money(paidAmt)}
+                              </span>
+                              <span className="text-xs text-emerald-800/80 dark:text-emerald-300 font-bold">تومان</span>
+                            </div>
+                            <span className="text-[10px] text-emerald-700 dark:text-emerald-400 mt-1 block font-bold">
+                              {toFa(paidPercentage)}٪ تسویه شده
+                            </span>
+                          </div>
+
+                          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 shadow-2xs flex flex-col justify-between">
+                            <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">
+                              مانده تا تسویه نهایی
+                            </span>
+                            <div className="mt-2 flex items-baseline justify-between">
+                              <span className="text-lg font-black text-amber-700 dark:text-amber-400 font-mono">
+                                {money(balanceAmt)}
+                              </span>
+                              <span className="text-xs text-amber-800/80 dark:text-amber-300 font-bold">تومان</span>
+                            </div>
+                            <span className="text-[10px] text-amber-700 dark:text-amber-400 mt-1 block font-bold">
+                              {balanceAmt === 0 ? "تسویه کامل پروژه" : "در انتظار وصول مراحل بعد"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* دکمه چاپ و مشاهده قرارداد رسمی */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-muted/40 border border-border/70">
+                          <div className="flex items-center gap-2.5">
+                            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                              <FileText className="size-5" />
+                            </div>
+                            <div>
+                              <span className="text-xs font-black text-foreground block">
+                                قرارداد رسمی شماره {contract.contractNumber}
+                              </span>
+                              <span className="text-[11px] text-muted-foreground mt-0.5 block">
+                                نسخه چاپی حقوقی با سربرگ، شناسه ملی، جدول اقساط و امضای الکترونیک
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(`/admin/print/contract/${order.id}?size=a4`, "_blank")}
+                            className="gap-2 text-xs font-bold h-9 border-primary/40 text-primary hover:bg-primary/10 cursor-pointer shadow-2xs"
+                          >
+                            <Receipt className="size-4" />
+                            چاپ قرارداد رسمی A4
+                          </Button>
+                        </div>
+                      </>
+                    );
+                  })()}
 
                   {/* مراحل پرداخت و اقساط */}
                   {contract.milestones && contract.milestones.length > 0 && (
-                    <Card className="rounded-2xl border-border/80 overflow-hidden">
-                      <CardHeader className="p-4 border-b border-border/80">
+                    <Card className="rounded-2xl border-border/80 overflow-hidden shadow-2xs">
+                      <CardHeader className="p-3.5 border-b border-border/80 bg-muted/30">
                         <CardTitle className="text-xs font-bold flex items-center gap-2">
                           <Receipt className="size-4 text-primary" />
                           مراحل و اقساط پرداخت قرارداد
@@ -718,24 +804,24 @@ export function ProjectJourneyDetailDialog({
                       </CardHeader>
                       <div className="divide-y divide-border/60 text-xs">
                         {contract.milestones.map((ms: any) => (
-                          <div key={ms.id} className="p-3 flex items-center justify-between">
-                            <div className="space-y-0.5">
-                              <span className="font-bold text-foreground">{ms.title}</span>
-                              <span className="text-[10px] text-muted-foreground block font-mono">
-                                سررسید در مرحله: {STAGE_CONFIG[ms.dueStage]?.label || ms.dueStage || "—"}
+                          <div key={ms.id} className="p-3.5 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                            <div className="space-y-1 text-right">
+                              <span className="font-bold text-foreground text-xs block">{ms.title}</span>
+                              <span className="text-[11px] text-muted-foreground block font-mono">
+                                سررسید در مرحله: {STAGE_CONFIG[ms.dueStage]?.label || ms.dueStage || "همزمان با عقد قرارداد"}
                               </span>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="font-mono font-bold text-foreground">
-                                {money(ms.amount)} ریال
+                              <span className="font-mono font-bold text-foreground text-sm">
+                                {money(ms.amount)} تومان
                               </span>
                               <Badge
                                 variant="outline"
                                 className={cn(
-                                  "text-[10px] font-bold",
+                                  "text-[10px] font-bold px-2 py-0.5 rounded-lg",
                                   ms.status === "PAID"
-                                    ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                                    : "bg-amber-100 text-amber-800 border-amber-300",
+                                    ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300"
+                                    : "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300",
                                 )}
                               >
                                 {ms.status === "PAID" ? "تسویه شده" : "در انتظار پرداخت"}

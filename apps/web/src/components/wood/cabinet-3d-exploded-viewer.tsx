@@ -254,14 +254,14 @@ export function Cabinet3DExplodedViewer({
             <Box className="size-5 animate-pulse" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-black text-foreground">{projectTitle}</h3>
-              <Badge variant="outline" className="font-mono text-[10px] bg-background">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <h3 className="text-sm font-black text-foreground truncate max-w-sm">{projectTitle}</h3>
+              <Badge variant="outline" className="font-mono text-[10px] bg-background shrink-0">
                 {orderCode}
               </Badge>
-              <Badge className="bg-emerald-600 text-white text-[10px] gap-1 font-bold">
+              <Badge className="bg-emerald-600 text-white text-[10px] gap-1 font-bold shrink-0">
                 <Sparkles className="size-3" />
-                دوقلوی دیجیتال ۳D
+                <span>دوقلوی دیجیتال سه‌بعدی</span>
               </Badge>
             </div>
             <p className="text-[11px] text-muted-foreground mt-0.5">
