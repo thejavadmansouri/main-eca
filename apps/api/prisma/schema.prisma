@@ -3087,6 +3087,8 @@ model ProductionOrder {
   progressPercent    Int                   @default(0) // درصد پیشرفت فیزیکی پروژه (۰ تا ۱۰۰)
   trackingToken      String?               @unique // توکن یکتا جهت ساخت لینک رهگیری زنده برای کارفرما/مشتری
   estimatedCompletionDate DateTime?        // تاریخ برآوردی تکمیل پروژه و تحویل به مشتری
+  customerSignatureData String?            // تصویر امضای دیجیتال لمسی مشتری در محل (Base64)
+  customerSignedAt   DateTime?             // زمان تایید و امضای کارفرما
 
   // هزینه‌ها و بهای تمام‌شده تولید (COGM)
   totalMaterialCost  Float                 @default(0)
@@ -3113,6 +3115,7 @@ model ProductionOrder {
   stageUpdates       ProductionStageUpdate[]
   installationOrders InstallationOrder[]
   contract           ProjectContract?
+  posts              ProjectPost[]
 
   @@index([status])
   @@index([productId])
@@ -3603,6 +3606,8 @@ model InstallationOrder {
   status            String          @default("SCHEDULED") // SCHEDULED, LOADED, IN_TRANSIT, INSTALLING, COMPLETED
   completionNotes   String?
   customerSignature Boolean         @default(false)
+  customerSignatureData String?     // تصویر امضای دیجیتال لمسی مشتری (Base64)
+  customerSignedAt    DateTime?     // زمان ثبت امضای دیجیتال
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
@@ -3854,6 +3859,42 @@ model ProductionStageUpdate {
   @@index([productionOrderId])
   @@index([stationCode])
   @@index([createdAt])
+}
+
+/// ═══════════════════════════════════════════════════════════════════════════
+/// پوستر کاردو (شبکه اجتماعی داخلی کارخانه برای اشتراک پروژه‌های نصب‌شده)
+/// ═══════════════════════════════════════════════════════════════════════════
+
+model ProjectPost {
+  id                String               @id @default(uuid())
+  productionOrderId String?
+  title             String
+  description       String?
+  installerName     String?              // نام نصاب یا استادکار
+  category          String               @default("CABINET") // CABINET, WARDROBE, CLOSET, DECORATION
+  photos            String[]             // عکس‌های باکیفیت پروژه
+  likesCount        Int                  @default(0)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  productionOrder   ProductionOrder?     @relation(fields: [productionOrderId], references: [id], onDelete: SetNull)
+  comments          ProjectPostComment[]
+
+  @@index([category])
+  @@index([createdAt])
+}
+
+model ProjectPostComment {
+  id        String      @id @default(uuid())
+  postId    String
+  author    String      // نام کامنت‌گذار (مثلا مدیر کارخانه یا مسئول فروش)
+  role      String?
+  text      String      // متن نظر یا بازخورد کیفی
+  createdAt DateTime    @default(now())
+
+  post      ProjectPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
 }
 
 

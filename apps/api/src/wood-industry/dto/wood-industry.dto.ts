@@ -134,4 +134,41 @@ export class CreateStageUpdateDto {
   advanceStage?: boolean;
 }
 
+export class ParametricBomDto {
+  unitType: 'BASE_CABINET' | 'WALL_CABINET' | 'TALL_CABINET' | 'WARDROBE' | 'DRAWER_BOX';
+  widthMm: number;
+  heightMm: number;
+  depthMm: number;
+  quantity?: number;
+  shelfCount?: number;
+  doorCount?: number;
+  drawerCount?: number;
+  bodyMaterial?: string;
+  doorMaterial?: string;
+  edgeThicknessMm?: number;
+  unitPriceEstimate?: number;
+}
+
+export class SaveCustomerSignatureDto {
+  signatureData: string; // Base64
+  signerName?: string;
+  notes?: string;
+}
+
+export class CreateProjectPostDto {
+  productionOrderId?: string;
+  title: string;
+  description?: string;
+  installerName?: string;
+  category?: string;
+  photos: string[];
+}
+
+export class AddPostCommentDto {
+  author: string;
+  role?: string;
+  text: string;
+}
+
+
 

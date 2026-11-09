@@ -4272,6 +4272,90 @@ export interface SalaryAdvanceRow {
   approvedBy?: { id: string; fullName: string } | null;
 }
 
+export interface ParametricBomDto {
+  unitType: 'BASE_CABINET' | 'WALL_CABINET' | 'TALL_CABINET' | 'WARDROBE' | 'DRAWER_BOX';
+  widthMm: number;
+  heightMm: number;
+  depthMm: number;
+  quantity?: number;
+  shelfCount?: number;
+  doorCount?: number;
+  drawerCount?: number;
+  bodyMaterial?: string;
+  doorMaterial?: string;
+  edgeThicknessMm?: number;
+  unitPriceEstimate?: number;
+}
+
+export interface ParametricBomPart {
+  partName: string;
+  material: string;
+  lengthMm: number;
+  widthMm: number;
+  thicknessMm: number;
+  quantity: number;
+  grainDirection: 'NONE' | 'LENGTHWISE' | 'WIDTHWISE';
+  edgeL1?: boolean;
+  edgeL2?: boolean;
+  edgeW1?: boolean;
+  edgeW2?: boolean;
+}
+
+export interface ParametricBomResult {
+  unitType: string;
+  dimensions: { widthMm: number; heightMm: number; depthMm: number; quantity: number };
+  parts: ParametricBomPart[];
+  summary: {
+    totalPartsCount: number;
+    totalBodyAreaM2: number;
+    totalDoorAreaM2: number;
+    totalEdgeLengthMeters: number;
+    bodySheetsRequired: number;
+    doorSheetsRequired: number;
+    edgeTapeThicknessMm: number;
+    hardwareList: Array<{ name: string; quantity: number; unit: string }>;
+    financials: {
+      materialCost: number;
+      laborCost: number;
+      totalCost: number;
+      suggestedPrice: number;
+    };
+  };
+}
+
+export interface SaveCustomerSignatureDto {
+  signatureData: string;
+  signerName?: string;
+  notes?: string;
+}
+
+export interface ProjectPostRow {
+  id: string;
+  productionOrderId?: string | null;
+  title: string;
+  description?: string | null;
+  installerName?: string | null;
+  category: string;
+  photos: string[];
+  likesCount: number;
+  createdAt: string;
+  comments: ProjectPostCommentRow[];
+  productionOrder?: {
+    code: string;
+    customerName?: string | null;
+    projectTitle?: string | null;
+  } | null;
+}
+
+export interface ProjectPostCommentRow {
+  id: string;
+  postId: string;
+  author: string;
+  role?: string | null;
+  text: string;
+  createdAt: string;
+}
+
 
 
 

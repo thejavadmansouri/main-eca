@@ -13,6 +13,11 @@ import {
   VerifyInboundReceiptDto,
   CreateProjectContractDto,
   RecordProjectPaymentDto,
+  CreateStageUpdateDto,
+  ParametricBomDto,
+  SaveCustomerSignatureDto,
+  CreateProjectPostDto,
+  AddPostCommentDto,
 } from './dto/wood-industry.dto';
 
 @Injectable()
@@ -1111,5 +1116,432 @@ export class WoodIndustryService {
     });
 
     return this.getProjectContract(contract.productionOrderId);
+  }
+
+  // ───────────────────────── موتور محاسبات BOM پارامتریک و فرموله ─────────────────────────
+  calculateParametricBom(dto: ParametricBomDto) {
+    const W = Number(dto.widthMm) || 900;
+    const H = Number(dto.heightMm) || 720;
+    const D = Number(dto.depthMm) || 550;
+    const qty = Number(dto.quantity) || 1;
+    const shelves = Number(dto.shelfCount) ?? 1;
+    const doors = Number(dto.doorCount) ?? 2;
+    const drawers = Number(dto.drawerCount) ?? 0;
+    const bodyMat = dto.bodyMaterial || 'MDF سفید صابونی ۱۶ میل';
+    const doorMat = dto.doorMaterial || 'هایگلاس AGT سفید براق';
+    const edgeThick = dto.edgeThicknessMm || 2;
+
+    const parts: Array<{
+      partName: string;
+      material: string;
+      lengthMm: number;
+      widthMm: number;
+      thicknessMm: number;
+      quantity: number;
+      grainDirection: 'NONE' | 'LENGTHWISE' | 'WIDTHWISE';
+      edgeL1?: boolean;
+      edgeL2?: boolean;
+      edgeW1?: boolean;
+      edgeW2?: boolean;
+    }> = [];
+
+    // بدنه راست و چپ
+    parts.push({
+      partName: 'بدنه راست و چپ',
+      material: bodyMat,
+      lengthMm: H,
+      widthMm: D,
+      thicknessMm: 16,
+      quantity: 2 * qty,
+      grainDirection: 'LENGTHWISE',
+      edgeL1: true,
+      edgeL2: false,
+      edgeW1: true,
+      edgeW2: false,
+    });
+
+    // کف و طاق
+    if (dto.unitType === 'WALL_CABINET' || dto.unitType === 'WARDROBE' || dto.unitType === 'TALL_CABINET') {
+      parts.push({
+        partName: 'کف و طاق یونیت',
+        material: bodyMat,
+        lengthMm: Math.max(100, W - 32),
+        widthMm: D,
+        thicknessMm: 16,
+        quantity: 2 * qty,
+        grainDirection: 'WIDTHWISE',
+        edgeL1: true,
+        edgeL2: false,
+        edgeW1: false,
+        edgeW2: false,
+      });
+    } else {
+      // کابینت زمینی (کف + ۲ عدد قید طاق)
+      parts.push({
+        partName: 'کف یونیت زمینی',
+        material: bodyMat,
+        lengthMm: Math.max(100, W - 32),
+        widthMm: D,
+        thicknessMm: 16,
+        quantity: 1 * qty,
+        grainDirection: 'WIDTHWISE',
+        edgeL1: true,
+        edgeL2: false,
+        edgeW1: false,
+        edgeW2: false,
+      });
+      parts.push({
+        partName: 'قیدهای اتصال طاق',
+        material: bodyMat,
+        lengthMm: Math.max(100, W - 32),
+        widthMm: 80,
+        thicknessMm: 16,
+        quantity: 2 * qty,
+        grainDirection: 'LENGTHWISE',
+        edgeL1: true,
+        edgeL2: false,
+        edgeW1: false,
+        edgeW2: false,
+      });
+    }
+
+    // طبقات متحرک
+    if (shelves > 0) {
+      parts.push({
+        partName: 'طبقه متحرک میانی',
+        material: bodyMat,
+        lengthMm: Math.max(100, W - 34),
+        widthMm: Math.max(100, D - 20),
+        thicknessMm: 16,
+        quantity: shelves * qty,
+        grainDirection: 'WIDTHWISE',
+        edgeL1: true,
+        edgeL2: false,
+        edgeW1: false,
+        edgeW2: false,
+      });
+    }
+
+    // فیبر ۳ میل پشت‌بند
+    parts.push({
+      partName: 'فیبر ۳ میل پشت یونیت',
+      material: 'فیبر ۳ میلیمتر سفید',
+      lengthMm: Math.max(100, H - 4),
+      widthMm: Math.max(100, W - 4),
+      thicknessMm: 3,
+      quantity: 1 * qty,
+      grainDirection: 'NONE',
+    });
+
+    // درب‌ها
+    if (doors > 0) {
+      const singleDoorW = Math.round(W / doors) - 3;
+      parts.push({
+        partName: `درب نما (${doors > 1 ? 'دو لنگه' : 'تک لنگه'})`,
+        material: doorMat,
+        lengthMm: Math.max(100, H - 4),
+        widthMm: Math.max(100, singleDoorW),
+        thicknessMm: 16,
+        quantity: doors * qty,
+        grainDirection: 'LENGTHWISE',
+        edgeL1: true,
+        edgeL2: true,
+        edgeW1: true,
+        edgeW2: true,
+      });
+    }
+
+    // قطعات کشو (اگر کشو تعریف شده باشد)
+    if (drawers > 0) {
+      parts.push({
+        partName: 'دیواره چپ و راست کشو',
+        material: bodyMat,
+        lengthMm: Math.max(100, D - 50),
+        widthMm: 140,
+        thicknessMm: 16,
+        quantity: 2 * drawers * qty,
+        grainDirection: 'LENGTHWISE',
+        edgeL1: true,
+        edgeL2: false,
+        edgeW1: false,
+        edgeW2: false,
+      });
+      parts.push({
+        partName: 'پیشانی و پشت کشو',
+        material: bodyMat,
+        lengthMm: Math.max(100, W - 80),
+        widthMm: 140,
+        thicknessMm: 16,
+        quantity: 2 * drawers * qty,
+        grainDirection: 'WIDTHWISE',
+        edgeL1: true,
+        edgeL2: false,
+        edgeW1: false,
+        edgeW2: false,
+      });
+    }
+
+    // محاسبات متراژ، تعداد ورق و نوار PVC
+    let totalBodyAreaM2 = 0;
+    let totalDoorAreaM2 = 0;
+    let totalEdgeLengthMeters = 0;
+
+    for (const p of parts) {
+      const area = (p.lengthMm * p.widthMm * p.quantity) / 1000000;
+      if (p.thicknessMm === 16 && p.material === bodyMat) {
+        totalBodyAreaM2 += area;
+      } else if (p.material === doorMat) {
+        totalDoorAreaM2 += area;
+      }
+
+      // محاسبه متر نوار دور قطعه
+      let edgesCount = 0;
+      if (p.edgeL1) edgesCount += p.lengthMm;
+      if (p.edgeL2) edgesCount += p.lengthMm;
+      if (p.edgeW1) edgesCount += p.widthMm;
+      if (p.edgeW2) edgesCount += p.widthMm;
+      totalEdgeLengthMeters += (edgesCount * p.quantity) / 1000;
+    }
+
+    // متراژ مفید ورق استاندارد ام‌دی‌اف (3.66 * 1.83 = 6.7 m²) با ۱۵٪ دورریز
+    const standardSheetAreaM2 = 3.66 * 1.83;
+    const bodySheetsRequired = Math.ceil((totalBodyAreaM2 * 1.15) / standardSheetAreaM2);
+    const doorSheetsRequired = Math.ceil((totalDoorAreaM2 * 1.15) / (2.8 * 1.22)); // ورق هایگلاس ۲.۸۰ * ۱.۲۲
+
+    // لیست یراق‌آلات تخمینی
+    const hardwareList = [
+      { name: 'لولا آرام‌بند پمپی کلیپسی', quantity: doors * 2 * qty, unit: 'عدد' },
+      { name: 'پایه کابینت ۱۰ یا ۱۴ سانتی قابل تنظیم', quantity: 4 * qty, unit: 'عدد' },
+      { name: 'پیچ کانفرمات ۵ سانتی', quantity: 24 * qty, unit: 'عدد' },
+      { name: 'پیچ ۴×۱۶ نوک تیز', quantity: 40 * qty, unit: 'عدد' },
+      { name: 'دستگیره خطی مدرن', quantity: (doors + drawers) * qty, unit: 'عدد' },
+      { name: 'ریل تلسکوپی سه زمانه ساچمه‌ای', quantity: drawers * qty, unit: 'دست' },
+      { name: 'خار طبقه فلزی', quantity: shelves * 4 * qty, unit: 'عدد' },
+    ];
+
+    // برآورد هزینه به ریال
+    const sheetCostBody = bodySheetsRequired * 18500000; // هر ورق بدنه ۱۸.۵ میلیون ریال
+    const sheetCostDoor = doorSheetsRequired * 32000000; // هر ورق هایگلاس ۳۲ میلیون ریال
+    const edgeTapeCost = Math.round(totalEdgeLengthMeters * 85000); // هر متر نوار ۲ میل ۸۵ هزار ریال
+    const hardwareCost = (doors * 2 * 450000 + 4 * 120000 + 200000) * qty;
+    const laborCost = Math.round((sheetCostBody + sheetCostDoor) * 0.35); // ۳۵ درصد دستمزد برش و ساخت
+    const totalCost = sheetCostBody + sheetCostDoor + edgeTapeCost + hardwareCost + laborCost;
+    const suggestedPrice = Math.round(totalCost * 1.3); // ۳۰ درصد حاشیه سود
+
+    return {
+      unitType: dto.unitType,
+      dimensions: { widthMm: W, heightMm: H, depthMm: D, quantity: qty },
+      parts,
+      summary: {
+        totalPartsCount: parts.reduce((s, p) => s + p.quantity, 0),
+        totalBodyAreaM2: Number(totalBodyAreaM2.toFixed(2)),
+        totalDoorAreaM2: Number(totalDoorAreaM2.toFixed(2)),
+        totalEdgeLengthMeters: Number(totalEdgeLengthMeters.toFixed(1)),
+        bodySheetsRequired,
+        doorSheetsRequired,
+        edgeTapeThicknessMm: edgeThick,
+        hardwareList,
+        financials: {
+          materialCost: sheetCostBody + sheetCostDoor + edgeTapeCost + hardwareCost,
+          laborCost,
+          totalCost,
+          suggestedPrice,
+        },
+      },
+    };
+  }
+
+  /** انتقال مستقیم قطعات پارامتریک به پارت‌لیست سفارش کارگاهی */
+  async applyParametricBomToOrder(orderId: string, dto: ParametricBomDto) {
+    const order = await this.prisma.productionOrder.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('سفارش تولید یافت نشد.');
+
+    const calculated = this.calculateParametricBom(dto);
+
+    // ثبت تک‌تک قطعات در جدول cuttingListItem
+    for (const p of calculated.parts) {
+      const count = await this.prisma.cuttingListItem.count();
+      const barcode = `CUT-${String(count + 1).padStart(5, '0')}`;
+
+      await this.prisma.cuttingListItem.create({
+        data: {
+          productionOrderId: orderId,
+          partName: p.partName,
+          materialType: p.material,
+          lengthMm: p.lengthMm,
+          widthMm: p.widthMm,
+          thicknessMm: p.thicknessMm,
+          quantity: p.quantity,
+          grainDirection: p.grainDirection,
+          edgeL1: p.edgeL1 ? 'PVC_2MM' : null,
+          edgeL2: p.edgeL2 ? 'PVC_2MM' : null,
+          edgeW1: p.edgeW1 ? 'PVC_2MM' : null,
+          edgeW2: p.edgeW2 ? 'PVC_2MM' : null,
+          barcode,
+        },
+      });
+    }
+
+    return {
+      message: `${calculated.parts.length} ردیف قطعه پارامتریک با موفقیت به پارت‌لیست سفارش اضافه گردید.`,
+      addedPartsCount: calculated.parts.length,
+      orderId,
+    };
+  }
+
+  /** صدور فایل استاندارد خروجی دستگاه برش Cut Rite / OptiCut CSV */
+  async exportCutRiteCsv(orderId: string): Promise<string> {
+    const order = await this.prisma.productionOrder.findUnique({
+      where: { id: orderId },
+      include: { cuttingListItems: true },
+    });
+    if (!order) throw new NotFoundException('سفارش تولید پیدا نشد.');
+
+    const headers = [
+      'OrderCode',
+      'PartName',
+      'Material',
+      'Length_mm',
+      'Width_mm',
+      'Thickness_mm',
+      'Quantity',
+      'GrainDirection',
+      'Edge_L1',
+      'Edge_L2',
+      'Edge_W1',
+      'Edge_W2',
+      'Barcode',
+      'Customer',
+    ];
+
+    const rows = order.cuttingListItems.map((item) => [
+      order.code,
+      `"${item.partName.replace(/"/g, '""')}"`,
+      `"${item.materialType.replace(/"/g, '""')}"`,
+      item.lengthMm,
+      item.widthMm,
+      item.thicknessMm,
+      item.quantity,
+      item.grainDirection,
+      item.edgeL1 || '-',
+      item.edgeL2 || '-',
+      item.edgeW1 || '-',
+      item.edgeW2 || '-',
+      item.barcode,
+      `"${(order.customerName || 'مشتری').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    return '\uFEFF' + csvContent; // اضافه کردن BOM برای باز شدن صحیح فارسی در اکسل
+  }
+
+  /** ثبت امضای الکترونیکی دیجیتال لمسی کارفرما در محل تحویل/نصب */
+  async saveCustomerSignature(orderId: string, dto: SaveCustomerSignatureDto) {
+    const order = await this.prisma.productionOrder.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('سفارش تولید یافت نشد.');
+
+    const now = new Date();
+
+    const updated = await this.prisma.productionOrder.update({
+      where: { id: orderId },
+      data: {
+        customerSignatureData: dto.signatureData,
+        customerSignedAt: now,
+        currentStage: 'INSTALLED',
+        progressPercent: 100,
+      },
+    });
+
+    // ثبت در حواله نصب مربوطه
+    await this.prisma.installationOrder.updateMany({
+      where: { productionOrderId: orderId },
+      data: {
+        customerSignature: true,
+        customerSignatureData: dto.signatureData,
+        customerSignedAt: now,
+        status: 'COMPLETED',
+        actualCompletedDate: now,
+        completionNotes: dto.notes || 'تایید نهایی و اخذ امضای رضایت کارفرما در محل',
+      },
+    });
+
+    // ثبت در خط سیر کارگاهی
+    await this.prisma.productionStageUpdate.create({
+      data: {
+        productionOrderId: orderId,
+        stationCode: 'INSTALLED',
+        title: 'امضای رضایت و تحویل نهایی پروژه توسط کارفرما',
+        notes: `کارفرما (${dto.signerName || order.customerName || 'مشتری'}) رضایت کامل خود را با امضای دیجیتال ثبت نمود.${dto.notes ? ` توضیحات: ${dto.notes}` : ''}`,
+        photos: [dto.signatureData],
+        operatorName: 'تاییدیه مستقیم کارفرما',
+      },
+    });
+
+    return {
+      success: true,
+      orderCode: order.code,
+      signedAt: now,
+      message: 'امضای الکترونیکی با موفقیت ثبت و سفارش به وضعیت تحویل قطعی تغییر یافت.',
+    };
+  }
+
+  /** ثبت امضا از طریق توکن عمومی رهگیری */
+  async savePublicSignature(token: string, dto: SaveCustomerSignatureDto) {
+    const order = await this.prisma.productionOrder.findUnique({ where: { trackingToken: token } });
+    if (!order) throw new NotFoundException('لینک رهگیری نامعتبر است.');
+    return this.saveCustomerSignature(order.id, dto);
+  }
+
+  // ───────────────────────── پوستر کاردو (نمایشگاه و گالری پروژه‌های اجرا شده) ─────────────────────────
+  async getProjectPosts() {
+    return this.prisma.projectPost.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        comments: {
+          orderBy: { createdAt: 'asc' },
+        },
+        productionOrder: {
+          select: {
+            code: true,
+            customerName: true,
+            projectTitle: true,
+          },
+        },
+      },
+    });
+  }
+
+  async createProjectPost(dto: CreateProjectPostDto) {
+    return this.prisma.projectPost.create({
+      data: {
+        productionOrderId: dto.productionOrderId || null,
+        title: dto.title,
+        description: dto.description,
+        installerName: dto.installerName || 'سرپرست تیم نصب کاردو',
+        category: dto.category || 'CABINET',
+        photos: dto.photos || [],
+      },
+    });
+  }
+
+  async likeProjectPost(id: string) {
+    return this.prisma.projectPost.update({
+      where: { id },
+      data: { likesCount: { increment: 1 } },
+    });
+  }
+
+  async addPostComment(id: string, dto: AddPostCommentDto) {
+    const post = await this.prisma.projectPost.findUnique({ where: { id } });
+    if (!post) throw new NotFoundException('پست پروژه پیدا نشد.');
+
+    return this.prisma.projectPostComment.create({
+      data: {
+        postId: id,
+        author: dto.author,
+        role: dto.role || 'کاربر سیستم',
+        text: dto.text,
+      },
+    });
   }
 }

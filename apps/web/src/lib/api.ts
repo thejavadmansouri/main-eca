@@ -4583,6 +4583,95 @@ export function updateSalaryAdvanceStatus(
   });
 }
 
+// ───────────────────────── موتور BOM پارامتریک و خروجی برش ─────────────────────────
+export function calculateParametricBom(body: T.ParametricBomDto): Promise<T.ParametricBomResult> {
+  return apiFetch<T.ParametricBomResult>('/wood-industry/parametric-bom/calculate', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function applyParametricBomToOrder(
+  orderId: string,
+  body: T.ParametricBomDto,
+): Promise<{ message: string; addedPartsCount: number }> {
+  return apiFetch<{ message: string; addedPartsCount: number }>(
+    `/wood-industry/orders/${encodeURIComponent(orderId)}/apply-parametric-bom`,
+    {
+      method: 'POST',
+      body,
+    },
+  );
+}
+
+export function exportCutRiteCsv(orderId: string): Promise<{ csv: string; filename: string }> {
+  return apiFetch<{ csv: string; filename: string }>(
+    `/wood-industry/orders/${encodeURIComponent(orderId)}/export-cut-rite`,
+  );
+}
+
+// ───────────────────────── امضای دیجیتال لمسی کارفرما ─────────────────────────
+export function saveCustomerSignature(
+  orderId: string,
+  body: T.SaveCustomerSignatureDto,
+): Promise<{ success: boolean; message: string }> {
+  return apiFetch<{ success: boolean; message: string }>(
+    `/wood-industry/orders/${encodeURIComponent(orderId)}/signature`,
+    {
+      method: 'POST',
+      body,
+    },
+  );
+}
+
+export function savePublicSignature(
+  token: string,
+  body: T.SaveCustomerSignatureDto,
+): Promise<{ success: boolean; message: string }> {
+  return apiFetch<{ success: boolean; message: string }>(
+    `/wood-industry/public/track/${encodeURIComponent(token)}/signature`,
+    {
+      method: 'POST',
+      body,
+    },
+  );
+}
+
+// ───────────────────────── پوستر کاردو (نمایشگاه پروژه‌ها) ─────────────────────────
+export function getProjectPosts(): Promise<T.ProjectPostRow[]> {
+  return apiFetch<T.ProjectPostRow[]>('/wood-industry/posters');
+}
+
+export function createProjectPost(body: {
+  productionOrderId?: string;
+  title: string;
+  description?: string;
+  installerName?: string;
+  category?: string;
+  photos: string[];
+}): Promise<T.ProjectPostRow> {
+  return apiFetch<T.ProjectPostRow>('/wood-industry/posters', {
+    method: 'POST',
+    body,
+  });
+}
+
+export function likeProjectPost(id: string): Promise<T.ProjectPostRow> {
+  return apiFetch<T.ProjectPostRow>(`/wood-industry/posters/${encodeURIComponent(id)}/like`, {
+    method: 'POST',
+  });
+}
+
+export function addPostComment(
+  id: string,
+  body: { author: string; role?: string; text: string },
+): Promise<T.ProjectPostCommentRow> {
+  return apiFetch<T.ProjectPostCommentRow>(`/wood-industry/posters/${encodeURIComponent(id)}/comments`, {
+    method: 'POST',
+    body,
+  });
+}
+
 
 
 

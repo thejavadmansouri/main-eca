@@ -24,6 +24,10 @@ import {
   CreateProjectContractDto,
   RecordProjectPaymentDto,
   CreateStageUpdateDto,
+  ParametricBomDto,
+  SaveCustomerSignatureDto,
+  CreateProjectPostDto,
+  AddPostCommentDto,
 } from './dto/wood-industry.dto';
 import { WoodIndustryService } from './wood-industry.service';
 
@@ -197,5 +201,67 @@ export class WoodIndustryController {
   @Post('contracts/payments')
   async recordProjectPayment(@Body() dto: RecordProjectPaymentDto) {
     return this.woodService.recordProjectPayment(dto);
+  }
+
+  // ───────────────────────── موتور BOM پارامتریک و خروجی Cut Rite ─────────────────────────
+  @Post('parametric-bom/calculate')
+  async calculateParametricBom(@Body() dto: ParametricBomDto) {
+    return this.woodService.calculateParametricBom(dto);
+  }
+
+  @Post('orders/:id/apply-parametric-bom')
+  async applyParametricBomToOrder(
+    @Param('id') orderId: string,
+    @Body() dto: ParametricBomDto,
+  ) {
+    return this.woodService.applyParametricBomToOrder(orderId, dto);
+  }
+
+  @Get('orders/:id/export-cut-rite')
+  async exportCutRiteCsv(@Param('id') orderId: string) {
+    const csv = await this.woodService.exportCutRiteCsv(orderId);
+    return { csv, filename: `CutRite_${orderId}.csv` };
+  }
+
+  // ───────────────────────── امضای دیجیتال لمسی کارفرما ─────────────────────────
+  @Post('orders/:id/signature')
+  async saveCustomerSignature(
+    @Param('id') orderId: string,
+    @Body() dto: SaveCustomerSignatureDto,
+  ) {
+    return this.woodService.saveCustomerSignature(orderId, dto);
+  }
+
+  @Public()
+  @Post('public/track/:token/signature')
+  async savePublicSignature(
+    @Param('token') token: string,
+    @Body() dto: SaveCustomerSignatureDto,
+  ) {
+    return this.woodService.savePublicSignature(token, dto);
+  }
+
+  // ───────────────────────── پوستر کاردو (نمایشگاه پروژه‌ها) ─────────────────────────
+  @Get('posters')
+  async getProjectPosts() {
+    return this.woodService.getProjectPosts();
+  }
+
+  @Post('posters')
+  async createProjectPost(@Body() dto: CreateProjectPostDto) {
+    return this.woodService.createProjectPost(dto);
+  }
+
+  @Post('posters/:id/like')
+  async likeProjectPost(@Param('id') id: string) {
+    return this.woodService.likeProjectPost(id);
+  }
+
+  @Post('posters/:id/comments')
+  async addPostComment(
+    @Param('id') id: string,
+    @Body() dto: AddPostCommentDto,
+  ) {
+    return this.woodService.addPostComment(id, dto);
   }
 }

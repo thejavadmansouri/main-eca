@@ -32,6 +32,7 @@ import {
   ThumbsUp,
   Heart,
   MessageCircle,
+  PenTool,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ import {
 import { getPublicTracking } from "@/lib/api";
 import { faDate, money, toFa } from "@/lib/format";
 import { Cabinet3DExplodedViewer } from "@/components/wood/cabinet-3d-exploded-viewer";
+import { DigitalSignatureDialog } from "@/components/wood/digital-signature-dialog";
 
 const STAGES = [
   { key: "CUTTING", label: "ایستگاه برش", icon: Scissors, desc: "برش دقیق ورق‌های MDF بر اساس نقشه بهینه‌ساز" },
@@ -64,6 +66,7 @@ export default function PublicProjectTrackingPage() {
   const token = params.token as string;
   const [activePreviewImage, setActivePreviewImage] = React.useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
+  const [isSignModalOpen, setIsSignModalOpen] = React.useState(false);
   const [isCopied, setIsCopied] = React.useState(false);
 
   // نظرسنجی و امتیاز رضایت مشتری
@@ -409,6 +412,75 @@ export default function PublicProjectTrackingPage() {
           </Card>
         )}
 
+        {/* تاییدیه و امضای دیجیتال تحویل پروژه در محل کارفرما */}
+        <Card className="mt-6 border p-5 shadow-sm overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3 mb-4">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <PenTool className="h-4 w-4 text-emerald-600" />
+              تاییدیه و امضای دیجیتال تحویل در محل پروژه
+            </h3>
+            {order.customerSignatureData ? (
+              <Badge className="bg-emerald-600 text-white gap-1 text-[11px]">
+                <CheckCircle2 className="size-3" />
+                تایید و تحویل قطعی گردید
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-amber-600 border-amber-500/30 text-[11px]">
+                در انتظار تایید کارفرما
+              </Badge>
+            )}
+          </div>
+
+          {order.customerSignatureData ? (
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border bg-emerald-500/10 border-emerald-500/20 p-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300 text-sm">
+                  <ShieldCheck className="size-5 text-emerald-600" />
+                  <span>پروژه با موفقیت و رضایت کامل کارفرما تحویل گردید</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  امضای الکترونیکی با موفقیت ثبت شد و کارت گارانتی ۲۴ ماهه طلایی کاردو فعال گردید.
+                </p>
+                {order.customerSignedAt && (
+                  <span className="text-[11px] font-mono text-muted-foreground block">
+                    زمان ثبت امضا: {faDate(order.customerSignedAt)}
+                  </span>
+                )}
+              </div>
+              <div className="rounded-xl border bg-white p-2 shadow-sm max-w-[160px]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={order.customerSignatureData}
+                  alt="امضای کارفرما"
+                  className="h-16 w-full object-contain"
+                />
+                <span className="text-[10px] text-center block text-slate-500 font-medium pt-1">
+                  امضای دیجیتال کارفرما
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-muted/30 p-4">
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-foreground">
+                  کارفرمای گرامی، آیا کار نصب پروژه به پایان رسیده و مورد تایید شماست؟
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  با ثبت امضای لمسی روی صفحه گوشی خود، تحویل بی‌نقص سفارش را تایید و ضمانت ۲۴ ماهه را فعال فرمایید.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setIsSignModalOpen(true)}
+                className="gap-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-9 shadow-sm"
+              >
+                <PenTool className="size-4" />
+                ثبت امضای دیجیتال رضایت‌نامه
+              </Button>
+            </div>
+          )}
+        </Card>
+
         {/* شفافیت مالی و جزئیات قرارداد پروژه */}
         {order.contract && (
           <Card className="mt-6 border p-5 shadow-sm">
@@ -722,6 +794,16 @@ export default function PublicProjectTrackingPage() {
           )}
         </DialogContent>
       </Dialog>
+      {/* دیالوگ رسم امضای دیجیتال لمسی کارفرما */}
+      <DigitalSignatureDialog
+        open={isSignModalOpen}
+        onOpenChange={setIsSignModalOpen}
+        trackingToken={token}
+        customerName={order.customerName}
+        orderCode={order.code}
+        projectTitle={order.projectTitle}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }

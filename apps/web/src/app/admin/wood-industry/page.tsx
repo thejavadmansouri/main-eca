@@ -40,6 +40,10 @@ import {
   FileCheck2,
   Banknote,
   Scale,
+  Calculator,
+  Download,
+  Camera,
+  PenTool,
 } from "lucide-react";
 
 import {
@@ -59,8 +63,12 @@ import {
   verifyInboundReceipt,
   getWarehouses,
   getAllProjectContracts,
+  exportCutRiteCsv,
 } from "@/lib/api";
 import { ProjectContractModal } from "./contract-dialog";
+import { ParametricBomDialog } from "./_components/parametric-bom-dialog";
+import { ProjectPostersDialog } from "./_components/project-posters-dialog";
+import { DigitalSignatureDialog } from "@/components/wood/digital-signature-dialog";
 import { faDate, money, toFa } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type {
@@ -178,6 +186,9 @@ export default function WoodIndustryPage() {
   const [isAddInstallationOpen, setIsAddInstallationOpen] = React.useState(false);
   const [isAddOrderOpen, setIsAddOrderOpen] = React.useState(false);
   const [isAddInboundOpen, setIsAddInboundOpen] = React.useState(false);
+  const [isParametricBomOpen, setIsParametricBomOpen] = React.useState(false);
+  const [isPostersOpen, setIsPostersOpen] = React.useState(false);
+  const [signatureOrder, setSignatureOrder] = React.useState<{ id: string; code: string; customerName?: string; projectTitle?: string } | null>(null);
 
   // دیالوگ استعلام متریال و ارتقای مرحله
   const [feasibilityOrderId, setFeasibilityOrderId] = React.useState<string | null>(null);
@@ -312,6 +323,27 @@ export default function WoodIndustryPage() {
     queryKey: ["wood-installations"],
     queryFn: getInstallationOrders,
   });
+
+  async function handleExportCutRite(orderId: string) {
+    if (!orderId) {
+      toast({ variant: "destructive", title: "ابتدا یک سفارش را انتخاب کنید." });
+      return;
+    }
+    try {
+      const res = await exportCutRiteCsv(orderId);
+      const blob = new Blob([res.csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", res.filename || `CutRite_${orderId}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast({ title: "فایل Cut Rite دانلود شد", description: "فایل بهینه‌ساز برش دستگاه کات با موفقیت آماده شد." });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "خطا در خروجی برش", description: err.message });
+    }
+  }
 
   // میوتیشن‌ها
   const createOrderMutation = useMutation({
@@ -461,7 +493,25 @@ export default function WoodIndustryPage() {
         title="مدیریت تخصصی صنایع چوب، MDF و برش‌کاری"
         description="سامانه هوشمند لیست ابعاد برش، کنترل نوار لبه PVC، لیبل پروفیل و شیشه، ماتریس جامع خط تولید و تحلیل بارگیری و نصب"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsParametricBomOpen(true)}
+              className="gap-1.5 text-xs h-8 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 font-bold"
+            >
+              <Calculator className="size-3.5 text-emerald-600" />
+              ماشین‌حساب BOM پارامتریک
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPostersOpen(true)}
+              className="gap-1.5 text-xs h-8 border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-bold"
+            >
+              <Camera className="size-3.5 text-rose-500" />
+              پوستر پروژه‌ها
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -727,6 +777,15 @@ export default function WoodIndustryPage() {
               <Badge variant="outline" className="text-[10px] font-mono">{toFa(filteredCuttingItems.length)} ردیف</Badge>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExportCutRite(selectedOrderId)}
+                className="gap-1.5 text-xs h-7 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 font-bold"
+              >
+                <Download className="size-3" />
+                خروجی Cut Rite / OptiCut (CSV)
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -2418,6 +2477,33 @@ export default function WoodIndustryPage() {
         open={!!contractOrderId}
         onOpenChange={(open) => !open && setContractOrderId(null)}
       />
+
+      {/* ۸. دیالوگ BOM پارامتریک و محاسبات ابعاد */}
+      <ParametricBomDialog
+        open={isParametricBomOpen}
+        onOpenChange={setIsParametricBomOpen}
+        orders={productionOrders as any}
+        defaultOrderId={selectedOrderId}
+      />
+
+      {/* ۹. دیالوگ پوستر پروژه‌ها و نمایشگاه کارگاهی */}
+      <ProjectPostersDialog
+        open={isPostersOpen}
+        onOpenChange={setIsPostersOpen}
+      />
+
+      {/* ۱۰. دیالوگ امضای الکترونیک مشتری در محل نصب */}
+      {signatureOrder && (
+        <DigitalSignatureDialog
+          open={Boolean(signatureOrder)}
+          onOpenChange={(open) => !open && setSignatureOrder(null)}
+          orderId={signatureOrder.id}
+          customerName={signatureOrder.customerName}
+          orderCode={signatureOrder.code}
+          projectTitle={signatureOrder.projectTitle}
+          onSuccess={() => refetchInstallations()}
+        />
+      )}
     </div>
   );
 }
