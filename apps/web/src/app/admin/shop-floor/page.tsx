@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   Barcode,
+  CalendarDays,
   Camera,
   CheckCircle2,
   Clock,
@@ -87,6 +89,7 @@ function playScanSound(isSuccess: boolean) {
 }
 
 export default function ShopFloorScanPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [stationCode, setStationCode] = React.useState("SAW");
   const [operatorName, setOperatorName] = React.useState("اپراتور خط ۱");
@@ -227,6 +230,17 @@ export default function ShopFloorScanPage() {
                   حالت کیوسک (تمام‌صفحه)
                 </>
               )}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/worker/leaves")}
+              className="gap-1.5 text-xs h-8 font-bold border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-400 cursor-pointer"
+              title="ثبت تقاضای مرخصی روزانه/ساعتی و کاردکس"
+            >
+              <CalendarDays className="size-3.5 text-emerald-600" />
+              <span>تقاضای مرخصی پرسنل</span>
             </Button>
 
             <Button

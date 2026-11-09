@@ -8,6 +8,7 @@ import {
   BookOpen,
   Boxes,
   Building2,
+  Calendar,
   ClipboardCheck,
   ClipboardList,
   Factory,
@@ -490,6 +491,12 @@ export const NAV_SECTIONS: NavSection[] = [
         title: "ساختار و واحدهای سازمانی",
         href: "/admin/hr?tab=departments",
         icon: Building2,
+        roles: ["ADMIN", "MANAGER"],
+      },
+      {
+        title: "مدیریت مرخصی‌ها و کاردکس",
+        href: "/admin/hr?tab=leaves",
+        icon: Calendar,
         roles: ["ADMIN", "MANAGER"],
       },
       {
