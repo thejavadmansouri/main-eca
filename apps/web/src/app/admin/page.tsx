@@ -25,6 +25,10 @@ import {
   Route,
   Truck,
   MessageSquare,
+  Calculator,
+  Plus,
+  FileCheck2,
+  HardHat,
   type LucideIcon,
 } from "lucide-react";
 
@@ -261,6 +265,85 @@ export default function AdminHome() {
             <span>صندوق فروش (F2)</span>
           </Button>
         </div>
+      </div>
+
+      {/* اتاق فرمان اقدامات سریع کاردو (Quick Action Cockpit) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <button
+          type="button"
+          onClick={() => router.push("/admin/wood-industry")}
+          className="group relative flex items-center gap-3.5 rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card p-3.5 text-right shadow-xs transition-all duration-200 hover:border-primary hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+        >
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-105">
+            <Plus className="size-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-foreground">ثبت سفارش ساخت جدید</span>
+              <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-bold text-primary">B2B/B2C</span>
+            </div>
+            <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+              سفارش کابینت، قرارداد و دوقلوی دیجیتال
+            </p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/admin/wood-industry?tab=bom")}
+          className="group relative flex items-center gap-3.5 rounded-xl border border-border/80 bg-card p-3.5 text-right shadow-xs transition-all duration-200 hover:border-indigo-500/50 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+        >
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-2xs transition-transform group-hover:scale-105">
+            <Calculator className="size-5.5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-foreground">ماشین‌حساب BOM پارامتریک</span>
+              <span className="rounded bg-indigo-500/10 px-1.5 py-0.5 text-[9px] font-bold text-indigo-600 dark:text-indigo-400">فرمول هوشمند</span>
+            </div>
+            <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+              محاسبه آنی قطعات برش، ورق و نوار PVC
+            </p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/admin/logistics/drivers")}
+          className="group relative flex items-center gap-3.5 rounded-xl border border-border/80 bg-card p-3.5 text-right shadow-xs transition-all duration-200 hover:border-amber-500/50 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+        >
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-2xs transition-transform group-hover:scale-105">
+            <Truck className="size-5.5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-foreground">ناوگان و اعزام نصاب‌ها</span>
+              <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-400">لجستیک</span>
+            </div>
+            <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+              حواله‌های بارگیری و زمان‌بندی نصب در محل
+            </p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/admin/chat")}
+          className="group relative flex items-center gap-3.5 rounded-xl border border-border/80 bg-card p-3.5 text-right shadow-xs transition-all duration-200 hover:border-emerald-500/50 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+        >
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-2xs transition-transform group-hover:scale-105">
+            <MessageSquare className="size-5.5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-foreground">پیام‌رسان کارخانه و خطوط</span>
+              <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">گفتگوی تیمی</span>
+            </div>
+            <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+              هماهنگی آنی بین اپراتورها، فروش و مدیران
+            </p>
+          </div>
+        </button>
       </div>
 
       {/* نوارهای شاخص‌های عملکرد واقعی (KPI Cards) — فقط برای مدیران و حسابداران */}

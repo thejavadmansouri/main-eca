@@ -5,11 +5,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   Barcode,
+  Camera,
   CheckCircle2,
   Clock,
   ExternalLink,
   Factory,
   HardHat,
+  Image as ImageIcon,
   Layers,
   LayoutGrid,
   Maximize2,
@@ -21,6 +23,7 @@ import {
   ScanLine,
   Scissors,
   ShieldCheck,
+  Smartphone,
   User,
   Volume2,
   VolumeX,
@@ -37,6 +40,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { MobileBarcodeCameraDialog } from "@/components/wood/mobile-barcode-camera-dialog";
+import { StagePhotoUploadDialog } from "@/components/wood/stage-photo-upload-dialog";
 
 const STATIONS = [
   { code: "SAW", name: "اره برش پانل (Saw)", icon: Scissors, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/30", ring: "ring-amber-500/20" },
@@ -88,6 +93,10 @@ export default function ShopFloorScanPage() {
   const [barcodeInput, setBarcodeInput] = React.useState("");
   const [soundEnabled, setSoundEnabled] = React.useState(true);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+
+  // وضعیت‌های دیالوگ موبایلی کارگران
+  const [isCameraOpen, setIsCameraOpen] = React.useState(false);
+  const [isPhotoOpen, setIsPhotoOpen] = React.useState(false);
 
   const [lastResult, setLastResult] = React.useState<{
     success: boolean;
@@ -243,6 +252,9 @@ export default function ShopFloorScanPage() {
               key={st.code}
               type="button"
               onClick={() => {
+                if (typeof navigator !== "undefined" && navigator.vibrate) {
+                  navigator.vibrate(40);
+                }
                 setStationCode(st.code);
                 barcodeInputRef.current?.focus();
               }}
@@ -308,6 +320,29 @@ export default function ShopFloorScanPage() {
                   className="h-16 text-lg font-mono font-black tracking-widest text-center border-2 border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/20 bg-background rounded-xl shadow-inner transition-all"
                   autoFocus
                 />
+              </div>
+
+              {/* ابزارهای مخصوص کار با گوشی موبایل و تبلت برای کارگران کارگاه */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCameraOpen(true)}
+                  className="h-11 gap-2 rounded-xl border-2 border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-black text-xs hover:bg-emerald-500/20 shadow-xs cursor-pointer"
+                >
+                  <Camera className="size-4.5" />
+                  <span>📸 اسکن بارکد با دوربین گوشی</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsPhotoOpen(true)}
+                  className="h-11 gap-2 rounded-xl border-2 border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-blue-400 font-black text-xs hover:bg-blue-500/20 shadow-xs cursor-pointer"
+                >
+                  <ImageIcon className="size-4.5" />
+                  <span>📷 عکاسی از قطعه / ثبت پیشرفت</span>
+                </Button>
               </div>
 
               <div className="flex items-center justify-between gap-2 pt-1">
@@ -451,6 +486,29 @@ export default function ShopFloorScanPage() {
           </div>
         </div>
       </div>
+
+      {/* دیالوگ اسکن با دوربین گوشی */}
+      <MobileBarcodeCameraDialog
+        open={isCameraOpen}
+        onOpenChange={setIsCameraOpen}
+        stationName={currentStation.name}
+        onScan={(scannedCode) => {
+          setBarcodeInput(scannedCode);
+          scanMutation.mutate({
+            barcode: scannedCode,
+            stationCode,
+            operatorName: operatorName.trim() || "اپراتور کارگاه",
+          });
+        }}
+      />
+
+      {/* دیالوگ عکاسی و ثبت کنترل کیفی مرحله کارگاهی */}
+      <StagePhotoUploadDialog
+        open={isPhotoOpen}
+        onOpenChange={setIsPhotoOpen}
+        stationName={currentStation.name}
+        orderCode={lastResult?.orderCode}
+      />
     </div>
   );
 }

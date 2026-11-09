@@ -537,16 +537,48 @@ export function ProjectContractModal({
                   </div>
                 </div>
 
-                <Button size="sm" onClick={() => window.print()} className="mt-3 gap-1.5">
-                  <Printer className="size-3.5" />
-                  ارسال به چاپگر
-                </Button>
+                <div className="mt-4 flex flex-wrap items-center gap-2 pt-3 border-t">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      window.open(`/admin/print/contract/${orderId || contract.id}?size=a4`, "_blank");
+                    }}
+                    className="gap-2 font-bold bg-primary text-primary-foreground shadow-xs cursor-pointer"
+                  >
+                    <Printer className="size-4" />
+                    <span>چاپ قرارداد رسمی A4 (سربرگ، شناسه ملی، کد ثبتی و مهر)</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      window.open(`/admin/print/contract/${orderId || contract.id}?size=a5`, "_blank");
+                    }}
+                    className="gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <span>چاپ فرمت A5</span>
+                  </Button>
+                </div>
               </div>
             )}
           </div>
         )}
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="flex items-center justify-between gap-2 border-t pt-3">
+          {contract ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                window.open(`/admin/print/contract/${orderId || contract.id}?size=a4`, "_blank");
+              }}
+              className="gap-1.5 text-xs font-bold text-primary hover:bg-primary/10"
+            >
+              <Printer className="size-3.5" />
+              <span>نسخه چاپی رسمی (A4)</span>
+            </Button>
+          ) : <div />}
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             بستن
           </Button>

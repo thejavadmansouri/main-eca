@@ -3,18 +3,22 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/auth-store";
 import {
   NAV_SECTIONS,
   filterNavByRole,
+  filterNavByWorkspaceMode,
+  WORKSPACE_MODES,
+  type WorkspaceMode,
   type NavItem,
   type NavSection,
 } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ROLE_LABELS } from "@/lib/format";
+import { openCommandPalette } from "@/components/command-palette";
 
 /**
  * پیاده‌سازی راست‌چین اصیل و استاندارد پنل ERP (Native RTL):
@@ -304,7 +308,29 @@ export function AdminSidebar({
 }) {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
-  const sections = filterNavByRole(NAV_SECTIONS, user?.role, user?.canManageSite);
+
+  // حالت کاری انتخابی (جامع، کارگاه، فروش، مالی، مدیریت)
+  const [workspaceMode, setWorkspaceMode] = React.useState<WorkspaceMode>("ALL");
+
+  // بازیابی از حافظه محلی مرورگر
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem("kardo:workspace-mode") as WorkspaceMode | null;
+      if (saved && WORKSPACE_MODES.some((m) => m.key === saved)) {
+        setWorkspaceMode(saved);
+      }
+    } catch {}
+  }, []);
+
+  const handleModeChange = (mode: WorkspaceMode) => {
+    setWorkspaceMode(mode);
+    try {
+      localStorage.setItem("kardo:workspace-mode", mode);
+    } catch {}
+  };
+
+  const baseSections = filterNavByRole(NAV_SECTIONS, user?.role, user?.canManageSite);
+  const sections = filterNavByWorkspaceMode(baseSections, workspaceMode);
 
   const isActive = (href: string) =>
     href === "/admin"
@@ -328,7 +354,7 @@ export function AdminSidebar({
     if (activeSection) {
       setOpenSectionTitle(activeSection.title);
     }
-  }, [pathname]);
+  }, [pathname, sections]);
 
   const handleToggle = (title: string) => {
     setOpenSectionTitle((prev) => (prev === title ? null : title));
@@ -360,6 +386,60 @@ export function AdminSidebar({
           </div>
         ) : null}
       </div>
+
+      {/* سوییچر حالت کاری هوشمند و دکمه جستجوی سریع (Ctrl+K) */}
+      {!collapsed ? (
+        <div className="shrink-0 border-b border-sidebar-border bg-sidebar/30 p-2" dir="rtl">
+          {/* دکمه جستجوی سریع هوشمند */}
+          <button
+            type="button"
+            onClick={openCommandPalette}
+            className="flex w-full items-center justify-between rounded-lg border border-border/70 bg-background/60 px-2.5 py-1.5 text-xs text-muted-foreground transition-all hover:border-primary/40 hover:bg-background hover:text-foreground shadow-2xs cursor-pointer select-none"
+          >
+            <span className="flex items-center gap-1.5 font-medium">
+              <Search className="size-3.5 text-primary" />
+              <span>جستجوی سریع...</span>
+            </span>
+            <kbd className="rounded border border-border/80 bg-muted px-1.5 py-0.5 font-mono text-[9px] font-bold">
+              Ctrl+K
+            </kbd>
+          </button>
+
+          {/* تب‌های تغییر حالت کاری (Workspace Modes) */}
+          <div className="mt-2 flex items-center justify-between gap-1 rounded-lg bg-muted/60 p-1 border border-border/50">
+            {WORKSPACE_MODES.map((m) => {
+              const active = workspaceMode === m.key;
+              return (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => handleModeChange(m.key)}
+                  title={m.description}
+                  className={cn(
+                    "flex-1 rounded-md py-1 text-[10px] font-bold transition-all text-center select-none cursor-pointer",
+                    active
+                      ? "bg-primary text-primary-foreground shadow-xs font-black"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  {m.shortLabel}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="shrink-0 border-b border-sidebar-border p-2 flex justify-center">
+          <button
+            type="button"
+            onClick={openCommandPalette}
+            title="جستجوی سریع (Ctrl+K)"
+            className="flex size-8 items-center justify-center rounded-lg border border-border/70 bg-background/60 text-muted-foreground hover:text-foreground hover:border-primary/40 shadow-2xs cursor-pointer"
+          >
+            <Search className="size-4 text-primary" />
+          </button>
+        </div>
+      )}
 
       <ScrollArea className="min-h-0 flex-1">
         <nav className="flex flex-col gap-1.5 px-2 py-2" aria-label="منوی اصلی">

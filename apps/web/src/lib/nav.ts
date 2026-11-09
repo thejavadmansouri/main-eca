@@ -62,6 +62,123 @@ export interface NavSection {
   items: NavItem[];
 }
 
+export type WorkspaceMode = "ALL" | "SHOPFLOOR" | "COMMERCIAL" | "FINANCE" | "EXECUTIVE";
+
+export interface WorkspaceModeOption {
+  key: WorkspaceMode;
+  label: string;
+  shortLabel: string;
+  description: string;
+}
+
+export const WORKSPACE_MODES: WorkspaceModeOption[] = [
+  {
+    key: "ALL",
+    label: "همه ماژول‌ها (جامع)",
+    shortLabel: "جامع",
+    description: "دسترسی به تمامی ماژول‌ها و ابزارهای سازمانی",
+  },
+  {
+    key: "SHOPFLOOR",
+    label: "کارگاه و خط تولید",
+    shortLabel: "کارگاه",
+    description: "مخصوص برش‌کار، اپراتور CNC، مونتاژ، بسته‌بندی و نصاب",
+  },
+  {
+    key: "COMMERCIAL",
+    label: "بازرگانی و فروش",
+    shortLabel: "فروش",
+    description: "مخصوص ویزیتور، فروشندگان، صندوق و ارتباط با مشتریان",
+  },
+  {
+    key: "FINANCE",
+    label: "مالی و خزانه‌داری",
+    shortLabel: "مالی",
+    description: "مخصوص حسابداری، چک‌ها، اسناد و امور مالی قراردادها",
+  },
+  {
+    key: "EXECUTIVE",
+    label: "مدیریت ارشد",
+    shortLabel: "مدیریت",
+    description: "داشبورد پرواز، KPIها، نظارت بر خطوط و سیر سفارشات",
+  },
+];
+
+/** فیلتر هوشمند بخش‌های سایدبار بر اساس حالت کاری انتخابی */
+export function filterNavByWorkspaceMode(
+  sections: NavSection[],
+  mode: WorkspaceMode,
+): NavSection[] {
+  if (mode === "ALL") return sections;
+
+  return sections
+    .map((sec) => {
+      if (sec.pinned) {
+        if (mode === "SHOPFLOOR") {
+          return {
+            ...sec,
+            items: sec.items.filter((it) => it.href === "/admin/chat" || it.href === "/admin/inbox"),
+          };
+        }
+        if (mode === "COMMERCIAL" || mode === "FINANCE") {
+          return {
+            ...sec,
+            items: sec.items.filter((it) => it.href === "/admin" || it.href === "/admin/chat" || it.href === "/admin/inbox"),
+          };
+        }
+        return sec;
+      }
+
+      if (mode === "SHOPFLOOR") {
+        if (sec.title.includes("تولید") || sec.title.includes("انبار")) {
+          return {
+            ...sec,
+            items: sec.items.filter(
+              (it) =>
+                it.href?.includes("wood-industry") ||
+                it.href?.includes("orders/tracking") ||
+                it.href?.includes("shop-floor") ||
+                it.href?.includes("manufacturing") ||
+                it.href?.includes("drivers") ||
+                it.href?.includes("labels"),
+            ),
+          };
+        }
+        return null;
+      }
+
+      if (mode === "COMMERCIAL") {
+        if (sec.title.includes("بازرگانی") || sec.title.includes("کاتالوگ")) {
+          return sec;
+        }
+        if (sec.title.includes("تولید")) {
+          return {
+            ...sec,
+            items: sec.items.filter((it) => it.href?.includes("wood-industry") || it.href?.includes("tracking")),
+          };
+        }
+        return null;
+      }
+
+      if (mode === "FINANCE") {
+        if (sec.title.includes("مالی") || sec.title.includes("خرید") || sec.title.includes("حقوق")) {
+          return sec;
+        }
+        return null;
+      }
+
+      if (mode === "EXECUTIVE") {
+        if (sec.title.includes("بازرگانی") || sec.title.includes("تولید") || sec.title.includes("مالی") || sec.title.includes("حقوق")) {
+          return sec;
+        }
+        return null;
+      }
+
+      return sec;
+    })
+    .filter((s): s is NavSection => s !== null && s.items.length > 0);
+}
+
 /**
  * پیکربندی ماژولار سایدبار کاردو مطابق با استانداردهای بین‌المللی ERP (Odoo, ERPNext, SAP B1, Dynamics 365)
  */

@@ -11,6 +11,7 @@ import { BackupCloseGuard } from "@/components/backup-close-guard";
 import { ConnectionBanner } from "@/components/connection-banner";
 import { isSalesFocused } from "@/lib/nav";
 import { CartsProvider } from "@/app/admin/pos/_lib/carts-context";
+import { CommandPaletteDialog } from "@/components/command-palette";
 
 export default function AdminLayout({
   children,
@@ -111,6 +112,7 @@ export default function AdminLayout({
         {/* در مرورگر بی‌اثر است؛ فقط داخل قاب دسکتاپ فعال می‌شود. */}
         <BackupCloseGuard />
       </div>
+      <CommandPaletteDialog />
     </div>
     </CartsProvider>
   );

@@ -866,9 +866,9 @@ export class WoodIndustryService {
   }
 
   // ───────────────────────── قرارداد پروژه‌ها و پرداخت‌های مرحله‌ای (Project Contracts & Milestones) ─────────────────────────
-  async getProjectContract(productionOrderId: string) {
-    const contract = await this.prisma.projectContract.findUnique({
-      where: { productionOrderId },
+  async getProjectContract(idOrOrderId: string) {
+    let contract = await this.prisma.projectContract.findUnique({
+      where: { productionOrderId: idOrOrderId },
       include: {
         productionOrder: {
           include: { product: true },
@@ -882,6 +882,25 @@ export class WoodIndustryService {
         },
       },
     });
+
+    if (!contract) {
+      contract = await this.prisma.projectContract.findUnique({
+        where: { id: idOrOrderId },
+        include: {
+          productionOrder: {
+            include: { product: true },
+          },
+          milestones: {
+            orderBy: { stepNumber: 'asc' },
+            include: { payments: true },
+          },
+          payments: {
+            orderBy: { paidAt: 'desc' },
+          },
+        },
+      });
+    }
+
     if (!contract) return null;
 
     // بررسی سررسید اقساط بر اساس مرحله جاری خط تولید

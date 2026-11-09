@@ -4120,11 +4120,14 @@ export interface ProjectContractRow {
     code: string;
     customerType?: string | null;
     customerName?: string | null;
+    customerPhone?: string | null;
     endClientName?: string | null;
     projectTitle?: string | null;
     currentStage?: string | null;
     assignedInstaller?: string | null;
     installerPhone?: string | null;
+    customerSignatureData?: string | null;
+    customerSignedAt?: string | null;
     product?: { name: string };
   };
   milestones?: ProjectMilestoneRow[];
