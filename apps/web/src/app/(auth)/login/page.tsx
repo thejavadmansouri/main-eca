@@ -78,8 +78,6 @@ export default function LoginPage() {
     }
   };
 
-  if (!hydrated) return null;
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
       <div className="w-full max-w-sm">
