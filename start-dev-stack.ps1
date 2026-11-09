@@ -1,4 +1,4 @@
-﻿# Warehouse OS — بالا آوردن سرور توسعه (API) + پنل ادمین (Web)
+# Warehouse OS — بالا آوردن سرور توسعه (API) + پنل ادمین (Web)
 # همان استکی که اپ اندرویدِ در حال توسعه به آن وصل می‌شود.
 
 $ErrorActionPreference = 'Stop'
@@ -35,11 +35,14 @@ $lan = Get-LanIPv4
 $host.UI.RawUI.WindowTitle = 'Warehouse OS — Dev Stack'
 
 Write-Host ''
-Write-Host '  Warehouse OS — استک توسعه' -ForegroundColor Cyan
-Write-Host '  --------------------------------' -ForegroundColor DarkGray
-Write-Host ("  API  (گوشی):  http://{0}:3000" -f $lan) -ForegroundColor Green
-Write-Host '  API  (روی PC): http://localhost:3000' -ForegroundColor Gray
-Write-Host '  پنل ادمین:      http://localhost:3001' -ForegroundColor Green
+Write-Host '  Warehouse OS — استک توسعه و دمو شبکه محلی (Hotspot/LAN)' -ForegroundColor Cyan
+Write-Host '  -------------------------------------------------------' -ForegroundColor DarkGray
+Write-Host ("  آی‌پی شبکه محلی (Host IP): {0}" -f $lan) -ForegroundColor White
+Write-Host ("  API سرور (بک‌اند):         http://{0}:3000" -f $lan) -ForegroundColor Green
+Write-Host ("  1. لپ‌تاپ اصلی (مدیر):     http://localhost:3001 (نام کاربری: admin)") -ForegroundColor Cyan
+Write-Host ("  2. لپ‌تاپ دوم (حسابدار):    http://{0}:3001 (نام کاربری: accountant)" -f $lan) -ForegroundColor Yellow
+Write-Host ("  3. گوشی موبایل (کارگر):     http://{0}:3001/admin/shop-floor (نام: behrouz.wood یا worker)" -f $lan) -ForegroundColor Magenta
+Write-Host '  -------------------------------------------------------' -ForegroundColor DarkGray
 Write-Host ''
 
 $pg = Get-Service -Name 'postgresql*' -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'Running' }
