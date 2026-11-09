@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import QRCode from "qrcode";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -68,6 +69,15 @@ export default function PublicProjectTrackingPage() {
   const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
   const [isSignModalOpen, setIsSignModalOpen] = React.useState(false);
   const [isCopied, setIsCopied] = React.useState(false);
+  const [qrDataUrl, setQrDataUrl] = React.useState<string>("");
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && isShareModalOpen) {
+      QRCode.toDataURL(window.location.href, { width: 180, margin: 1 })
+        .then(setQrDataUrl)
+        .catch(() => {});
+    }
+  }, [isShareModalOpen]);
 
   // نظرسنجی و امتیاز رضایت مشتری
   const [rating, setRating] = React.useState<number>(5);
@@ -667,7 +677,6 @@ export default function PublicProjectTrackingPage() {
           {(() => {
             const currentUrl = typeof window !== "undefined" ? window.location.href : "";
             const shareText = `کارفرمای گرامی، رهگیری لحظه‌ای و تصاویر تولید سفارش ${order.code} (${order.projectTitle || "پروژه صنایع چوب کاردو"}):\n${currentUrl}`;
-            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(currentUrl)}`;
 
             function handleCopy() {
               if (navigator.clipboard) {
@@ -754,8 +763,12 @@ export default function PublicProjectTrackingPage() {
                 {/* QR کد برای اسکن با دوربین */}
                 <div className="flex items-center gap-4 rounded-2xl border bg-muted/20 p-3">
                   <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border bg-white p-1">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={qrImageUrl} alt="QR Code رهگیری" className="h-full w-full object-contain" />
+                    {qrDataUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={qrDataUrl} alt="QR Code رهگیری" className="h-full w-full object-contain" />
+                    ) : (
+                      <QrCode className="h-8 w-8 text-muted-foreground animate-pulse" />
+                    )}
                   </div>
                   <div className="space-y-1 text-xs">
                     <p className="font-bold text-foreground flex items-center gap-1.5">

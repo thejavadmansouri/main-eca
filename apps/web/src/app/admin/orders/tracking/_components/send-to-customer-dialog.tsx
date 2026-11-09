@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import QRCode from "qrcode";
 import { useMutation } from "@tanstack/react-query";
 import {
   Share2,
@@ -49,6 +50,11 @@ export function SendToCustomerDialog({ open, onOpenChange, order }: SendToCustom
   const { toast } = useToast();
   const [mobileNumber, setMobileNumber] = React.useState("");
   const [isCopied, setIsCopied] = React.useState(false);
+  const [qrDataUrl, setQrDataUrl] = React.useState<string>("");
+
+  // آدرس کامل رهگیری
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const trackingUrl = order?.trackingToken ? `${baseUrl}/track/${order.trackingToken}` : "";
 
   React.useEffect(() => {
     if (order) {
@@ -56,6 +62,14 @@ export function SendToCustomerDialog({ open, onOpenChange, order }: SendToCustom
       setIsCopied(false);
     }
   }, [order]);
+
+  React.useEffect(() => {
+    if (trackingUrl) {
+      QRCode.toDataURL(trackingUrl, { width: 180, margin: 1 })
+        .then(setQrDataUrl)
+        .catch(() => {});
+    }
+  }, [trackingUrl]);
 
   const sendSmsMut = useMutation({
     mutationFn: ({ orderId, mobile }: { orderId: string; mobile?: string }) =>
@@ -77,10 +91,6 @@ export function SendToCustomerDialog({ open, onOpenChange, order }: SendToCustom
   });
 
   if (!order) return null;
-
-  // آدرس کامل رهگیری
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const trackingUrl = order.trackingToken ? `${baseUrl}/track/${order.trackingToken}` : "";
 
   const smsPreview = `کارفرمای گرامی جناب ${order.customerName || "مشتری"}\nسفارش شما با کد ${order.code} (${order.projectTitle || "پروژه صنایع چوب"}) در کارخانه کاردو در حال آماده‌سازی است.\nجهت مشاهده پیشرفت لحظه‌ای و تصاویر تولید:\n${trackingUrl || `${baseUrl}/track/...`}\nکاردو OS`;
 
@@ -109,8 +119,6 @@ export function SendToCustomerDialog({ open, onOpenChange, order }: SendToCustom
     const text = encodeURIComponent(smsPreview);
     window.open(`https://eitaa.com/share/url?url=${encodeURIComponent(trackingUrl)}&text=${text}`, "_blank");
   }
-
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(trackingUrl)}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -228,11 +236,17 @@ export function SendToCustomerDialog({ open, onOpenChange, order }: SendToCustom
           {/* بارکد QR جهت اسکن حضوری */}
           {trackingUrl && (
             <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/20">
-              <img
-                src={qrImageUrl}
-                alt="QR Code"
-                className="size-16 rounded-xl border border-border bg-white p-1 shrink-0"
-              />
+              {qrDataUrl ? (
+                <img
+                  src={qrDataUrl}
+                  alt="QR Code"
+                  className="size-16 rounded-xl border border-border bg-white p-1 shrink-0"
+                />
+              ) : (
+                <div className="size-16 rounded-xl border border-border bg-muted flex items-center justify-center shrink-0">
+                  <QrCode className="size-6 text-muted-foreground animate-pulse" />
+                </div>
+              )}
               <div className="text-xs space-y-0.5">
                 <p className="font-bold text-foreground flex items-center gap-1">
                   <QrCode className="size-3.5 text-primary" />
